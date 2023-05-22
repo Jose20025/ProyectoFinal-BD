@@ -7,3 +7,4 @@ ctk.set_default_color_theme('dark-blue')
 ventana = ctk.CTk()
 ventana.geometry('400x200')
 
+ventana.mainloop()
