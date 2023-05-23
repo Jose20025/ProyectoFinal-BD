@@ -1,7 +1,8 @@
 create database FinalVeterinaria
 use FinalVeterinaria
 
-create table Clientes(
+create table Clientes
+(
 	IdCliente char(5),
 	Apellido varchar (20) not null,
 	NroCuenta varchar (10) not null,
@@ -10,7 +11,8 @@ create table Clientes(
 	constraint PK_Cli primary key (IdCliente)
 );
 
-create table Mascotas(
+create table Mascotas
+(
 	CodMascota char(5),
 	IdCliente char(5),
 	Alias varchar (20) not null,
@@ -23,13 +25,15 @@ create table Mascotas(
 	constraint FK_CliMasc foreign key (IdCliente) references Clientes
 );
 
-create table Personas(
+create table Personas
+(
 	CI varchar (10),
 	Nombre varchar (30) not null,
 	constraint PK_Pers primary key (CI)
 );
 
-create table Encargados(
+create table Encargados
+(
 	IdCliente char(5),
 	CI varchar (10),
 	constraint PK_Enc primary key (IdCliente,CI),
@@ -37,7 +41,8 @@ create table Encargados(
 	constraint FK_PersEnc foreign key (CI) references Personas
 );
 
-create table HistorialesPeso(
+create table HistorialesPeso
+(
 	FechaPeso date,
 	CodMascota char(5),
 	Peso float not null,
@@ -45,7 +50,8 @@ create table HistorialesPeso(
 	constraint FK_MascPeso foreign key (CodMascota) references Mascotas
 );
 
-create table HistorialesMedicos(
+create table HistorialesMedicos
+(
 	FechaConsulta date,
 	CodMascota char(5),
 	Enfermedad varchar (20),
@@ -53,15 +59,17 @@ create table HistorialesMedicos(
 	constraint FK_MascMed foreign key (CodMascota) references Mascotas
 );
 
-create table CalendariosVacunas(
+create table CalendariosVacunas
+(
 	FechaVacuna date,
 	CodMascota char (5),
-	TipoVac varchar (20), 
+	TipoVac varchar (20),
 	constraint PK_Vac primary key (CodMascota,FechaVacuna,TipoVac),
 	constraint FK_MascVac foreign key (CodMascota) references Mascotas,
 );
 
-create table Estadias(
+create table Estadias
+(
 	CheckIn date,
 	CodMascota char(5),
 	CheckOut date default null,
@@ -70,7 +78,8 @@ create table Estadias(
 	constraint FK_MascEstad foreign key (CodMascota) references Mascotas
 );
 
-create table Necesidades(
+create table Necesidades
+(
 	CheckIn date,
 	CodMascota char(5),
 	TipoNec varchar (15),
@@ -79,7 +88,8 @@ create table Necesidades(
 	constraint FK_FechaNec foreign key (CodMascota,CheckIn) references Estadias
 );
 
-create table Extras(
+create table Extras
+(
 	CheckIn date,
 	CodMascota char(5),
 	TipoExtra varchar (15),
