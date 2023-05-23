@@ -17,6 +17,11 @@ class App(ctk.CTk):
         background_label = ctk.CTkLabel(self.loginPage, image=image, text='')
         background_label.pack()
 
+        self.userFrame = ctk.CTkFrame()
+        self.usernamelabel = ctk.CTkLabel(
+            self.loginPage, text='Username')
+        self.usernamelabel.place(x=90, y=460)
+
         self.loginPage.pack()
 
 
