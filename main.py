@@ -23,7 +23,7 @@ class App(ctk.CTk):
         background_label.pack()
 
         self.logo = ctk.CTkLabel(self.loginPage, image=ctk.CTkImage(light_image=Image.open(
-            './image/logo.jpg'), dark_image=Image.open('./image/logo.jpg'), size=(400, 340)), width=400, height=340, text='',
+            './image/logo-transparente.png'), dark_image=Image.open('./image/logo-transparente.png'), size=(400, 340)), width=400, height=340, text='',
             corner_radius=5)
         self.logo.place(x=50, y=40)
 
