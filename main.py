@@ -53,13 +53,17 @@ class App(ctk.CTk):
         self.centrarVentana(500, 700)
 
         # Main Page
-        self.mainPage = ctk.CTkFrame(self, width=1000, height=800)
+        self.mainPage = MenuPrincipal(self)
 
     def centrarVentana(self, ancho, alto):
         self.update_idletasks()
         x = (self.winfo_screenwidth() // 2) - (ancho // 2)
         y = (self.winfo_screenheight() // 2) - (alto // 2)
         self.geometry(f'{ancho}x{alto}+{x}+{y-20}')
+
+    def cambioVentana(self, old: ctk.CTkFrame, new: ctk.CTkFrame):
+        old.pack_forget()
+        new.pack()
 
     def login(self):
         user = self.username.get()
@@ -69,10 +73,9 @@ class App(ctk.CTk):
                 self.conexion = pyodbc.connect(
                     f'DRIVER={{SQL Server}};SERVER=JoseK-Laptop\SQLEXPRESS;DATABASE=FinalVeterinaria;UID={user};PWD={password}')
 
-                self.loginPage.pack_forget()
-                self.mainPage.pack()
                 self.geometry('1000x600')
                 self.title('Cute Pets - Menu')
+                self.cambioVentana(self.loginPage, self.mainPage)
 
             except:
                 msg.showerror('Error en la conexion',
@@ -86,6 +89,11 @@ class App(ctk.CTk):
         else:
             msg.showerror('Campos requeridos',
                           'Los dos campos no pueden estar vacios')
+
+
+class MenuPrincipal(ctk.CTkFrame):
+    def __init__(self, master=None):
+        super().__init__(master=master, width=1000, height=600)
 
 
 app = App()
