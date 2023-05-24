@@ -2,6 +2,7 @@ import customtkinter as ctk
 import pyodbc
 from tabulate import tabulate
 from PIL import Image
+import time
 
 
 class App(ctk.CTk):
@@ -11,6 +12,8 @@ class App(ctk.CTk):
         ctk.set_default_color_theme('blue')
         self.geometry('500x700')
         self.conexion = None
+        self.errorPage = None
+        self.title('Login')
         self.iconbitmap('./image/icono.ico')
         self.resizable(0, 0)
 
@@ -20,6 +23,11 @@ class App(ctk.CTk):
             './image/fondo2.jpg'), size=(500, 1000))
         background_label = ctk.CTkLabel(self.loginPage, image=image, text='')
         background_label.pack()
+
+        self.logo = ctk.CTkLabel(self.loginPage, image=ctk.CTkImage(light_image=Image.open(
+            './image/logo.jpg'), dark_image=Image.open('./image/logo.jpg'), size=(400, 340)), width=400, height=340, text='',
+            corner_radius=5)
+        self.logo.place(x=50, y=40)
 
         self.loginPage.pack()
 
@@ -56,27 +64,32 @@ class App(ctk.CTk):
                 self.conexion = pyodbc.connect(
                     f'DRIVER={{SQL Server}};SERVER=JoseK-Laptop\SQLEXPRESS;DATABASE=FinalVeterinaria;UID={user};PWD={password}')
 
-                cursor = self.conexion.cursor()
-
-                cursor.execute('select * from Clientes')
-                resultado = cursor.fetchall()
-
-                nombreColumnas = [columna[0] for columna in cursor.description]
-
-                tabla = tabulate(resultado, headers=nombreColumnas,
-                                 tablefmt='fancy_grid')
-
-                print(tabla)
-
-                cursor.close()
-                self.conexion.close()
-
                 self.loginPage.pack_forget()
                 self.mainPage.pack()
                 self.geometry('1000x600')
 
             except:
-                pass
+                self.errorPage = ErrorPage('Error en la conexion',
+                                           'Ha ocurrido un error al momento de conectarse a la base de datos!')
+
+
+class ErrorPage(ctk.CTkToplevel):
+    def __init__(self, titulo=None, descripcion=None):
+        super().__init__()
+        self.geometry('400x200')
+        self.title(f'Error: {titulo}')
+        self.descripcion = ctk.CTkLabel(
+            self, text=descripcion, justify='center')
+        self.boton = ctk.CTkButton(self, text='Aceptar', command=self.aceptar)
+
+        self.descripcion.place(x=10, y=30)
+        self.descripcion.update()
+        self.boton.place(x=250, y=165)
+
+        self.mainloop()
+
+    def aceptar(self):
+        self.destroy()
 
 
 app = App()
