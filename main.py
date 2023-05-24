@@ -1,8 +1,7 @@
 import customtkinter as ctk
 import pyodbc
-from tabulate import tabulate
+import tkinter.messagebox as msg
 from PIL import Image
-import time
 
 
 class App(ctk.CTk):
@@ -12,7 +11,6 @@ class App(ctk.CTk):
         ctk.set_default_color_theme('blue')
         self.geometry('500x700')
         self.conexion = None
-        self.errorPage = None
         self.title('Login')
         self.iconbitmap('./image/icono.ico')
         self.resizable(0, 0)
@@ -47,14 +45,21 @@ class App(ctk.CTk):
             self.userFrame, width=340, height=30, placeholder_text='Ingrese su contraseña')
         self.password.place(x=30, y=125)
 
-        self.boton = ctk.CTkButton(
-            self.userFrame, text='Login', command=self.login)
-        self.boton.place(x=130, y=180)
+        ctk.CTkButton(
+            self.userFrame, text='Login', command=self.login).place(x=230, y=180)
 
         self.userFrame.place(x=50, y=430)
 
+        self.centrarVentana(500, 700)
+
         # Main Page
         self.mainPage = ctk.CTkFrame(self, width=1000, height=800)
+
+    def centrarVentana(self, ancho, alto):
+        self.update_idletasks()
+        x = (self.winfo_screenwidth() // 2) - (ancho // 2)
+        y = (self.winfo_screenheight() // 2) - (alto // 2)
+        self.geometry(f'{ancho}x{alto}+{x}+{y}')
 
     def login(self):
         user = self.username.get()
@@ -69,27 +74,17 @@ class App(ctk.CTk):
                 self.geometry('1000x600')
 
             except:
-                self.errorPage = ErrorPage('Error en la conexion',
-                                           'Ha ocurrido un error al momento de conectarse a la base de datos!')
-
-
-class ErrorPage(ctk.CTkToplevel):
-    def __init__(self, titulo=None, descripcion=None):
-        super().__init__()
-        self.geometry('400x200')
-        self.title(f'Error: {titulo}')
-        self.descripcion = ctk.CTkLabel(
-            self, text=descripcion, justify='center')
-        self.boton = ctk.CTkButton(self, text='Aceptar', command=self.aceptar)
-
-        self.descripcion.place(x=10, y=30)
-        self.descripcion.update()
-        self.boton.place(x=250, y=165)
-
-        self.mainloop()
-
-    def aceptar(self):
-        self.destroy()
+                msg.showerror('Error en la conexion',
+                              'Usuario o contraseña incorrectos')
+        elif not user and password:
+            msg.showerror('Usuario es requerido',
+                          'El campo de username no puede estar vacio')
+        elif not password and user:
+            msg.showerror('La contraseña es requerida',
+                          'El campo de contraseña no puede estar vacio')
+        else:
+            msg.showerror('Campos requeridos',
+                          'Los dos campos no pueden estar vacios')
 
 
 app = App()
