@@ -59,7 +59,7 @@ class App(ctk.CTk):
         self.update_idletasks()
         x = (self.winfo_screenwidth() // 2) - (ancho // 2)
         y = (self.winfo_screenheight() // 2) - (alto // 2)
-        self.geometry(f'{ancho}x{alto}+{x}+{y}')
+        self.geometry(f'{ancho}x{alto}+{x}+{y-20}')
 
     def login(self):
         user = self.username.get()
@@ -72,6 +72,7 @@ class App(ctk.CTk):
                 self.loginPage.pack_forget()
                 self.mainPage.pack()
                 self.geometry('1000x600')
+                self.title('Cute Pets - Menu')
 
             except:
                 msg.showerror('Error en la conexion',
