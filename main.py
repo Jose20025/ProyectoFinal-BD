@@ -1,6 +1,5 @@
 import customtkinter as ctk
 import pyodbc
-from tabulate import tabulate
 from PIL import Image
 import time
 
