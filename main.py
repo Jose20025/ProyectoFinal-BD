@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import pyodbc
+import tkinter.messagebox as msg
 from PIL import Image
-import time
 
 
 class App(ctk.CTk):
@@ -11,7 +11,6 @@ class App(ctk.CTk):
         ctk.set_default_color_theme('blue')
         self.geometry('500x700')
         self.conexion = None
-        self.errorPage = None
         self.title('Login')
         self.iconbitmap('./image/icono.ico')
         self.resizable(0, 0)
@@ -67,38 +66,17 @@ class App(ctk.CTk):
                 self.geometry('1000x600')
 
             except:
-                if self.errorPage:
-                    self.errorPage.destroy()
-
-                self.errorPage = ErrorPage(
-                    self.userFrame, 'Error al iniciar sesion!')
-                self.errorPage.place(x=30, y=180)
+                msg.showerror('Error en la conexion',
+                              'Usuario o contraseña incorrectos')
         elif not user and password:
-            if self.errorPage:
-                self.errorPage.destroy()
-
-            self.errorPage = ErrorPage(
-                self.userFrame, 'Ingrese un nombre de usuario!')
-            self.errorPage.place(x=30, y=180)
+            msg.showerror('Usuario es requerido',
+                          'El campo de username no puede estar vacio')
         elif not password and user:
-            if self.errorPage:
-                self.errorPage.destroy()
-
-            self.errorPage = ErrorPage(
-                self.userFrame, 'Ingrese una contraseña!')
-            self.errorPage.place(x=30, y=180)
+            msg.showerror('La contraseña es requerida',
+                          'El campo de contraseña no puede estar vacio')
         else:
-            if self.errorPage:
-                self.errorPage.destroy()
-
-            self.errorPage = ErrorPage(
-                self.userFrame, 'Los campos no pueden estar vacios!')
-            self.errorPage.place(x=30, y=180)
-
-
-class ErrorPage(ctk.CTkLabel):
-    def __init__(self, master=None, descripcion=None):
-        super().__init__(master=master, text=descripcion, fg_color='red')
+            msg.showerror('Campos requeridos',
+                          'Los dos campos no pueden estar vacios')
 
 
 app = App()
