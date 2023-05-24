@@ -47,9 +47,8 @@ class App(ctk.CTk):
             self.userFrame, width=340, height=30, placeholder_text='Ingrese su contraseña')
         self.password.place(x=30, y=125)
 
-        self.boton = ctk.CTkButton(
-            self.userFrame, text='Login', command=self.login)
-        self.boton.place(x=130, y=180)
+        ctk.CTkButton(
+            self.userFrame, text='Login', command=self.login).place(x=230, y=180)
 
         self.userFrame.place(x=50, y=430)
 
@@ -69,27 +68,38 @@ class App(ctk.CTk):
                 self.geometry('1000x600')
 
             except:
-                self.errorPage = ErrorPage('Error en la conexion',
-                                           'Ha ocurrido un error al momento de conectarse a la base de datos!')
+                if self.errorPage:
+                    self.errorPage.destroy()
+
+                self.errorPage = ErrorPage(
+                    self.userFrame, 'Error al iniciar sesion!')
+                self.errorPage.place(x=30, y=180)
+        elif not user and password:
+            if self.errorPage:
+                self.errorPage.destroy()
+
+            self.errorPage = ErrorPage(
+                self.userFrame, 'Ingrese un nombre de usuario!')
+            self.errorPage.place(x=30, y=180)
+        elif not password and user:
+            if self.errorPage:
+                self.errorPage.destroy()
+
+            self.errorPage = ErrorPage(
+                self.userFrame, 'Ingrese una contraseña!')
+            self.errorPage.place(x=30, y=180)
+        else:
+            if self.errorPage:
+                self.errorPage.destroy()
+
+            self.errorPage = ErrorPage(
+                self.userFrame, 'Los campos no pueden estar vacios!')
+            self.errorPage.place(x=30, y=180)
 
 
-class ErrorPage(ctk.CTkToplevel):
-    def __init__(self, titulo=None, descripcion=None):
-        super().__init__()
-        self.geometry('400x200')
-        self.title(f'Error: {titulo}')
-        self.descripcion = ctk.CTkLabel(
-            self, text=descripcion, justify='center')
-        self.boton = ctk.CTkButton(self, text='Aceptar', command=self.aceptar)
-
-        self.descripcion.place(x=10, y=30)
-        self.descripcion.update()
-        self.boton.place(x=250, y=165)
-
-        self.mainloop()
-
-    def aceptar(self):
-        self.destroy()
+class ErrorPage(ctk.CTkLabel):
+    def __init__(self, master=None, descripcion=None):
+        super().__init__(master=master, text=descripcion, fg_color='red')
 
 
 app = App()
