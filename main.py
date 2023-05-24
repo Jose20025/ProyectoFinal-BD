@@ -50,8 +50,16 @@ class App(ctk.CTk):
 
         self.userFrame.place(x=50, y=430)
 
+        self.centrarVentana(500, 700)
+
         # Main Page
         self.mainPage = ctk.CTkFrame(self, width=1000, height=800)
+
+    def centrarVentana(self, ancho, alto):
+        self.update_idletasks()
+        x = (self.winfo_screenwidth() // 2) - (ancho // 2)
+        y = (self.winfo_screenheight() // 2) - (alto // 2)
+        self.geometry(f'{ancho}x{alto}+{x}+{y}')
 
     def login(self):
         user = self.username.get()
