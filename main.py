@@ -12,6 +12,7 @@ class App(ctk.CTk):
         self.geometry('500x700')
         self.conexion = None
         self.iconbitmap('./image/icono.ico')
+        self.resizable(0, 0)
 
         self.loginPage = ctk.CTkFrame(self, width=500, height=700)
 
@@ -44,6 +45,9 @@ class App(ctk.CTk):
 
         self.userFrame.place(x=50, y=430)
 
+        # Main Page
+        self.mainPage = ctk.CTkFrame(self, width=1000, height=800)
+
     def login(self):
         user = self.username.get()
         password = self.password.get()
@@ -65,7 +69,11 @@ class App(ctk.CTk):
                 print(tabla)
 
                 cursor.close()
-                conexion.close()
+                self.conexion.close()
+
+                self.loginPage.pack_forget()
+                self.mainPage.pack()
+                self.geometry('1000x600')
 
             except:
                 pass
