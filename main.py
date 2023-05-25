@@ -22,10 +22,10 @@ class App(ctk.CTk):
         self.centrarVentana(500, 700)
 
         # Eleccion
-        self.eleccion = Eleccion(self)
+        self.eleccionPage = Eleccion(self)
 
         # Main Page
-        self.mainPage = MenuPrincipal(self)
+        self.mainPageHotel = MenuPrincipal(self)
 
     def centrarVentana(self, ancho, alto):
         self.update_idletasks()
@@ -37,11 +37,12 @@ class App(ctk.CTk):
         old.destroy()
         self.geometry(f'{ancho}x{alto}')
         self.title(titulo)
+        self.centrarVentana(ancho, alto)
         new.pack()
 
 
 class LoginPage(ctk.CTkFrame):
-    def __init__(self, master=None):
+    def __init__(self, master: App = None):
         super().__init__(master=master, width=500, height=700)
 
         self.padre = master
@@ -92,7 +93,7 @@ class LoginPage(ctk.CTkFrame):
                         f'DRIVER={{SQL Server}};SERVER={self.conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
 
                     self.padre.cambioVentana(
-                        self.padre.loginPage, self.padre.mainPage, 1000, 600, 'Cute Pets - Menu')
+                        self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
 
                 except:
                     msg(title='Error en la conexion',
@@ -112,8 +113,26 @@ class LoginPage(ctk.CTkFrame):
 
 
 class Eleccion(ctk.CTkFrame):
-    def __init__(self, master=None):
+    def __init__(self, master: App = None):
         super().__init__(master=master, width=400, height=250)
+        self.padre = master
+
+        ctk.CTkLabel(self, text='¿A donde quieres entrar?',
+                     width=150, height=50, anchor=ctk.CENTER).place(x=130, y=20)
+
+        ctk.CTkButton(self, text='Veterinaria', width=160,
+                      height=90, anchor=ctk.CENTER, command=self.veterinaria).place(x=20, y=90)
+
+        ctk.CTkButton(self, text='Hotel', width=160,
+                      height=90, anchor=ctk.CENTER, command=self.hotel).place(x=220, y=90)
+
+    def hotel(self):
+        self.padre.cambioVentana(
+            self, self.padre.mainPageHotel, 1000, 600, 'Cute Pets - Hotel')
+
+    def veterinaria(self):
+        self.padre.cambioVentana(
+            self, self.padre.mainPageHotel, 1000, 600, 'Cute Pets - Hotel')
 
 
 class MenuPrincipal(ctk.CTkFrame):
