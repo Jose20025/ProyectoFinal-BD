@@ -1,6 +1,6 @@
 import customtkinter as ctk
+from CTkMessagebox import CTkMessagebox as msg
 import pyodbc
-import tkinter.messagebox as msg
 from PIL import Image
 
 
@@ -43,7 +43,7 @@ class App(ctk.CTk):
             self.userFrame, text='Password').place(x=40, y=100)
 
         self.password = ctk.CTkEntry(
-            self.userFrame, width=340, height=30, placeholder_text='Ingrese su contraseña')
+            self.userFrame, width=340, height=30, placeholder_text='Ingrese su contraseña', show='*')
         self.password.place(x=30, y=125)
 
         ctk.CTkButton(
@@ -80,20 +80,20 @@ class App(ctk.CTk):
                     self.cambioVentana(self.loginPage, self.mainPage)
 
                 except:
-                    msg.showerror('Error en la conexion',
-                                  'Usuario o contraseña incorrectos')
+                    msg(title='Error en la conexion',
+                        message='Usuario o contraseña incorrectos', icon='cancel')
             else:
-                msg.showerror('Error en la conexion',
-                              'Usuario o contraseña incorrectos')
+                msg(title='Error en la conexion',
+                    message='Usuario o contraseña incorrectos', icon='cancel')
         elif not user and password:
-            msg.showerror('Usuario es requerido',
-                          'El campo de username no puede estar vacio')
+            msg(title='Usuario es requerido',
+                message='El campo de username no puede estar vacio', icon='cancel')
         elif not password and user:
-            msg.showerror('La contraseña es requerida',
-                          'El campo de contraseña no puede estar vacio')
+            msg(title='La contraseña es requerida',
+                message='El campo de contraseña no puede estar vacio', icon='cancel')
         else:
-            msg.showerror('Campos requeridos',
-                          'Los dos campos no pueden estar vacios')
+            msg(title='Campos requeridos',
+                message='Los dos campos no pueden estar vacios', icon='cancel')
 
 
 class MenuPrincipal(ctk.CTkFrame):
