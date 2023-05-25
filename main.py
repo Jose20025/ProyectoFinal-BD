@@ -63,7 +63,7 @@ class App(ctk.CTk):
         self.geometry(f'{ancho}x{alto}+{x}+{y-20}')
 
     def cambioVentana(self, old: ctk.CTkFrame, new: ctk.CTkFrame):
-        old.pack_forget()
+        old.destroy()
         new.pack()
 
     def login(self):
