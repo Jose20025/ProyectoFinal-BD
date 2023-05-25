@@ -46,7 +46,8 @@ class LoginPage(ctk.CTkFrame):
         super().__init__(master=master, width=500, height=700)
 
         self.padre = master
-        self.conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS']}
+        self.conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
+                           'nangui': ['soychurro', 'JoseK-Laptop\SQLEXPRESS']}
 
         image = ctk.CTkImage(dark_image=Image.open(
             './image/fondo2.jpg'), size=(500, 1000))
