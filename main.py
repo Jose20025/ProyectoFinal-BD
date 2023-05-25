@@ -21,6 +21,9 @@ class App(ctk.CTk):
 
         self.centrarVentana(500, 700)
 
+        # Eleccion
+        self.eleccion = Eleccion(self)
+
         # Main Page
         self.mainPage = MenuPrincipal(self)
 
@@ -30,8 +33,10 @@ class App(ctk.CTk):
         y = (self.winfo_screenheight() // 2) - (alto // 2)
         self.geometry(f'{ancho}x{alto}+{x}+{y-20}')
 
-    def cambioVentana(self, old: ctk.CTkFrame, new: ctk.CTkFrame):
+    def cambioVentana(self, old: ctk.CTkFrame, new: ctk.CTkFrame, ancho, alto, titulo):
         old.destroy()
+        self.geometry(f'{ancho}x{alto}')
+        self.title(titulo)
         new.pack()
 
 
@@ -61,6 +66,7 @@ class LoginPage(ctk.CTkFrame):
         self.username = ctk.CTkEntry(
             self.userFrame, width=340, height=30, placeholder_text='Ingrese su usuario')
         self.username.place(x=30, y=45)
+        self.username.bind('<Return>', self.login)
 
         ctk.CTkLabel(
             self.userFrame, text='Password').place(x=40, y=100)
@@ -68,13 +74,15 @@ class LoginPage(ctk.CTkFrame):
         self.password = ctk.CTkEntry(
             self.userFrame, width=340, height=30, placeholder_text='Ingrese su contraseña', show='*')
         self.password.place(x=30, y=125)
+        self.password.bind('<Return>', self.login)
 
-        ctk.CTkButton(
-            self.userFrame, text='Login', command=self.login).place(x=230, y=180)
+        self.boton = ctk.CTkButton(
+            self.userFrame, text='Login', command=self.login)
+        self.boton.place(x=230, y=180)
 
         self.userFrame.place(x=50, y=430)
 
-    def login(self):
+    def login(self, event=None):
         user = self.username.get()
         password = self.password.get()
         if user and password:
@@ -83,10 +91,8 @@ class LoginPage(ctk.CTkFrame):
                     self.padre.conexion = pyodbc.connect(
                         f'DRIVER={{SQL Server}};SERVER={self.conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
 
-                    self.padre.geometry('1000x600')
-                    self.padre.title('Cute Pets - Menu')
                     self.padre.cambioVentana(
-                        self.padre.loginPage, self.padre.mainPage)
+                        self.padre.loginPage, self.padre.mainPage, 1000, 600, 'Cute Pets - Menu')
 
                 except:
                     msg(title='Error en la conexion',
@@ -105,9 +111,31 @@ class LoginPage(ctk.CTkFrame):
                 message='Los dos campos no pueden estar vacios', icon='cancel')
 
 
+class Eleccion(ctk.CTkFrame):
+    def __init__(self, master=None):
+        super().__init__(master=master, width=400, height=250)
+
+
 class MenuPrincipal(ctk.CTkFrame):
     def __init__(self, master=None):
         super().__init__(master=master, width=1000, height=600)
+
+        self.padre = master
+
+        ctk.CTkButton(self, text='Consultas', width=210,
+                      height=40).place(x=730, y=20)
+
+        ctk.CTkButton(self, text='Insertar', width=210,
+                      height=40).place(x=730, y=90)
+
+        ctk.CTkButton(self, text='Modificar', width=210,
+                      height=40).place(x=730, y=160)
+
+        ctk.CTkButton(self, text='Eliminar', width=210,
+                      height=40).place(x=730, y=230)
+
+        ctk.CTkButton(self, text='Consulta Personalizada', width=210,
+                      height=40).place(x=730, y=300)
 
 
 app = App()
