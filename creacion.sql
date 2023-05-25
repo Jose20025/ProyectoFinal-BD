@@ -48,7 +48,7 @@ create table HistorialesPeso(
 create table HistorialesMedicos(
 	FechaConsulta date,
 	CodMascota char(5),
-	Enfermedad varchar (20),
+	Situacion varchar (20),
 	DetalleMed varchar (40) default null,
 	constraint PK_Med primary key (CodMascota,FechaConsulta),
 	constraint FK_MascMed foreign key (CodMascota) references Mascotas
@@ -62,33 +62,38 @@ create table CalendariosVacunas(
 	constraint FK_MascVac foreign key (CodMascota) references Mascotas,
 );
 
+create table Habitaciones(
+	NroHab char (2),
+	CantMax int,
+	Disponible char (1) not null,
+	constraint PK_Hab primary key (NroHab)
+);
+
 create table Estadias(
 	CheckIn date,
 	CodMascota char(5),
+	NroHab char (2),
 	CheckOut date default null,
 	Dias int not null,
-	Pieza char (3) not null,
-	constraint PK_Estad primary key (CodMascota,CheckIn),
-	constraint FK_MascEstad foreign key (CodMascota) references Mascotas
+	constraint PK_Estad primary key (CodMascota,CheckIn,NroHab),
+	constraint FK_MascEstad foreign key (CodMascota) references Mascotas,
+	constraint FK_HabEstad foreign key (NroHab) references Habitaciones
 );
 
-create table Necesidades(
-	CheckIn date,
-	CodMascota char(5),
-	TipoNec varchar (15),
-	CantNec int default 0,
-	DescripNec varchar (40) default null,
-	constraint PK_NecEsp primary key (CodMascota,CheckIn,TipoNec),
-	constraint FK_FechaNec foreign key (CodMascota,CheckIn) references Estadias
+create table Servicios(
+	TipoServ varchar (20),
+	constraint PK_Serv primary key (TipoServ)
 );
 
-create table Extras(
+
+create table Requerimientos(
+	TipoServ varchar (20),
 	CheckIn date,
 	CodMascota char(5),
-	TipoExtra varchar (15),
-	CantExtra int default 1,
+	NroHab char (2),
+	Cantidad int default 1,
 	Cargo money not null,
-	DescripExtra varchar(40) default null,
-	constraint PK_Extra primary key (CodMascota,CheckIn,TipoExtra),
-	constraint FK_FechaExtra foreign key (CodMascota,CheckIn) references Estadias
+	constraint PK_Req primary key (CodMascota,CheckIn,NroHab,TipoServ),
+	constraint FK_EstadReq foreign key (CodMascota,CheckIn,NroHab) references Estadias,
+	constraint FK_ServReq foreign key (TipoServ) references Servicios
 );
