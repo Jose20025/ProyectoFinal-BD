@@ -10,27 +10,50 @@ class App(ctk.CTk):
         ctk.set_appearance_mode('system')
         ctk.set_default_color_theme('blue')
         self.geometry('500x700')
-        self.conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS']}
-        self.conexion = None
         self.title('Login')
         self.iconbitmap('./image/icono.ico')
         self.resizable(0, 0)
 
-        self.loginPage = ctk.CTkFrame(self, width=500, height=700)
+        self.conexion = None
+
+        self.loginPage = LoginPage(self)
+        self.loginPage.pack()
+
+        self.centrarVentana(500, 700)
+
+        # Main Page
+        self.mainPage = MenuPrincipal(self)
+
+    def centrarVentana(self, ancho, alto):
+        self.update_idletasks()
+        x = (self.winfo_screenwidth() // 2) - (ancho // 2)
+        y = (self.winfo_screenheight() // 2) - (alto // 2)
+        self.geometry(f'{ancho}x{alto}+{x}+{y-20}')
+
+    def cambioVentana(self, old: ctk.CTkFrame, new: ctk.CTkFrame):
+        old.destroy()
+        new.pack()
+
+
+class LoginPage(ctk.CTkFrame):
+    def __init__(self, master=None):
+        super().__init__(master=master, width=500, height=700)
+
+        self.padre = master
+        self.conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS']}
 
         image = ctk.CTkImage(dark_image=Image.open(
             './image/fondo2.jpg'), size=(500, 1000))
-        background_label = ctk.CTkLabel(self.loginPage, image=image, text='')
+        background_label = ctk.CTkLabel(self, image=image, text='')
         background_label.pack()
 
-        self.logo = ctk.CTkLabel(self.loginPage, image=ctk.CTkImage(light_image=Image.open(
+        self.logo = ctk.CTkLabel(self, image=ctk.CTkImage(light_image=Image.open(
             './image/logo-transparente.png'), dark_image=Image.open('./image/logo-transparente.png'), size=(400, 340)), width=400, height=340, text='',
             corner_radius=5)
         self.logo.place(x=50, y=40)
 
-        self.loginPage.pack()
-
-        self.userFrame = ctk.CTkFrame(self.loginPage, width=400, height=230)
+        # User Frame
+        self.userFrame = ctk.CTkFrame(self, width=400, height=230)
 
         ctk.CTkLabel(
             self.userFrame, text='Username').place(x=40, y=20)
@@ -51,33 +74,19 @@ class App(ctk.CTk):
 
         self.userFrame.place(x=50, y=430)
 
-        self.centrarVentana(500, 700)
-
-        # Main Page
-        self.mainPage = MenuPrincipal(self)
-
-    def centrarVentana(self, ancho, alto):
-        self.update_idletasks()
-        x = (self.winfo_screenwidth() // 2) - (ancho // 2)
-        y = (self.winfo_screenheight() // 2) - (alto // 2)
-        self.geometry(f'{ancho}x{alto}+{x}+{y-20}')
-
-    def cambioVentana(self, old: ctk.CTkFrame, new: ctk.CTkFrame):
-        old.destroy()
-        new.pack()
-
     def login(self):
         user = self.username.get()
         password = self.password.get()
         if user and password:
             if user in self.conexiones and password == self.conexiones[user][0]:
                 try:
-                    self.conexion = pyodbc.connect(
+                    self.padre.conexion = pyodbc.connect(
                         f'DRIVER={{SQL Server}};SERVER={self.conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
 
-                    self.geometry('1000x600')
-                    self.title('Cute Pets - Menu')
-                    self.cambioVentana(self.loginPage, self.mainPage)
+                    self.padre.geometry('1000x600')
+                    self.padre.title('Cute Pets - Menu')
+                    self.padre.cambioVentana(
+                        self.padre.loginPage, self.padre.mainPage)
 
                 except:
                     msg(title='Error en la conexion',
