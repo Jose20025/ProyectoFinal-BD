@@ -20,7 +20,7 @@ create table Mascotas(
 	FechaNac date not null,
 	Tamaño char (2) not null,
 	constraint PK_Masc primary key (CodMascota),
-	constraint FK_CliMasc foreign key (IdCliente) references Clientes
+	constraint FK_CliMasc foreign key (IdCliente) references Clientes on DELETE CASCADE on UPDATE CASCADE
 );
 
 create table Personas(
@@ -33,8 +33,8 @@ create table Encargados(
 	IdCliente char(5),
 	CI varchar (10),
 	constraint PK_Enc primary key (IdCliente,CI),
-	constraint FK_CliEnc foreign key (IdCliente) references Clientes,
-	constraint FK_PersEnc foreign key (CI) references Personas
+	constraint FK_CliEnc foreign key (IdCliente) references Clientes on DELETE CASCADE on UPDATE CASCADE,
+	constraint FK_PersEnc foreign key (CI) references Personas on DELETE CASCADE on UPDATE CASCADE
 );
 
 create table HistorialesPeso(
@@ -42,7 +42,7 @@ create table HistorialesPeso(
 	CodMascota char(5),
 	Peso float not null,
 	constraint PK_Peso primary key (CodMascota,FechaPeso),
-	constraint FK_MascPeso foreign key (CodMascota) references Mascotas
+	constraint FK_MascPeso foreign key (CodMascota) references Mascotas on DELETE CASCADE on UPDATE CASCADE
 );
 
 create table HistorialesMedicos(
@@ -51,7 +51,7 @@ create table HistorialesMedicos(
 	Situacion varchar (20),
 	DetalleMed varchar (40) default null,
 	constraint PK_Med primary key (CodMascota,FechaConsulta),
-	constraint FK_MascMed foreign key (CodMascota) references Mascotas
+	constraint FK_MascMed foreign key (CodMascota) references Mascotas on DELETE CASCADE on UPDATE CASCADE
 );
 
 create table CalendariosVacunas(
@@ -59,7 +59,7 @@ create table CalendariosVacunas(
 	CodMascota char (5),
 	TipoVac varchar (20), 
 	constraint PK_Vac primary key (CodMascota,FechaVacuna,TipoVac),
-	constraint FK_MascVac foreign key (CodMascota) references Mascotas,
+	constraint FK_MascVac foreign key (CodMascota) references Mascotas on DELETE CASCADE on UPDATE CASCADE
 );
 
 create table Habitaciones(
@@ -76,8 +76,8 @@ create table Estadias(
 	CheckOut date default null,
 	Dias int not null,
 	constraint PK_Estad primary key (CodMascota,CheckIn,NroHab),
-	constraint FK_MascEstad foreign key (CodMascota) references Mascotas,
-	constraint FK_HabEstad foreign key (NroHab) references Habitaciones
+	constraint FK_MascEstad foreign key (CodMascota) references Mascotas on DELETE CASCADE on UPDATE CASCADE,
+	constraint FK_HabEstad foreign key (NroHab) references Habitaciones on DELETE CASCADE on UPDATE CASCADE
 );
 
 create table Servicios(
@@ -94,6 +94,6 @@ create table Requerimientos(
 	Cantidad int default 1,
 	Cargo money not null,
 	constraint PK_Req primary key (CodMascota,CheckIn,NroHab,TipoServ),
-	constraint FK_EstadReq foreign key (CodMascota,CheckIn,NroHab) references Estadias,
-	constraint FK_ServReq foreign key (TipoServ) references Servicios
+	constraint FK_EstadReq foreign key (CodMascota,CheckIn,NroHab) references Estadias on DELETE CASCADE on UPDATE CASCADE,
+	constraint FK_ServReq foreign key (TipoServ) references Servicios on DELETE CASCADE on UPDATE CASCADE
 );
