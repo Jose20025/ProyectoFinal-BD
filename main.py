@@ -10,6 +10,7 @@ class App(ctk.CTk):
         ctk.set_appearance_mode('system')
         ctk.set_default_color_theme('blue')
         self.geometry('500x700')
+        self.conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS']}
         self.conexion = None
         self.title('Login')
         self.iconbitmap('./image/icono.ico')
@@ -23,7 +24,7 @@ class App(ctk.CTk):
         background_label.pack()
 
         self.logo = ctk.CTkLabel(self.loginPage, image=ctk.CTkImage(light_image=Image.open(
-            './image/logo.jpg'), dark_image=Image.open('./image/logo.jpg'), size=(400, 340)), width=400, height=340, text='',
+            './image/logo-transparente.png'), dark_image=Image.open('./image/logo-transparente.png'), size=(400, 340)), width=400, height=340, text='',
             corner_radius=5)
         self.logo.place(x=50, y=40)
 
@@ -53,27 +54,35 @@ class App(ctk.CTk):
         self.centrarVentana(500, 700)
 
         # Main Page
-        self.mainPage = ctk.CTkFrame(self, width=1000, height=800)
+        self.mainPage = MenuPrincipal(self)
 
     def centrarVentana(self, ancho, alto):
         self.update_idletasks()
         x = (self.winfo_screenwidth() // 2) - (ancho // 2)
         y = (self.winfo_screenheight() // 2) - (alto // 2)
-        self.geometry(f'{ancho}x{alto}+{x}+{y}')
+        self.geometry(f'{ancho}x{alto}+{x}+{y-20}')
+
+    def cambioVentana(self, old: ctk.CTkFrame, new: ctk.CTkFrame):
+        old.pack_forget()
+        new.pack()
 
     def login(self):
         user = self.username.get()
         password = self.password.get()
         if user and password:
-            try:
-                self.conexion = pyodbc.connect(
-                    f'DRIVER={{SQL Server}};SERVER=JoseK-Laptop\SQLEXPRESS;DATABASE=FinalVeterinaria;UID={user};PWD={password}')
+            if user in self.conexiones and password == self.conexiones[user][0]:
+                try:
+                    self.conexion = pyodbc.connect(
+                        f'DRIVER={{SQL Server}};SERVER={self.conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
 
-                self.loginPage.pack_forget()
-                self.mainPage.pack()
-                self.geometry('1000x600')
+                    self.geometry('1000x600')
+                    self.title('Cute Pets - Menu')
+                    self.cambioVentana(self.loginPage, self.mainPage)
 
-            except:
+                except:
+                    msg.showerror('Error en la conexion',
+                                  'Usuario o contraseña incorrectos')
+            else:
                 msg.showerror('Error en la conexion',
                               'Usuario o contraseña incorrectos')
         elif not user and password:
@@ -85,6 +94,11 @@ class App(ctk.CTk):
         else:
             msg.showerror('Campos requeridos',
                           'Los dos campos no pueden estar vacios')
+
+
+class MenuPrincipal(ctk.CTkFrame):
+    def __init__(self, master=None):
+        super().__init__(master=master, width=1000, height=600)
 
 
 app = App()
