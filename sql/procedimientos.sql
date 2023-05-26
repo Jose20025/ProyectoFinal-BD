@@ -28,6 +28,16 @@ BEGIN
 END
 GO;
 
+--Modificación de datos de un cliente
+create procedure ModificarCliente 
+@IdCliente char (5),
+@Campo varchar(15),
+@NuevoValor varchar (20)
+AS
+BEGIN
+    update Clientes set @Campo = @NuevoValor where IdCliente = @IdCliente
+END
+
 --Secuencia para Codigo de mascota
 CREATE SEQUENCE SecCodMascota
     START WITH 28
@@ -60,6 +70,18 @@ BEGIN
     insert into Mascotas values (@pCodMascota,@IdCliente,@Alias,@Especie,@Raza,@Color_pelo,@FechaNac,@Tamaño)
 END
 GO;
+
+--Modificación de datos de una mascota
+create procedure ModificarMascota
+@CodMascota char (5),
+@Campo varchar(15),
+@NuevoValor varchar (20)
+as 
+BEGIN
+    update Mascotas set @Campo = @NuevoValor where CodMascota = @CodMascota
+END
+GO;
+
 
 --Procedimiento de registro de una persona y su asignación al cliente
 create procedure RegistrarPersona
