@@ -25,7 +25,8 @@ class App(ctk.CTk):
         self.eleccionPage = Eleccion(self)
 
         # Main Page
-        self.mainPageHotel = MenuPrincipal(self)
+        self.mainPageHotel = HotelPage(self)
+        self.mainPageVeterinaria = VeterinariaPage()
 
     def centrarVentana(self, ancho, alto):
         self.update_idletasks()
@@ -128,35 +129,63 @@ class Eleccion(ctk.CTkFrame):
 
     def veterinaria(self):
         self.padre.cambioVentana(
-            self, self.padre.mainPageHotel, 1000, 600, 'Cute Pets - Hotel')
+            self, self.padre.mainPageVeterinaria, 1000, 600, 'Cute Pets - Veterinaria')
 
 
-class MenuPrincipal(ctk.CTkFrame):
+class HotelPage(ctk.CTkFrame):
     def __init__(self, master=None):
         super().__init__(master=master, width=1000, height=600)
 
         self.padre = master
 
         ctk.CTkButton(self, text='Consultas', width=210,
-                      height=40).place(x=20, y=10)
+                      height=40).place(x=20, y=30)
 
         ctk.CTkButton(self, text='Insertar', width=210,
-                      height=40).place(x=20, y=80)
+                      height=40).place(x=20, y=100)
 
         ctk.CTkButton(self, text='Modificar', width=210,
-                      height=40).place(x=20, y=150)
+                      height=40).place(x=20, y=170)
 
         ctk.CTkButton(self, text='Eliminar', width=210,
-                      height=40).place(x=20, y=220)
+                      height=40).place(x=20, y=240)
 
         ctk.CTkButton(self, text='Consulta Personalizada', width=210,
-                      height=40).place(x=20, y=290)
+                      height=40).place(x=20, y=310)
 
         self.imagen = ctk.CTkImage(dark_image=Image.open(
             './image/logo_sinletras.jpg'), size=(210, 180))
 
         ctk.CTkLabel(
-            self, width=190, height=160, image=self.imagen, text='').place(x=20, y=380)
+            self, width=190, height=160, image=self.imagen, text='').place(x=20, y=400)
+
+
+class VeterinariaPage(ctk.CTkFrame):
+    def __init__(self, master=None):
+        super().__init__(master=master, width=1000, height=600)
+
+        self.padre = master
+
+        ctk.CTkButton(self, text='Consultas', width=210,
+                      height=40).place(x=20, y=30)
+
+        ctk.CTkButton(self, text='Insertar', width=210,
+                      height=40).place(x=20, y=100)
+
+        ctk.CTkButton(self, text='Modificar', width=210,
+                      height=40).place(x=20, y=170)
+
+        ctk.CTkButton(self, text='Eliminar', width=210,
+                      height=40).place(x=20, y=240)
+
+        ctk.CTkButton(self, text='Consulta Personalizada', width=210,
+                      height=40).place(x=20, y=310)
+
+        self.imagen = ctk.CTkImage(dark_image=Image.open(
+            './image/logo_sinletras.jpg'), size=(210, 180))
+
+        ctk.CTkLabel(
+            self, width=190, height=160, image=self.imagen, text='').place(x=20, y=400)
 
 
 app = App()
