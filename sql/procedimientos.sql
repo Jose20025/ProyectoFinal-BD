@@ -61,6 +61,7 @@ BEGIN
 END
 GO;
 
+--Procedimiento de registro de una persona y su asignación al cliente
 create procedure RegistrarPersona
 @CI varchar(10),
 @Nombre varchar (30),
