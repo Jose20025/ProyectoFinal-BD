@@ -110,3 +110,22 @@ AS
 insert into Personas values (@CI,@Nombre)
 insert into Encargados values (@IdCliente,@CI)
 GO;
+
+--Modificación de una Persona
+create procedure ModfiicarPersona
+@CI varchar (10),
+@NuevoNombre varchar (30)
+AS
+BEGIN
+    update Personas set Nombre = @NuevoNombre where CI = @CI
+END
+GO;
+
+--Eliminación de persona
+create procedure EliminarPersona
+@CI varchar (10)
+AS 
+BEGIN  
+    delete from Personas where CI=@CI 
+END;
+GO;

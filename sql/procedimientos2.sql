@@ -9,6 +9,29 @@ BEGIN
 END
 GO;
 
+--Modificar un registro de peso
+create procedure ModificarPeso
+@FechaPeso date,
+@CodMascota char (5),
+@NuevoPeso float
+AS
+BEGIN
+    update HistorialesPeso set Peso = @NuevoPeso 
+    where CodMascota = @CodMascota and FechaPeso = @FechaPeso  
+END
+GO;
+
+--Eliminar un registro de peso
+create procedure EliminarRegPeso
+@FechaPeso date,
+@CodMascota char (5)
+AS
+BEGIN
+    delete from HistorialesPeso 
+    where CodMascota = @CodMascota and FechaPeso = @FechaPeso 
+END 
+GO;
+
 --procedimiento de registro de visita medica
 create PROCEDURE RegistrarVisitaMedica 
 @FechaConsulta date,
@@ -21,6 +44,29 @@ BEGIN
 END
 GO;
 
+--Modificar una visita medica
+create procedure ModificarVisitaMed
+@FechaConsulta date,
+@CodMascota char(5),
+@Campo varchar (20),
+@NuevoValor varchar (40)
+AS
+BEGIN
+    update HistorialesMedicos set @Campo = @NuevoValor
+    where FechaConsulta = @FechaConsulta and CodMascota = @CodMascota
+END
+GO;
+
+--Eliminar una visita medica
+create procedure EliminarVisitaMed
+@FechaConsulta date,
+@CodMascota char(5)
+AS
+BEGIN
+    delete from HistorialesMedicos where FechaConsulta = @FechaConsulta and CodMascota = @CodMascota
+END
+GO; 
+
 --Procedimiento para registrar una vacunacion
 create PROCEDURE RegistrarVacuna
 @FechaVacuna date,
@@ -32,6 +78,22 @@ BEGIN
 END
 GO;
 
+--no existe la modificación de un campo de vacunación, puesto que todos los campos forman la PK
+--de modo que si se registra una vacunacion errada, se procede con la eliminación del registro
+
+--Eliminar una vacunacion
+create procedure EliminarVacuna
+@FechaVacuna date,
+@CodMascota char (5),
+@TipoVac varchar(20)
+AS
+BEGIN
+    delete from CalendariosVacunas
+    where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVac=@TipoVac
+END
+GO;
+
+--Registro de una estadía
 create procedure RegistrarEstadia
 @CheckIn date,
 @CodMascota char (5),
@@ -40,7 +102,41 @@ create procedure RegistrarEstadia
 AS
 BEGIN
     insert into Estadias values (@CheckIn,@CodMascota,@NroHab,NULL,@Dias)
-    update Habitaciones set Disponible = 'O'
+    update Habitaciones set Disponible = 'O' where NroHab = @NroHab
+END
+GO;
+
+--Modificación de una estadía
+create procedure ModificarEstadia
+@CheckIn date,
+@CodMascota char (5),
+@NroHab char (2),
+@Campo varchar (20),
+@NuevoValor varchar (20)
+as
+BEGIN
+    if @Campo = 'NroHab'
+        BEGIN
+        update Habitaciones set Disponible = 'D' where NroHab = @NroHab
+        update Estadias set NroHab = @NuevoValor 
+        where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab 
+        update Habitaciones set Disponible = 'O' where NroHab=@NuevoValor
+        END 
+    else 
+        update Estadias set @Campo = @NuevoValor
+        where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
+END
+GO;
+
+--Eliminar una estadía
+create procedure EliminarEstadia
+@CheckIn date,
+@CodMascota char (5),
+@NroHab char (2)
+AS
+BEGIN
+    delete from Estadias
+    where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
 END
 GO;
 
@@ -106,8 +202,59 @@ BEGIN
         insert into Requerimientos values (@IdServicio,@CheckIn,@CodMascota,@NroHab,@Cantidad,@Cargo)
         END
 END  
+GO;
+
+--Modificacion de requerimiento
+create procedure ModificarRequerimiento
+@IdServicio char (3),
+@CheckIn date,
+@CodMascota char (5),
+@NroHab char (2),
+@Campo varchar (10),
+@NuevoValor int
+AS
+BEGIN
+    if @IdServicio='S01' or @IdServicio='S03' or @IdServicio ='S06'
+        if @Campo = 'Cantidad'
+            BEGIN
+                DECLARE
+                @Tamaño char (2),
+                @Cargo money,
+                @Factor float,
+                @Precio money
+                set @Tamaño = (select Tamaño from Mascotas where CodMascota = @CodMascota)
+                set @Precio = (select Precio from Servicios where IdServicio = @IdServicio)
+                if @Tamaño = 'S'
+                    set @Factor = 1
+                if @Tamaño = 'M'
+                    set @Factor = 1.15
+                if @Tamaño = 'G'
+                    set @Factor = 1.30
+                if @Tamaño = 'XG'
+                    set @Factor = 1.40
+                set @Cargo = @NuevoValor * @Precio * @Factor
+                update Requerimientos set Cantidad=@NuevoValor, Cargo=@Cargo
+                where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
+            END
+END
+GO;
+
+--Eliminación de requerimiento en la estadía
+create procedure EliminarRequerimiento
+@IdServicio char (3),
+@CheckIn date,
+@CodMascota char (5),
+@NroHab char (2)
+AS
+BEGIN
+    delete from Requerimientos
+    where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
+END
+GO;
 
 select * from Servicios
+
+select * from Servicios 
 insert into Mascotas values ('M0077','C0001','Test','Felino','Bombay','Negro','2020/01/15','G')
 insert into Estadias values ('2023-05-06','M0077','01',NULL,7)
 select * from Estadias
