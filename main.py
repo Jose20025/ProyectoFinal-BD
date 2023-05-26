@@ -3,6 +3,9 @@ from CTkMessagebox import CTkMessagebox as msg
 import pyodbc
 from PIL import Image
 
+conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
+              'nangui': ['soychurro', 'JoseK-Laptop\SQLEXPRESS']}
+
 
 class App(ctk.CTk):
     def __init__(self):
@@ -13,8 +16,6 @@ class App(ctk.CTk):
         self.title('Login')
         self.iconbitmap('./image/icono.ico')
         self.resizable(0, 0)
-
-        self.conexion = None
 
         self.loginPage = LoginPage(self)
         self.loginPage.pack()
@@ -47,8 +48,6 @@ class LoginPage(ctk.CTkFrame):
         super().__init__(master=master, width=500, height=700)
 
         self.padre = master
-        self.conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
-                           'nangui': ['soychurro', 'JoseK-Laptop\SQLEXPRESS']}
 
         self.logo = ctk.CTkLabel(self, image=ctk.CTkImage(light_image=Image.open(
             './image/logo-transparente.png'), dark_image=Image.open('./image/logo-transparente.png'), size=(400, 370)), width=400, height=340, text='',
@@ -84,17 +83,19 @@ class LoginPage(ctk.CTkFrame):
         user = self.username.get()
         password = self.password.get()
         if user and password:
-            if user in self.conexiones and password == self.conexiones[user][0]:
+            if user in conexiones and password == conexiones[user][0]:
                 try:
-                    self.padre.conexion = pyodbc.connect(
-                        f'DRIVER={{SQL Server}};SERVER={self.conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
-
-                    self.padre.cambioVentana(
-                        self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
+                    pyodbc.connect(
+                        f'DRIVER={{SQL Server}};SERVER={conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
 
                 except:
                     msg(title='Error en la conexion',
                         message='Usuario o contraseña incorrectos', icon='cancel')
+
+                else:
+                    self.padre.cambioVentana(
+                        self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
+
             else:
                 msg(title='Error en la conexion',
                     message='Usuario o contraseña incorrectos', icon='cancel')
