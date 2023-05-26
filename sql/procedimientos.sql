@@ -3,8 +3,9 @@ CREATE SEQUENCE SecIdCliente
     START WITH 19
     INCREMENT BY 1
     NO MAXVALUE;
+GO;
 
---Procedimiento para insertar un cliente
+--Procedimiento para registrar un cliente
 create procedure RegistrarCliente  
 @Apellido varchar(20), 
 @NroCuenta varchar(10), 
@@ -25,14 +26,16 @@ BEGIN
     
     insert into Clientes values (@pIdCliente,@Apellido,@NroCuenta,@Direccion,@Telefono)
 END
-
+GO;
 
 --Secuencia para Codigo de mascota
 CREATE SEQUENCE SecCodMascota
     START WITH 28
     INCREMENT BY 1
     NO MAXVALUE;
+GO;
 
+--Procedimiento para registrar una mascota
 create procedure RegistrarMascota  
 @IdCliente varchar(20), 
 @Alias varchar(10), 
@@ -56,6 +59,7 @@ BEGIN
     
     insert into Mascotas values (@pCodMascota,@IdCliente,@Alias,@Especie,@Raza,@Color_pelo,@FechaNac,@Tamaño)
 END
+GO;
 
 create procedure RegistrarPersona
 @CI varchar(10),
@@ -64,8 +68,4 @@ create procedure RegistrarPersona
 AS
 insert into Personas values (@CI,@Nombre)
 insert into Encargados values (@IdCliente,@CI)
-
-
-
-
---Procedimiento para insertar una mascota
+GO;
