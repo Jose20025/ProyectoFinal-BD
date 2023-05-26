@@ -143,19 +143,25 @@ class MenuPrincipal(ctk.CTkFrame):
         self.padre = master
 
         ctk.CTkButton(self, text='Consultas', width=210,
-                      height=40).place(x=730, y=20)
+                      height=40).place(x=20, y=10)
 
         ctk.CTkButton(self, text='Insertar', width=210,
-                      height=40).place(x=730, y=90)
+                      height=40).place(x=20, y=80)
 
         ctk.CTkButton(self, text='Modificar', width=210,
-                      height=40).place(x=730, y=160)
+                      height=40).place(x=20, y=150)
 
         ctk.CTkButton(self, text='Eliminar', width=210,
-                      height=40).place(x=730, y=230)
+                      height=40).place(x=20, y=220)
 
         ctk.CTkButton(self, text='Consulta Personalizada', width=210,
-                      height=40).place(x=730, y=300)
+                      height=40).place(x=20, y=290)
+
+        self.imagen = ctk.CTkImage(dark_image=Image.open(
+            './image/logo_sinletras.jpg'), size=(210, 180))
+
+        ctk.CTkLabel(
+            self, width=190, height=160, image=self.imagen, text='').place(x=20, y=380)
 
 
 app = App()
