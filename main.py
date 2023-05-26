@@ -49,13 +49,8 @@ class LoginPage(ctk.CTkFrame):
         self.conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
                            'nangui': ['soychurro', 'JoseK-Laptop\SQLEXPRESS']}
 
-        image = ctk.CTkImage(dark_image=Image.open(
-            './image/fondo2.jpg'), size=(500, 1000))
-        background_label = ctk.CTkLabel(self, image=image, text='')
-        background_label.pack()
-
         self.logo = ctk.CTkLabel(self, image=ctk.CTkImage(light_image=Image.open(
-            './image/logo-transparente.png'), dark_image=Image.open('./image/logo-transparente.png'), size=(400, 340)), width=400, height=340, text='',
+            './image/logo-transparente.png'), dark_image=Image.open('./image/logo-transparente.png'), size=(400, 370)), width=400, height=340, text='',
             corner_radius=5)
         self.logo.place(x=50, y=40)
 
@@ -80,7 +75,7 @@ class LoginPage(ctk.CTkFrame):
 
         self.boton = ctk.CTkButton(
             self.userFrame, text='Login', command=self.login)
-        self.boton.place(x=230, y=180)
+        self.boton.place(x=135, y=180)
 
         self.userFrame.place(x=50, y=430)
 
