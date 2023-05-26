@@ -40,6 +40,7 @@ create procedure RegistrarEstadia
 AS
 BEGIN
     insert into Estadias values (@CheckIn,@CodMascota,@NroHab,NULL,@Dias)
+    update Habitaciones set Disponible = 'O'
 END
 GO;
 

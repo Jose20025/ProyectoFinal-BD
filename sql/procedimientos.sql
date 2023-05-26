@@ -37,6 +37,16 @@ AS
 BEGIN
     update Clientes set @Campo = @NuevoValor where IdCliente = @IdCliente
 END
+GO;
+
+--Eliminacion de cliente
+create procedure EliminarCliente
+@IdCliente char (5)
+AS
+BEGIN
+    delete from Clientes where IdCliente = @IdCliente
+END
+GO;
 
 --Secuencia para Codigo de mascota
 CREATE SEQUENCE SecCodMascota
@@ -82,6 +92,14 @@ BEGIN
 END
 GO;
 
+--Eliminacion de mascota
+create procedure EliminarMascota
+@CodMascota char (5)
+AS
+BEGIN
+    delete from Mascotas where CodMascota = @CodMascota
+END
+GO;
 
 --Procedimiento de registro de una persona y su asignación al cliente
 create procedure RegistrarPersona
