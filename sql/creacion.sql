@@ -81,19 +81,20 @@ create table Estadias(
 );
 
 create table Servicios(
+	IdServicio char (3),
 	TipoServ varchar (20),
-	constraint PK_Serv primary key (TipoServ)
+	constraint PK_Serv primary key (IdServicio)
 );
 
 
 create table Requerimientos(
-	TipoServ varchar (20),
+	IdServicio char (3),
 	CheckIn date,
 	CodMascota char(5),
 	NroHab char (2),
 	Cantidad int default 1,
 	Cargo money not null,
-	constraint PK_Req primary key (CodMascota,CheckIn,NroHab,TipoServ),
+	constraint PK_Req primary key (CodMascota,CheckIn,NroHab,IdServicio),
 	constraint FK_EstadReq foreign key (CodMascota,CheckIn,NroHab) references Estadias on DELETE CASCADE on UPDATE CASCADE,
-	constraint FK_ServReq foreign key (TipoServ) references Servicios on DELETE CASCADE on UPDATE CASCADE
+	constraint FK_ServReq foreign key (IdServicio) references Servicios on DELETE CASCADE on UPDATE CASCADE
 );
