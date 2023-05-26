@@ -83,6 +83,7 @@ create table Estadias(
 create table Servicios(
 	IdServicio char (3),
 	TipoServ varchar (20),
+	Precio money
 	constraint PK_Serv primary key (IdServicio)
 );
 
