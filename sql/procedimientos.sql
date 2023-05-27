@@ -107,8 +107,10 @@ create procedure RegistrarPersona
 @Nombre varchar (30),
 @IdCliente char(5) 
 AS
-insert into Personas values (@CI,@Nombre)
-insert into Encargados values (@IdCliente,@CI)
+BEGIN
+    insert into Personas values (@CI,@Nombre)
+    insert into Encargados values (@IdCliente,@CI)
+END 
 GO;
 
 --Modificación de una Persona
