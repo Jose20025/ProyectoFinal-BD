@@ -41,6 +41,7 @@ class App(ctk.CTk):
         new.pack()
 
 
+
 class LoginPage(ctk.CTkFrame):
     def __init__(self, master: App = None):
         super().__init__(master=master, width=500, height=700)
@@ -49,6 +50,7 @@ class LoginPage(ctk.CTkFrame):
 
         self.logo = ctk.CTkLabel(self, image=ctk.CTkImage(light_image=Image.open(
             './image/logo-transparente.png'), dark_image=Image.open('./image/logo-transparente.png'), size=(400, 370)), width=400, height=340, text='',
+                                 
             corner_radius=5)
         self.logo.place(x=50, y=40)
 
@@ -249,6 +251,11 @@ class Tabla(ctk.CTkFrame):
         self.conexion.close()
 
         self.place(x=310, y=10)
+
+
+class MenuPrincipal(ctk.CTkFrame):
+    def __init__(self, master=None):
+        super().__init__(master=master, width=1000, height=600)
 
 
 app = App()
