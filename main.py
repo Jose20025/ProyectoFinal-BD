@@ -3,7 +3,6 @@ from tkinter import ttk
 from CTkMessagebox import CTkMessagebox as msg
 import pyodbc
 from PIL import Image
-import sys
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
               'nangui': ['soychurro', 'JoseK-Laptop\SQLEXPRESS']}
@@ -88,6 +87,7 @@ class LoginPage(ctk.CTkFrame):
                 try:
                     self.conexion = pyodbc.connect(
                         f'DRIVER={{SQL Server}};SERVER={conexiones[self.user][1]};DATABASE=FinalVeterinaria;UID={self.user};PWD={self.passwd}')
+                    self.conexion.close()
 
                 except:
                     msg(title='Error en la conexion',
@@ -203,6 +203,7 @@ class HotelPage(ctk.CTkFrame):
                 '', ctk.END, text=atributos[0], values=atributos[1:])
 
         self.tabla.pack()
+        self.conexion.close()
 
 
 class VeterinariaPage(ctk.CTkFrame):
