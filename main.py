@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from tkinter import ttk
 from CTkMessagebox import CTkMessagebox as msg
 import pyodbc
 from PIL import Image
@@ -6,8 +7,8 @@ import sys
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
               'nangui': ['soychurro', 'JoseK-Laptop\SQLEXPRESS']}
-user = None
-password = None
+user = 'josek'
+password = 'password'
 
 
 class App(ctk.CTk):
@@ -19,21 +20,17 @@ class App(ctk.CTk):
         self.title('Login')
         self.iconbitmap('./image/icono.ico')
         self.resizable(0, 0)
+        self.eleccionPage = Eleccion(self)
+        self.mainPageHotel = HotelPage(self)
+        self.mainPageVeterinaria = VeterinariaPage(self)
 
         self.loginPage = LoginPage(self)
         self.loginPage.pack()
 
         self.centrarVentana(500, 700)
 
-        # Eleccion
-        self.eleccionPage = Eleccion(self)
-
-        # Main Page
-        self.mainPageHotel = HotelPage(self)
-        self.mainPageVeterinaria = VeterinariaPage()
-
     def centrarVentana(self, ancho, alto):
-        self.update_idletasks()
+        self.update()
         x = (self.winfo_screenwidth() // 2) - (ancho // 2)
         y = (self.winfo_screenheight() // 2) - (alto // 2)
         self.geometry(f'{ancho}x{alto}+{x}+{y-20}')
@@ -43,6 +40,7 @@ class App(ctk.CTk):
         self.geometry(f'{ancho}x{alto}')
         self.title(titulo)
         self.centrarVentana(ancho, alto)
+        self.update()
         new.pack()
 
 
@@ -84,22 +82,21 @@ class LoginPage(ctk.CTkFrame):
 
     def login(self, event=None):
         self.user = self.username.get()
-        self.password = self.password.get()
-        if user and password:
-            if user in conexiones and password == conexiones[self.user][0]:
+        self.passwd = self.password.get()
+        if self.user and self.passwd:
+            if self.user in conexiones and self.passwd == conexiones[self.user][0]:
                 try:
-                    pyodbc.connect(
-                        f'DRIVER={{SQL Server}};SERVER={conexiones[self.user][1]};DATABASE=FinalVeterinaria;UID={self.user};PWD={self.password}')
+                    self.conexion = pyodbc.connect(
+                        f'DRIVER={{SQL Server}};SERVER={conexiones[self.user][1]};DATABASE=FinalVeterinaria;UID={self.user};PWD={self.passwd}')
 
                 except:
                     msg(title='Error en la conexion',
                         message='Usuario o contraseña incorrectos', icon='cancel')
 
-                else:
-                    user = self.user
-                    password = self.password
-                    self.padre.cambioVentana(
-                        self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
+                user = self.user
+                password = self.passwd
+                self.padre.cambioVentana(
+                    self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
 
             else:
                 msg(title='Error en la conexion',
@@ -130,6 +127,7 @@ class Eleccion(ctk.CTkFrame):
                       height=90, anchor=ctk.CENTER, command=self.hotel).place(x=220, y=90)
 
     def hotel(self):
+        self.padre.mainPageHotel.setTabla()
         self.padre.cambioVentana(
             self, self.padre.mainPageHotel, 1000, 600, 'Cute Pets - Hotel')
 
@@ -143,14 +141,9 @@ class HotelPage(ctk.CTkFrame):
         super().__init__(master=master, width=1000, height=600)
 
         self.padre = master
+        self.cursor = None
 
-        try:
-            with pyodbc.connect(
-                    f'DRIVER={{SQL Server}};SERVER={conexiones[self.user][1]};DATABASE=FinalVeterinaria;UID={self.user};PWD={self.password}') as conexion:
-                self.cursor = conexion.cursor()
-        except:
-            msg(self, title='Error', message='Error en la conexion')
-            sys.exit()
+        self.tablaFrame = ctk.CTkFrame(self, width=640, height=340)
 
         ctk.CTkButton(self, text='Consultas', width=210,
                       height=40).place(x=20, y=30)
@@ -173,10 +166,43 @@ class HotelPage(ctk.CTkFrame):
         ctk.CTkLabel(
             self, width=190, height=160, image=self.imagen, text='').place(x=20, y=400)
 
-    # TODO
+        self.tablaFrame.place(x=310, y=10)
+
     def setTabla(self):
+        self.conexion = pyodbc.connect(
+            f'DRIVER={{SQL Server}};SERVER={conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
+        self.cursor = self.conexion.cursor()
+
         self.cursor.execute(
-            'select * from Mascotas M inner join Estadias E on E.')
+            'select M.* from Mascotas M inner join Estadias E on E.CodMascota = M.CodMascota')
+
+        titulos = []
+
+        for titulo in self.cursor.description:
+            titulos.append(titulo[0])
+
+        mascotas = self.cursor.fetchall()
+
+        self.tabla = ttk.Treeview(
+            self.tablaFrame, columns=titulos[1:], height=20)
+
+        for titulo in titulos:
+            if titulo == titulos[0]:
+                self.tabla.column('#0', width=100, anchor=ctk.CENTER)
+                self.tabla.heading('#0', text=titulo)
+            else:
+                self.tabla.column(titulo, width=100, anchor=ctk.CENTER)
+                self.tabla.heading(titulo, text=titulo)
+
+        for mascota in mascotas:
+            atributos = []
+            for atributo in mascota:
+                atributos.append(atributo)
+
+            self.tabla.insert(
+                '', ctk.END, text=atributos[0], values=atributos[1:])
+
+        self.tabla.pack()
 
 
 class VeterinariaPage(ctk.CTkFrame):
