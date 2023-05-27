@@ -252,11 +252,6 @@ class Tabla(ctk.CTkFrame):
         self.place(x=310, y=10)
 
 
-class MenuPrincipal(ctk.CTkFrame):
-    def __init__(self, master=None):
-        super().__init__(master=master, width=1000, height=600)
-
-
 if __name__ == '__main__':
     app = App()
     user = StringVar()
