@@ -2,9 +2,12 @@ import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox as msg
 import pyodbc
 from PIL import Image
+import sys
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
               'nangui': ['soychurro', 'JoseK-Laptop\SQLEXPRESS']}
+user = None
+password = None
 
 
 class App(ctk.CTk):
@@ -80,19 +83,21 @@ class LoginPage(ctk.CTkFrame):
         self.userFrame.place(x=50, y=430)
 
     def login(self, event=None):
-        user = self.username.get()
-        password = self.password.get()
+        self.user = self.username.get()
+        self.password = self.password.get()
         if user and password:
-            if user in conexiones and password == conexiones[user][0]:
+            if user in conexiones and password == conexiones[self.user][0]:
                 try:
                     pyodbc.connect(
-                        f'DRIVER={{SQL Server}};SERVER={conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
+                        f'DRIVER={{SQL Server}};SERVER={conexiones[self.user][1]};DATABASE=FinalVeterinaria;UID={self.user};PWD={self.password}')
 
                 except:
                     msg(title='Error en la conexion',
                         message='Usuario o contraseña incorrectos', icon='cancel')
 
                 else:
+                    user = self.user
+                    password = self.password
                     self.padre.cambioVentana(
                         self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
 
@@ -139,6 +144,14 @@ class HotelPage(ctk.CTkFrame):
 
         self.padre = master
 
+        try:
+            with pyodbc.connect(
+                    f'DRIVER={{SQL Server}};SERVER={conexiones[self.user][1]};DATABASE=FinalVeterinaria;UID={self.user};PWD={self.password}') as conexion:
+                self.cursor = conexion.cursor()
+        except:
+            msg(self, title='Error', message='Error en la conexion')
+            sys.exit()
+
         ctk.CTkButton(self, text='Consultas', width=210,
                       height=40).place(x=20, y=30)
 
@@ -159,6 +172,11 @@ class HotelPage(ctk.CTkFrame):
 
         ctk.CTkLabel(
             self, width=190, height=160, image=self.imagen, text='').place(x=20, y=400)
+
+    # TODO
+    def setTabla(self):
+        self.cursor.execute(
+            'select * from Mascotas M inner join Estadias E on E.')
 
 
 class VeterinariaPage(ctk.CTkFrame):
