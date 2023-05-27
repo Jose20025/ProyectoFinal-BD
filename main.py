@@ -5,7 +5,7 @@ import pyodbc
 from PIL import Image
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
-              'nangui': ['soychurro', 'JoseK-Laptop\SQLEXPRESS']}
+              'nangui': ['soychurro', 'BrunoPC']}
 user = 'josek'
 password = 'password'
 
@@ -80,21 +80,19 @@ class LoginPage(ctk.CTkFrame):
         self.userFrame.place(x=50, y=430)
 
     def login(self, event=None):
-        self.user = self.username.get()
-        self.passwd = self.password.get()
-        if self.user and self.passwd:
-            if self.user in conexiones and self.passwd == conexiones[self.user][0]:
+        usern = self.username.get()
+        passwd = self.password.get()
+        if usern and passwd:
+            if usern in conexiones and passwd == conexiones[usern][0]:
                 try:
                     self.conexion = pyodbc.connect(
-                        f'DRIVER={{SQL Server}};SERVER={conexiones[self.user][1]};DATABASE=FinalVeterinaria;UID={self.user};PWD={self.passwd}')
+                        f'DRIVER={{SQL Server}};SERVER={conexiones[usern][1]};DATABASE=FinalVeterinaria;UID={usern};PWD={passwd}')
                     self.conexion.close()
 
                 except:
                     msg(title='Error en la conexion',
                         message='Usuario o contraseña incorrectos', icon='cancel')
 
-                user = self.user
-                password = self.passwd
                 self.padre.cambioVentana(
                     self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
 
