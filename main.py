@@ -20,8 +20,6 @@ class App(ctk.CTk):
         self.eleccionPage = Eleccion(self)
         self.mainPageHotel = HotelPage(self)
         self.mainPageVeterinaria = VeterinariaPage(self)
-        self.user = StringVar(self)
-        self.passwd = StringVar(self)
 
         self.loginPage = LoginPage(self)
         self.loginPage.pack()
@@ -80,13 +78,16 @@ class LoginPage(ctk.CTkFrame):
         self.userFrame.place(x=50, y=430)
 
     def login(self, event=None):
-        user = self.username.get()
-        password = self.password.get()
-        if user and password:
-            if user in conexiones and password == conexiones[user][0]:
+
+        global user, password
+
+        self.user = self.username.get()
+        self.passwd = self.password.get()
+        if self.user and self.passwd:
+            if self.user in conexiones and self.passwd == conexiones[self.user][0]:
                 try:
                     self.conexion = pyodbc.connect(
-                        f'DRIVER={{SQL Server}};SERVER={conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
+                        f'DRIVER={{SQL Server}};SERVER={conexiones[self.user][1]};DATABASE=FinalVeterinaria;UID={self.user};PWD={self.passwd}')
                     self.conexion.close()
 
                 except:
@@ -94,18 +95,19 @@ class LoginPage(ctk.CTkFrame):
                         message='Usuario o contraseña incorrectos', icon='cancel')
 
                 else:
-                    self.padre.user = user
-                    self.padre.password = password
+                    user.set(self.user)
+                    password.set(self.passwd)
+                    print(user.get())
                     self.padre.cambioVentana(
                         self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
 
             else:
                 msg(title='Error en la conexion',
                     message='Usuario o contraseña incorrectos', icon='cancel')
-        elif not user and password:
+        elif not self.user and self.passwd:
             msg(title='Usuario es requerido',
                 message='El campo de username no puede estar vacio', icon='cancel')
-        elif not password and user:
+        elif not self.passwd and self.user:
             msg(title='La contraseña es requerida',
                 message='El campo de contraseña no puede estar vacio', icon='cancel')
         else:
@@ -128,7 +130,8 @@ class Eleccion(ctk.CTkFrame):
                       height=90, anchor=ctk.CENTER, command=self.hotel).place(x=220, y=90)
 
     def hotel(self):
-        self.padre.mainPageHotel.setTabla()
+        self.padre.mainPageHotel.tablaFrame.setTabla(
+            'select M.* from Mascotas M inner join Estadias E on M.CodMascota = E.CodMascota')
         self.padre.cambioVentana(
             self, self.padre.mainPageHotel, 1000, 600, 'Cute Pets - Hotel')
 
@@ -144,7 +147,7 @@ class HotelPage(ctk.CTkFrame):
         self.padre = master
         self.cursor = None
 
-        self.tablaFrame = ctk.CTkFrame(self, width=640, height=340)
+        self.tablaFrame = Tabla(self, 640, 340)
 
         ctk.CTkButton(self, text='Consultas', width=210,
                       height=40).place(x=20, y=30)
@@ -166,45 +169,6 @@ class HotelPage(ctk.CTkFrame):
 
         ctk.CTkLabel(
             self, width=190, height=160, image=self.imagen, text='').place(x=20, y=400)
-
-        self.tablaFrame.place(x=310, y=10)
-
-    def setTabla(self):
-        self.conexion = pyodbc.connect(
-            f'DRIVER={{SQL Server}};SERVER={conexiones[self.padre.user][1]};DATABASE=FinalVeterinaria;UID={self.padre.user};PWD={self.padre.password}')
-        self.cursor = self.conexion.cursor()
-
-        self.cursor.execute(
-            'select M.* from Mascotas M inner join Estadias E on E.CodMascota = M.CodMascota')
-
-        titulos = []
-
-        for titulo in self.cursor.description:
-            titulos.append(titulo[0])
-
-        mascotas = self.cursor.fetchall()
-
-        self.tabla = ttk.Treeview(
-            self.tablaFrame, columns=titulos[1:], height=20)
-
-        for titulo in titulos:
-            if titulo == titulos[0]:
-                self.tabla.column('#0', width=100, anchor=ctk.CENTER)
-                self.tabla.heading('#0', text=titulo)
-            else:
-                self.tabla.column(titulo, width=100, anchor=ctk.CENTER)
-                self.tabla.heading(titulo, text=titulo)
-
-        for mascota in mascotas:
-            atributos = []
-            for atributo in mascota:
-                atributos.append(atributo)
-
-            self.tabla.insert(
-                '', ctk.END, text=atributos[0], values=atributos[1:])
-
-        self.tabla.pack()
-        self.conexion.close()
 
 
 class VeterinariaPage(ctk.CTkFrame):
@@ -235,5 +199,55 @@ class VeterinariaPage(ctk.CTkFrame):
             self, width=190, height=160, image=self.imagen, text='').place(x=20, y=400)
 
 
+class Tabla(ctk.CTkFrame):
+    def __init__(self, master, ancho, alto):
+        super().__init__(master, width=ancho, height=alto)
+
+    def setTabla(self, consulta):
+        print(user.get(), password.get())
+
+        self.user = user.get()
+        self.password = password.get()
+
+        self.conexion = pyodbc.connect(
+            f'DRIVER={{SQL Server}};SERVER={conexiones[self.user][1]};DATABASE=FinalVeterinaria;UID={self.user};PWD={self.password}')
+        self.cursor = self.conexion.cursor()
+
+        self.cursor.execute(consulta)
+
+        titulos = []
+
+        for titulo in self.cursor.description:
+            titulos.append(titulo[0])
+
+        mascotas = self.cursor.fetchall()
+
+        self.tabla = ttk.Treeview(
+            self, columns=titulos[1:], height=20)
+
+        for titulo in titulos:
+            if titulo == titulos[0]:
+                self.tabla.column('#0', width=100, anchor=ctk.CENTER)
+                self.tabla.heading('#0', text=titulo)
+            else:
+                self.tabla.column(titulo, width=100, anchor=ctk.CENTER)
+                self.tabla.heading(titulo, text=titulo)
+
+        for mascota in mascotas:
+            atributos = []
+            for atributo in mascota:
+                atributos.append(atributo)
+
+            self.tabla.insert(
+                '', ctk.END, text=atributos[0], values=atributos[1:])
+
+        self.tabla.pack()
+        self.conexion.close()
+
+        self.place(x=310, y=10)
+
+
 app = App()
+user = StringVar()
+password = StringVar()
 app.mainloop()
