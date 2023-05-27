@@ -131,11 +131,13 @@ class Eleccion(ctk.CTkFrame):
 
     def hotel(self):
         self.padre.mainPageHotel.tablaFrame.setTabla(
-            'select M.* from Mascotas M inner join Estadias E on M.CodMascota = E.CodMascota')
+            'select M.* from Mascotas M inner join Estadias E on M.CodMascota = E.CodMascota order by M.CodMascota')
         self.padre.cambioVentana(
             self, self.padre.mainPageHotel, 1000, 600, 'Cute Pets - Hotel')
 
     def veterinaria(self):
+        self.padre.mainPageVeterinaria.tablaFrame.setTabla(
+            'select distinct M.* from Mascotas M inner join HistorialesPeso H on M.CodMascota = H.CodMascota')
         self.padre.cambioVentana(
             self, self.padre.mainPageVeterinaria, 1000, 600, 'Cute Pets - Veterinaria')
 
@@ -176,6 +178,8 @@ class VeterinariaPage(ctk.CTkFrame):
         super().__init__(master=master, width=1000, height=600)
 
         self.padre = master
+
+        self.tablaFrame = Tabla(self, 640, 340)
 
         ctk.CTkButton(self, text='Consultas', width=210,
                       height=40).place(x=20, y=30)
