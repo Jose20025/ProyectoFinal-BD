@@ -68,13 +68,14 @@ END
 GO; 
 
 --Procedimiento para registrar una vacunacion
-create PROCEDURE RegistrarVacuna
+create PROCEDURE RegistrarVacunacion
 @FechaVacuna date,
 @CodMascota char (5),
-@TipoVac varchar(20)
+@TipoVacuna varchar(15),
+@Fabricante varchar (20)
 as 
 BEGIN
-    insert into CalendariosVacunas values (@FechaVacuna,@CodMascota,@TipoVac)
+    insert into CalendariosVacunas values (@FechaVacuna,@CodMascota,@TipoVacuna,@Fabricante)
 END
 GO;
 
@@ -82,14 +83,15 @@ GO;
 --de modo que si se registra una vacunacion errada, se procede con la eliminación del registro
 
 --Eliminar una vacunacion
-create procedure EliminarVacuna
+create procedure EliminarVacunacion
 @FechaVacuna date,
 @CodMascota char (5),
-@TipoVac varchar(20)
+@TipoVacuna varchar(15),
+@Fabricante varchar (20)
 AS
 BEGIN
     delete from CalendariosVacunas
-    where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVac=@TipoVac
+    where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna and Fabricante=@Fabricante
 END
 GO;
 
@@ -251,6 +253,26 @@ BEGIN
     where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
 END
 GO;
+
+--Adicion de vacunas de nuevos proveedores
+create procedure AgregarVacuna
+@TipoVacuna varchar(15),
+@Fabricante varchar(20),
+@Precio money
+AS
+BEGIN
+    insert into Vacunas values (@TipoVacuna,@Fabricante,@Precio)
+END
+GO;
+
+--Eliminar vacuna
+create procedure EliminarVacuna
+@TipoVacuna varchar(15),
+@Fabricante varchar (20)
+AS
+BEGIN
+    delete from Vacunas where TipoVacuna=@TipoVacuna and Fabricante=@Fabricante
+END
 
 select * from Servicios
 
