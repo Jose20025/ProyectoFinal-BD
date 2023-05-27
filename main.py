@@ -1,13 +1,11 @@
 import customtkinter as ctk
-from tkinter import ttk
+from tkinter import StringVar, ttk
 from CTkMessagebox import CTkMessagebox as msg
 import pyodbc
 from PIL import Image
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
               'nangui': ['soychurro', 'BrunoPC']}
-user = 'josek'
-password = 'password'
 
 
 class App(ctk.CTk):
@@ -22,6 +20,8 @@ class App(ctk.CTk):
         self.eleccionPage = Eleccion(self)
         self.mainPageHotel = HotelPage(self)
         self.mainPageVeterinaria = VeterinariaPage(self)
+        self.user = StringVar(self)
+        self.passwd = StringVar(self)
 
         self.loginPage = LoginPage(self)
         self.loginPage.pack()
@@ -80,21 +80,24 @@ class LoginPage(ctk.CTkFrame):
         self.userFrame.place(x=50, y=430)
 
     def login(self, event=None):
-        usern = self.username.get()
-        passwd = self.password.get()
-        if usern and passwd:
-            if usern in conexiones and passwd == conexiones[usern][0]:
+        user = self.username.get()
+        password = self.password.get()
+        if user and password:
+            if user in conexiones and password == conexiones[user][0]:
                 try:
                     self.conexion = pyodbc.connect(
-                        f'DRIVER={{SQL Server}};SERVER={conexiones[usern][1]};DATABASE=FinalVeterinaria;UID={usern};PWD={passwd}')
+                        f'DRIVER={{SQL Server}};SERVER={conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
                     self.conexion.close()
 
                 except:
                     msg(title='Error en la conexion',
                         message='Usuario o contraseña incorrectos', icon='cancel')
 
-                self.padre.cambioVentana(
-                    self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
+                else:
+                    self.padre.user = user
+                    self.padre.password = password
+                    self.padre.cambioVentana(
+                        self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
 
             else:
                 msg(title='Error en la conexion',
@@ -168,7 +171,7 @@ class HotelPage(ctk.CTkFrame):
 
     def setTabla(self):
         self.conexion = pyodbc.connect(
-            f'DRIVER={{SQL Server}};SERVER={conexiones[user][1]};DATABASE=FinalVeterinaria;UID={user};PWD={password}')
+            f'DRIVER={{SQL Server}};SERVER={conexiones[self.padre.user][1]};DATABASE=FinalVeterinaria;UID={self.padre.user};PWD={self.padre.password}')
         self.cursor = self.conexion.cursor()
 
         self.cursor.execute(
