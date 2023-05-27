@@ -54,12 +54,21 @@ create table HistorialesMedicos(
 	constraint FK_MascMed foreign key (CodMascota) references Mascotas on DELETE CASCADE on UPDATE CASCADE
 );
 
+create table Vacunas(
+	TipoVacuna varchar (15),
+	Fabricante varchar (20),
+	PrecioVac money,
+	constraint PK_Vac primary key (TipoVacuna,Fabricante)
+);
+
 create table CalendariosVacunas(
 	FechaVacuna date,
 	CodMascota char (5),
-	TipoVac varchar (20), 
-	constraint PK_Vac primary key (CodMascota,FechaVacuna,TipoVac),
-	constraint FK_MascVac foreign key (CodMascota) references Mascotas on DELETE CASCADE on UPDATE CASCADE
+	TipoVacuna varchar (15),
+	Fabricante varchar (20),
+	constraint PK_CalVac primary key (CodMascota,FechaVacuna,TipoVacuna,Fabricante),
+	constraint FK_MascVac foreign key (CodMascota) references Mascotas on DELETE CASCADE on UPDATE CASCADE,
+	constraint FK_ProvVac foreign key (TipoVacuna,Fabricante) references Vacunas on DELETE CASCADE on UPDATE CASCADE
 );
 
 create table Habitaciones(
