@@ -58,7 +58,7 @@ GO;
 --Procedimiento para registrar una mascota
 create procedure RegistrarMascota  
 @IdCliente varchar(20), 
-@Alias varchar(10), 
+@Alias varchar(20), 
 @Especie varchar(40), 
 @Raza varchar(14),
 @Color_pelo varchar (15),
