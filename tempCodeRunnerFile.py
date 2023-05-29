@@ -1,3 +1,2 @@
 
-
-class App(ctk.CTk):
+# Close the cursor and the database connection

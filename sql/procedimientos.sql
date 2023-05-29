@@ -5,6 +5,7 @@ CREATE SEQUENCE SecIdCliente
     NO MAXVALUE;
 GO;
 
+
 --Procedimiento para registrar un cliente
 alter procedure RegistrarCliente  
 @Apellido varchar(20), 
@@ -17,9 +18,13 @@ BEGIN
     begin TRANSACTION
     if exists(select 1 from Clientes
                 where Apellido=@Apellido and NroCuenta=@NroCuenta and Telefono=@Telefono)   
+        begin
         set @Check = 0
+        select @Check
+        end
     ELSE
         set @Check = 1
+        SELECT @Check
         DECLARE
         @DatoID int = next value for SecIdCliente,
         @pIdCliente char(5)
@@ -46,9 +51,15 @@ BEGIN
     begin TRANSACTION
     update Clientes set @Campo = @NuevoValor where IdCliente = @IdCliente
     if exists (select 1 from Clientes where IdCliente=@IdCliente and @Campo=@NuevoValor)
+        BEGIN
         set @Check = 1
+        SELECT @Check
+        END
     ELSE
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        END
 END
 GO;
 
@@ -63,9 +74,15 @@ BEGIN
     delete from Clientes where IdCliente = @IdCliente
     select @Cuenta = count(*) from Clientes where IdCliente=@IdCliente
     if (@Cuenta = 0)
+        BEGIN
         set @Check = 1
+        SELECT @Check
+        END
     else
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        END
 END
 GO;
 
@@ -91,10 +108,14 @@ BEGIN
     begin TRANSACTION
     if exists (select 1 from Mascotas 
                 where Alias=@Alias and Especie=@Especie and IdCliente=@IdCliente)
+        BEGIN
         set @Check = 0
+        select @Check
+        END
     else
         BEGIN
         set @Check = 1
+        select @Check
         DECLARE
         @DatoCod int = next value for SecCodMascota,
         @pCodMascota char(5)
@@ -107,9 +128,11 @@ BEGIN
             set @pCodMascota = CONCAT('M', CONVERT(char(4),@DatoCod))
         
         insert into Mascotas values (@pCodMascota,@IdCliente,@Alias,@Especie,@Raza,@Color_pelo,@FechaNac,@Tamaño)
-        END
+        commit
+        END 
 END
 GO;
+
 
 --Modificación de datos de una mascota
 alter procedure ModificarMascota
@@ -122,9 +145,15 @@ BEGIN
     begin TRANSACTION
     update Mascotas set @Campo = @NuevoValor where CodMascota = @CodMascota
     if exists (select 1 from Mascotas where CodMascota=@CodMascota and @Campo=@NuevoValor)
+        BEGIN
         set @Check = 1
+        SELECT @Check
+        END
     else
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        END
 END
 GO;
 
@@ -139,9 +168,15 @@ BEGIN
     delete from Mascotas where CodMascota = @CodMascota
     select @Cuenta = count(*) from Mascotas where CodMascota=@CodMascota 
     if @Cuenta = 0
+        BEGIN
         set @Check = 1
+        SELECT @Check
+        end
     ELSE
+        begin
         set @Check = 0
+        SELECT @Check
+        end 
 END
 GO;
 
@@ -155,10 +190,14 @@ AS
 BEGIN
     begin TRANSACTION
     if exists (select 1 from Personas where Ci = @CI)
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        END
     else
         BEGIN
         set @Check = 1
+        SELECT @Check
         insert into Personas values (@CI,@Nombre)
         insert into Encargados values (@IdCliente,@CI)
         END
@@ -175,9 +214,15 @@ BEGIN
     begin TRANSACTION 
     update Personas set Nombre = @NuevoNombre where CI = @CI
     if exists (select 1 from Personas where CI=@CI and Nombre=@NuevoNombre)
+        BEGIN
         set @Check = 1
+        SELECT @Check
+        END
     else
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        END
 END
 GO;
 
@@ -192,8 +237,14 @@ BEGIN
     delete from Personas where CI=@CI 
     select @Cuenta = count(*) from Personas where CI=@CI
     if @Cuenta = 0
+        BEGIN
         set @Check = 1
+        SELECT @Check
+        END
     ELSE
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        END
 END
 GO;

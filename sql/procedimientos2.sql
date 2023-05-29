@@ -9,7 +9,10 @@ BEGIN
     begin TRANSACTION
     if exists (select 1 from HistorialesPeso 
                 where FechaPeso=@FechaPeso and CodMascota=@CodMascota)
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        end
     else
         BEGIN
         set @Check = 1
@@ -32,9 +35,15 @@ BEGIN
     where CodMascota = @CodMascota and FechaPeso = @FechaPeso  
     if exists (select 1 from HistorialesPeso 
         where FechaPeso=@FechaPeso and CodMascota=@CodMascota and Peso=@NuevoPeso)
+        BEGIN
         set @Check = 1
+        SELECT @Check
+        END 
     else    
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        END
 END
 GO;
 
@@ -52,9 +61,15 @@ BEGIN
     select @Cuenta = count(*) from HistorialesPeso
         where FechaPeso=@FechaPeso and CodMascota=@CodMascota
     if @Cuenta = 0
+        BEGIN
         set @Check  = 1
+        SELECT @Check
+        END
     else 
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        END
 END 
 GO;
 
@@ -69,11 +84,15 @@ as
 BEGIN
     begin TRANSACTION
     if exists (select 1 from HistorialesMedicos where FechaConsulta=@FechaConsulta and CodMascota=@CodMascota)
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        end
     else
         BEGIN
         insert into HistorialesMedicos values (@FechaConsulta,@CodMascota,@Situacion,@DetalleMed)
         set @Check = 1
+        SELECT @Check
         END
 END
 GO;
@@ -92,9 +111,15 @@ BEGIN
     where FechaConsulta = @FechaConsulta and CodMascota = @CodMascota
     if exists (select 1 from HistorialesMedicos 
                 where FechaConsulta=@FechaConsulta and CodMascota=@CodMascota and @Campo=@NuevoValor)
+        begin
         set @Check = 1
+        SELECT @Check
+        end
     else    
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        end
 END
 GO;
 
@@ -110,9 +135,15 @@ BEGIN
     delete from HistorialesMedicos where FechaConsulta = @FechaConsulta and CodMascota = @CodMascota
     select @Cuenta = count (*) from HistorialesMedicos where FechaConsulta = @FechaConsulta and CodMascota = @CodMascota
     if @Cuenta = 0
+        BEGIN
         set @Check = 1
+        SELECT @Check
+        end
     else    
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        end
 END
 GO; 
 
@@ -128,13 +159,16 @@ BEGIN
     begin TRANSACTION 
     if exists (select 1 from CalendariosVacunas 
                 where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna and Fabricante=@Fabricante)
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        end
     ELSE
         BEGIN
         insert into CalendariosVacunas values (@FechaVacuna,@CodMascota,@TipoVacuna,@Fabricante)    
         set @Check = 1
         END
-    END
+END
 GO;
 
 --no existe la modificación de un campo de vacunación, puesto que todos los campos forman la PK
@@ -156,9 +190,15 @@ BEGIN
     select @Cuenta = count(*) from CalendariosVacunas 
         where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna and Fabricante=@Fabricante
     if @Cuenta = 0
+        BEGIN
         set @Check = 1
+        SELECT @Check
+        end
     else   
+        begin
         set @Check = 0
+        SELECT @Check
+        end
 END
 GO;
 
@@ -173,12 +213,16 @@ AS
 BEGIN  
     begin TRANSACTION
     if exists(select 1 from Estadias where CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab)
+        begin
         set @Check = 0
+        SELECT @Check
+        end
     else    
         BEGIN
         insert into Estadias values (@CheckIn,@CodMascota,@NroHab,NULL,@Dias)
         update Habitaciones set Disponible = 'O' where NroHab = @NroHab 
         set @Check = 1
+        SELECT @Check
         END
 END
 GO;
@@ -202,18 +246,30 @@ BEGIN
         update Habitaciones set Disponible = 'O' where NroHab=@NuevoValor
         if exists (select 1 from Estadias 
                     where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NuevoValor)
+            begin
             set @Check = 1
+            SELECT @Check
+            end
         else
+            begin
             set @Check = 0
+            SELECT @Check
+            end
         END 
     else 
         update Estadias set @Campo = @NuevoValor
         where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
         if exists (select 1 from Estadias 
                     where CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab and @Campo = @NuevoValor)
+            begin
             set @Check = 1
+            SELECT @Check
+            end
         else    
+            BEGIN
             set @Check = 0
+            SELECT @Check
+            end
 END
 GO;
 
@@ -232,9 +288,15 @@ BEGIN
     SELECT @Cuenta = count(*) from Estadias 
         where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
     if @Cuenta = 0
+        BEGIN
         set @Check = 1
+        SELECT @Check
+        end
     else
+        begin
         set @Check = 0
+        SELECT @Check
+        end
 END
 GO;
 
@@ -269,11 +331,20 @@ BEGIN
     begin TRANSACTION
     if exists (select 1 from Requerimientos 
                 where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab)
+        begin
         set @Check = 0
+        SELECT @Check
+        end
     else
     --los demás servicios que se pueden realizar varias veces y se cobran de acuerdo al tamaño, cantidad de veces
         BEGIN
+         DECLARE
+        @Tamaño char (2),
+        @Cargo money,
+        @Factor float,
+        @Precio money
         set @Check = 1
+        SELECT @Check
         set @Tamaño = (select Tamaño from Mascotas where CodMascota = @CodMascota)
         set @Precio = (select Precio from Servicios where IdServicio = @IdServicio)
         if @Tamaño = 'S'
@@ -286,11 +357,7 @@ BEGIN
             set @Factor = 1.40
         set @Cargo = @Cantidad * @Precio * @Factor
         insert into Requerimientos values (@IdServicio,@CheckIn,@CodMascota,@NroHab,@Cantidad,@Cargo)
-        DECLARE
-        @Tamaño char (2),
-        @Cargo money,
-        @Factor float,
-        @Precio money
+       
         --son servicios especiales y no tienen cantidad, se cobra por la cantidad de dias
         if @IdServicio = 'S04' or @IdServicio = 'S05'
             BEGIN
@@ -360,9 +427,15 @@ BEGIN
             END
     if exists (select 1 from Requerimientos
         where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab and Cantidad=@NuevoValor)
+        begin
         set @Check = 1
+        SELECT @Check
+        end
     else   
+        begin
         set @Check = 0
+        SELECT @Check
+        end
 END
 GO;
 
@@ -382,9 +455,15 @@ BEGIN
     select @Cuenta = count(*) from Requerimientos
         where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
     if @Cuenta = 0
+        begin
         set @Check = 1
+        SELECT @Check
+        end
     ELSE    
+        begin
         set @Check = 0
+        SELECT @Check
+        end
 END
 GO;
 
@@ -398,10 +477,14 @@ AS
 BEGIN
     begin TRANSACTION
     if exists (select 1 from Vacunas where TipoVacuna=@TipoVacuna and Fabricante=@Fabricante)
+        begin
         set @Check = 0
+        SELECT @Check
+        end
     else
         BEGIN
         set @Check = 1
+        SELECT @Check
         insert into Vacunas values (@TipoVacuna,@Fabricante,@Precio)
         END
 END
@@ -419,7 +502,13 @@ BEGIN
     delete from Vacunas where TipoVacuna=@TipoVacuna and Fabricante=@Fabricante
     select @Cuenta = count (*) from Vacunas where TipoVacuna=@TipoVacuna and Fabricante=@Fabricante
     if @Cuenta = 0
+        begin
         set @Check = 1
+        SELECT @Check
+        end
     ELSE
+        begin
         set @Check = 0
+        SELECT @Check
+        end
 END
