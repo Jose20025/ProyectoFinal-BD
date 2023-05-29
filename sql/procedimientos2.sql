@@ -1,144 +1,240 @@
 --Procedimiento de registro de peso
-create procedure RegistrarPeso
+alter procedure RegistrarPeso
 @FechaPeso date,
 @CodMascota char(5),
-@Peso float
+@Peso float,
+@Check bit out
 as 
 BEGIN
-    insert into HistorialesPeso values (@FechaPeso,@CodMascota,@Peso)
+    begin TRANSACTION
+    if exists (select 1 from HistorialesPeso 
+                where FechaPeso=@FechaPeso and CodMascota=@CodMascota)
+        set @Check = 0
+    else
+        BEGIN
+        set @Check = 1
+        insert into HistorialesPeso values (@FechaPeso,@CodMascota,@Peso)
+        insert into HistorialesPeso values (@FechaPeso,@CodMascota,@Peso)
+        END
 END
 GO;
 
 --Modificar un registro de peso
-create procedure ModificarPeso
+alter procedure ModificarPeso
 @FechaPeso date,
 @CodMascota char (5),
-@NuevoPeso float
+@NuevoPeso float,
+@Check bit out
 AS
 BEGIN
+    begin TRANSACTION
     update HistorialesPeso set Peso = @NuevoPeso 
     where CodMascota = @CodMascota and FechaPeso = @FechaPeso  
+    if exists (select 1 from HistorialesPeso 
+        where FechaPeso=@FechaPeso and CodMascota=@CodMascota and Peso=@NuevoPeso)
+        set @Check = 1
+    else    
+        set @Check = 0
 END
 GO;
 
 --Eliminar un registro de peso
-create procedure EliminarRegPeso
+alter procedure EliminarRegPeso
 @FechaPeso date,
-@CodMascota char (5)
+@CodMascota char (5),
+@Cuenta int,
+@Check bit out
 AS
-BEGIN
+BEGIN 
+    begin TRANSACTION
     delete from HistorialesPeso 
-    where CodMascota = @CodMascota and FechaPeso = @FechaPeso 
+    where CodMascota = @CodMascota and FechaPeso = @FechaPeso
+    select @Cuenta = count(*) from HistorialesPeso
+        where FechaPeso=@FechaPeso and CodMascota=@CodMascota
+    if @Cuenta = 0
+        set @Check  = 1
+    else 
+        set @Check = 0
 END 
 GO;
 
---procedimiento de registro de visita medica
-create PROCEDURE RegistrarVisitaMedica 
+--procedimiento de registro de visita medica 
+alter PROCEDURE RegistrarVisitaMedica 
 @FechaConsulta date,
 @CodMascota char(5),
 @Situacion varchar(20),
-@DetalleMed varchar(40)
+@DetalleMed varchar(40),
+@Check bit out
 as 
 BEGIN
-    insert into HistorialesMedicos values (@FechaConsulta,@CodMascota,@Situacion,@DetalleMed)
+    begin TRANSACTION
+    if exists (select 1 from HistorialesMedicos where FechaConsulta=@FechaConsulta and CodMascota=@CodMascota)
+        set @Check = 0
+    else
+        BEGIN
+        insert into HistorialesMedicos values (@FechaConsulta,@CodMascota,@Situacion,@DetalleMed)
+        set @Check = 1
+        END
 END
 GO;
 
 --Modificar una visita medica
-create procedure ModificarVisitaMed
+alter procedure ModificarVisitaMed
 @FechaConsulta date,
 @CodMascota char(5),
 @Campo varchar (20),
-@NuevoValor varchar (40)
+@NuevoValor varchar (40),
+@Check bit out
 AS
 BEGIN
+    begin TRANSACTION
     update HistorialesMedicos set @Campo = @NuevoValor
     where FechaConsulta = @FechaConsulta and CodMascota = @CodMascota
+    if exists (select 1 from HistorialesMedicos 
+                where FechaConsulta=@FechaConsulta and CodMascota=@CodMascota and @Campo=@NuevoValor)
+        set @Check = 1
+    else    
+        set @Check = 0
 END
 GO;
 
 --Eliminar una visita medica
-create procedure EliminarVisitaMed
+alter procedure EliminarVisitaMed
 @FechaConsulta date,
-@CodMascota char(5)
+@CodMascota char(5),
+@Cuenta int,
+@Check bit out
 AS
 BEGIN
+    begin TRANSACTION
     delete from HistorialesMedicos where FechaConsulta = @FechaConsulta and CodMascota = @CodMascota
+    select @Cuenta = count (*) from HistorialesMedicos where FechaConsulta = @FechaConsulta and CodMascota = @CodMascota
+    if @Cuenta = 0
+        set @Check = 1
+    else    
+        set @Check = 0
 END
 GO; 
 
 --Procedimiento para registrar una vacunacion
-create PROCEDURE RegistrarVacunacion
+alter PROCEDURE RegistrarVacunacion
 @FechaVacuna date,
 @CodMascota char (5),
 @TipoVacuna varchar(15),
-@Fabricante varchar (20)
+@Fabricante varchar (20),
+@Check bit out
 as 
 BEGIN
-    insert into CalendariosVacunas values (@FechaVacuna,@CodMascota,@TipoVacuna,@Fabricante)
-END
+    begin TRANSACTION 
+    if exists (select 1 from CalendariosVacunas 
+                where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna and Fabricante=@Fabricante)
+        set @Check = 0
+    ELSE
+        BEGIN
+        insert into CalendariosVacunas values (@FechaVacuna,@CodMascota,@TipoVacuna,@Fabricante)    
+        set @Check = 1
+        END
+    END
 GO;
 
 --no existe la modificación de un campo de vacunación, puesto que todos los campos forman la PK
 --de modo que si se registra una vacunacion errada, se procede con la eliminación del registro
 
 --Eliminar una vacunacion
-create procedure EliminarVacunacion
+alter procedure EliminarVacunacion
 @FechaVacuna date,
 @CodMascota char (5),
 @TipoVacuna varchar(15),
-@Fabricante varchar (20)
+@Fabricante varchar (20),
+@Cuenta int,
+@Check bit out
 AS
 BEGIN
+    begin TRANSACTION
     delete from CalendariosVacunas
-    where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna and Fabricante=@Fabricante
+        where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna and Fabricante=@Fabricante
+    select @Cuenta = count(*) from CalendariosVacunas 
+        where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna and Fabricante=@Fabricante
+    if @Cuenta = 0
+        set @Check = 1
+    else   
+        set @Check = 0
 END
 GO;
 
 --Registro de una estadía
-create procedure RegistrarEstadia
+alter procedure RegistrarEstadia
 @CheckIn date,
 @CodMascota char (5),
 @NroHab char (2),
-@Dias int
+@Dias int,
+@Check bit out
 AS
-BEGIN
-    insert into Estadias values (@CheckIn,@CodMascota,@NroHab,NULL,@Dias)
-    update Habitaciones set Disponible = 'O' where NroHab = @NroHab
+BEGIN  
+    begin TRANSACTION
+    if exists(select 1 from Estadias where CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab)
+        set @Check = 0
+    else    
+        BEGIN
+        insert into Estadias values (@CheckIn,@CodMascota,@NroHab,NULL,@Dias)
+        update Habitaciones set Disponible = 'O' where NroHab = @NroHab 
+        set @Check = 1
+        END
 END
 GO;
 
 --Modificación de una estadía
-create procedure ModificarEstadia
+alter procedure ModificarEstadia
 @CheckIn date,
 @CodMascota char (5),
 @NroHab char (2),
 @Campo varchar (20),
-@NuevoValor varchar (20)
+@NuevoValor varchar (20),
+@Check bit out
 as
 BEGIN
+    begin TRANSACTION
     if @Campo = 'NroHab'
         BEGIN
         update Habitaciones set Disponible = 'D' where NroHab = @NroHab
         update Estadias set NroHab = @NuevoValor 
         where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab 
         update Habitaciones set Disponible = 'O' where NroHab=@NuevoValor
+        if exists (select 1 from Estadias 
+                    where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NuevoValor)
+            set @Check = 1
+        else
+            set @Check = 0
         END 
     else 
         update Estadias set @Campo = @NuevoValor
         where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
+        if exists (select 1 from Estadias 
+                    where CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab and @Campo = @NuevoValor)
+            set @Check = 1
+        else    
+            set @Check = 0
 END
 GO;
 
 --Eliminar una estadía
-create procedure EliminarEstadia
+alter procedure EliminarEstadia
 @CheckIn date,
 @CodMascota char (5),
-@NroHab char (2)
+@NroHab char (2),
+@Cuenta int,
+@Check bit out
 AS
 BEGIN
+    begin TRANSACTION
     delete from Estadias
     where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
+    SELECT @Cuenta = count(*) from Estadias 
+        where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
+    if @Cuenta = 0
+        set @Check = 1
+    else
+        set @Check = 0
 END
 GO;
 
@@ -160,36 +256,24 @@ declare CursorServiciosEsp cursor for select * from ServiciosEsp
 GO;
 
 --Procedimiento para registrar un requerimiento de un servicio en la estadía
-create procedure RegistrarRequerimiento 
+alter procedure RegistrarRequerimiento 
 @CodMascota char (5), 
 @IdServicio char(3),
 @CheckIn date, 
 @Cantidad int,
 @NroHab char (2),
-@Dias int
+@Dias int,
+@Check bit out
 AS
 BEGIN 
-    DECLARE
-    @Tamaño char (2),
-    @Cargo money,
-	@Factor float,
-    @Precio money
-    --son servicios especiales y no tienen cantidad, se cobra por la cantidad de dias
-    if @IdServicio = 'S04' or @IdServicio = 'S05'
-        BEGIN
-        set @Cargo = (select Precio from Servicios where IdServicio = @IdServicio)
-        set @Cargo *= @Dias
-        insert into Requerimientos values (@IdServicio,@CheckIn,@CodMascota,@NroHab,NULL,@Cargo)
-        END
-    --servicios que pueden llegar a realizarse hasta una vez por estadía
-    if @IdServicio = 'S02'
-        BEGIN
-        set @Cargo = (select Precio from Servicios where IdServicio = @IdServicio)
-        insert into Requerimientos values (@IdServicio,@CheckIn,@CodMascota,@NroHab,1,@Cargo)
-        END
+    begin TRANSACTION
+    if exists (select 1 from Requerimientos 
+                where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab)
+        set @Check = 0
     else
     --los demás servicios que se pueden realizar varias veces y se cobran de acuerdo al tamaño, cantidad de veces
         BEGIN
+        set @Check = 1
         set @Tamaño = (select Tamaño from Mascotas where CodMascota = @CodMascota)
         set @Precio = (select Precio from Servicios where IdServicio = @IdServicio)
         if @Tamaño = 'S'
@@ -202,20 +286,56 @@ BEGIN
             set @Factor = 1.40
         set @Cargo = @Cantidad * @Precio * @Factor
         insert into Requerimientos values (@IdServicio,@CheckIn,@CodMascota,@NroHab,@Cantidad,@Cargo)
+        DECLARE
+        @Tamaño char (2),
+        @Cargo money,
+        @Factor float,
+        @Precio money
+        --son servicios especiales y no tienen cantidad, se cobra por la cantidad de dias
+        if @IdServicio = 'S04' or @IdServicio = 'S05'
+            BEGIN
+            set @Cargo = (select Precio from Servicios where IdServicio = @IdServicio)
+            set @Cargo *= @Dias
+            insert into Requerimientos values (@IdServicio,@CheckIn,@CodMascota,@NroHab,NULL,@Cargo)
+            END
+        --servicios que pueden llegar a realizarse hasta una vez por estadía
+        if @IdServicio = 'S02'
+            BEGIN
+            set @Cargo = (select Precio from Servicios where IdServicio = @IdServicio)
+            insert into Requerimientos values (@IdServicio,@CheckIn,@CodMascota,@NroHab,1,@Cargo)
+            END
+        else
+        --los demás servicios que se pueden realizar varias veces y se cobran de acuerdo al tamaño, cantidad de veces
+            BEGIN
+            set @Tamaño = (select Tamaño from Mascotas where CodMascota = @CodMascota)
+            set @Precio = (select Precio from Servicios where IdServicio = @IdServicio)
+            if @Tamaño = 'S'
+                set @Factor = 1
+            if @Tamaño = 'M'
+                set @Factor = 1.15
+            if @Tamaño = 'G'
+                set @Factor = 1.30
+            if @Tamaño = 'XG'
+                set @Factor = 1.40
+            set @Cargo = @Cantidad * @Precio * @Factor
+            insert into Requerimientos values (@IdServicio,@CheckIn,@CodMascota,@NroHab,@Cantidad,@Cargo)
+            END
         END
 END  
 GO;
 
 --Modificacion de requerimiento
-create procedure ModificarRequerimiento
+alter procedure ModificarRequerimiento
 @IdServicio char (3),
 @CheckIn date,
 @CodMascota char (5),
 @NroHab char (2),
 @Campo varchar (10),
-@NuevoValor int
+@NuevoValor int,
+@Check bit out
 AS
 BEGIN
+    begin TRANSACTION
     if @IdServicio='S01' or @IdServicio='S03' or @IdServicio ='S06'
         if @Campo = 'Cantidad'
             BEGIN
@@ -238,78 +358,68 @@ BEGIN
                 update Requerimientos set Cantidad=@NuevoValor, Cargo=@Cargo
                 where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
             END
+    if exists (select 1 from Requerimientos
+        where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab and Cantidad=@NuevoValor)
+        set @Check = 1
+    else   
+        set @Check = 0
 END
 GO;
 
 --Eliminación de requerimiento en la estadía
-create procedure EliminarRequerimiento
+alter procedure EliminarRequerimiento
 @IdServicio char (3),
 @CheckIn date,
 @CodMascota char (5),
-@NroHab char (2)
+@NroHab char (2),
+@Cuenta int,
+@Check bit out 
 AS
 BEGIN
+    begin TRANSACTION
     delete from Requerimientos
     where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
+    select @Cuenta = count(*) from Requerimientos
+        where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
+    if @Cuenta = 0
+        set @Check = 1
+    ELSE    
+        set @Check = 0
 END
 GO;
 
 --Adicion de vacunas de nuevos proveedores
-create procedure AgregarVacuna
+alter procedure AgregarVacuna
 @TipoVacuna varchar(15),
 @Fabricante varchar(20),
-@Precio money
+@Precio money,
+@Check bit out
 AS
 BEGIN
-    insert into Vacunas values (@TipoVacuna,@Fabricante,@Precio)
+    begin TRANSACTION
+    if exists (select 1 from Vacunas where TipoVacuna=@TipoVacuna and Fabricante=@Fabricante)
+        set @Check = 0
+    else
+        BEGIN
+        set @Check = 1
+        insert into Vacunas values (@TipoVacuna,@Fabricante,@Precio)
+        END
 END
 GO;
 
 --Eliminar vacuna
-create procedure EliminarVacuna
+alter procedure EliminarVacuna
 @TipoVacuna varchar(15),
-@Fabricante varchar (20)
+@Fabricante varchar (20),
+@Cuenta int,
+@Check bit out
 AS
 BEGIN
+    begin TRANSACTION
     delete from Vacunas where TipoVacuna=@TipoVacuna and Fabricante=@Fabricante
+    select @Cuenta = count (*) from Vacunas where TipoVacuna=@TipoVacuna and Fabricante=@Fabricante
+    if @Cuenta = 0
+        set @Check = 1
+    ELSE
+        set @Check = 0
 END
-
-select * from Servicios
-
-select * from Servicios 
-insert into Mascotas values ('M0077','C0001','Test','Felino','Bombay','Negro','2020/01/15','G')
-insert into Estadias values ('2023-05-06','M0077','01',NULL,7)
-select * from Estadias
-exec RegistrarRequerimiento 'M0077','S03','2023-05-06',4,'01',7
-select * from Requerimientos
-
-
-
-
-
-
-
-
-    
-    
-    
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
