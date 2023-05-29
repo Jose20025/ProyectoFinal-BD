@@ -132,7 +132,7 @@ class Eleccion(ctk.CTkFrame):
 
     def hotel(self):
         self.padre.mainPageHotel.tablaFrame.setTabla(
-            'select M.* from Mascotas M inner join Estadias E on M.CodMascota = E.CodMascota order by M.CodMascota')
+            'select distinct M.* from Mascotas M inner join Estadias E on M.CodMascota = E.CodMascota order by M.CodMascota')
         self.padre.cambioVentana(
             self, self.padre.mainPageHotel, 1000, 600, 'Cute Pets - Hotel')
 
