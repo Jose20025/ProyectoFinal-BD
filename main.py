@@ -4,12 +4,11 @@ from CTkMessagebox import CTkMessagebox as msg
 import pyodbc
 from PIL import Image
 
-conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
-              'nangui': ['soychurro', 'BrunoPC']}
-
 
 class App(ctk.CTk):
     def __init__(self):
+        global user, password, lugar
+
         super().__init__()
         ctk.set_appearance_mode('system')
         ctk.set_default_color_theme('blue')
@@ -17,7 +16,6 @@ class App(ctk.CTk):
         self.title('Login')
         self.iconbitmap('./image/icono.ico')
         self.resizable(0, 0)
-        self.eleccionPage = Eleccion(self)
         self.mainPageHotel = HotelPage(self)
         self.mainPageVeterinaria = VeterinariaPage(self)
 
@@ -46,6 +44,7 @@ class LoginPage(ctk.CTkFrame):
         super().__init__(master=master, width=500, height=700)
 
         self.padre = master
+        self.lugar = None
 
         self.logo = ctk.CTkLabel(self, image=ctk.CTkImage(light_image=Image.open(
             './image/logo-transparente.png'), dark_image=Image.open('./image/logo-transparente.png'), size=(400, 370)), width=400, height=340, text='',
@@ -74,13 +73,16 @@ class LoginPage(ctk.CTkFrame):
 
         self.boton = ctk.CTkButton(
             self.userFrame, text='Login', command=self.login)
-        self.boton.place(x=135, y=180)
+        self.boton.place(x=230, y=180)
+
+        self.combobox = ctk.CTkComboBox(
+            self.userFrame, values=['Veterinaria', 'Hotel'], state='readonly')
+        self.combobox.set('Veterinaria')
+        self.combobox.place(x=30, y=180)
 
         self.userFrame.place(x=50, y=430)
 
     def login(self, event=None):
-
-        global user, password
 
         self.user = self.username.get()
         self.passwd = self.password.get()
@@ -99,8 +101,8 @@ class LoginPage(ctk.CTkFrame):
                     user.set(self.user)
                     password.set(self.passwd)
                     print(user.get())
-                    self.padre.cambioVentana(
-                        self.padre.loginPage, self.padre.eleccionPage, 400, 250, 'Eleccion')
+                    self.lugar = self.combobox.get()
+                    self.eleccion()
 
             else:
                 msg(title='Error en la conexion',
@@ -115,32 +117,13 @@ class LoginPage(ctk.CTkFrame):
             msg(title='Campos requeridos',
                 message='Los dos campos no pueden estar vacios', icon='cancel')
 
-
-class Eleccion(ctk.CTkFrame):
-    def __init__(self, master: App = None):
-        super().__init__(master=master, width=400, height=250)
-        self.padre = master
-
-        ctk.CTkLabel(self, text='¿A donde quieres entrar?',
-                     width=150, height=50, anchor=ctk.CENTER).place(x=130, y=20)
-
-        ctk.CTkButton(self, text='Veterinaria', width=160,
-                      height=90, anchor=ctk.CENTER, command=self.veterinaria).place(x=20, y=90)
-
-        ctk.CTkButton(self, text='Hotel', width=160,
-                      height=90, anchor=ctk.CENTER, command=self.hotel).place(x=220, y=90)
-
-    def hotel(self):
-        self.padre.mainPageHotel.tablaFrame.setTabla(
-            'select distinct M.* from Mascotas M inner join Estadias E on M.CodMascota = E.CodMascota order by M.CodMascota')
-        self.padre.cambioVentana(
-            self, self.padre.mainPageHotel, 1000, 600, 'Cute Pets - Hotel')
-
-    def veterinaria(self):
-        self.padre.mainPageVeterinaria.tablaFrame.setTabla(
-            'select distinct M.* from Mascotas M inner join HistorialesPeso H on M.CodMascota = H.CodMascota')
-        self.padre.cambioVentana(
-            self, self.padre.mainPageVeterinaria, 1000, 600, 'Cute Pets - Veterinaria')
+    def eleccion(self):
+        if self.lugar == 'Veterinaria':
+            self.padre.cambioVentana(
+                self, self.padre.mainPageVeterinaria, 1000, 600, 'Cute Pets - Veterinaria')
+        else:
+            self.padre.cambioVentana(
+                self, self.padre.mainPageHotel, 1000, 600, 'Cute Pets - Hotel')
 
 
 class HotelPage(ctk.CTkFrame):
@@ -252,8 +235,10 @@ class Tabla(ctk.CTkFrame):
         self.place(x=310, y=10)
 
 
-if __name__ == '__main__':
-    app = App()
-    user = StringVar()
-    password = StringVar()
-    app.mainloop()
+conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
+              'nangui': ['soychurro', 'BrunoPC']}
+
+app = App()
+user = StringVar()
+password = StringVar()
+app.mainloop()
