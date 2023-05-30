@@ -96,6 +96,7 @@ alter procedure ReporteAtendidos2
 @FechaFinal date
 AS
 BEGIN
+    SET NOCOUNT ON
     DECLARE @PrintTable TABLE (PrintText NVARCHAR(MAX))
     DECLARE @PrintText NVARCHAR(MAX)
     set @PrintText ='' ;insert into @PrintTable values (@PrintText)    
@@ -172,5 +173,4 @@ BEGIN
         set @PrintText = 'Ningún huesped se encuentra actualmente hospedado' ;insert into @PrintTable values (@PrintText)
     SELECT PrintText FROM @PrintTable
 END
-
-exec ReporteAtendidos2 '2022-12-15','2023-01-01'
+GO
