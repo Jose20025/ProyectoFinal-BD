@@ -31,7 +31,7 @@ class App(ctk.CTk):
         self.geometry(f'{ancho}x{alto}+{x}+{y-20}')
 
     def cambioVentana(self, old: ctk.CTkFrame, new: ctk.CTkFrame, ancho, alto, titulo):
-        old.destroy()
+        old.pack_forget()
         self.geometry(f'{ancho}x{alto}')
         self.title(titulo)
         self.centrarVentana(ancho, alto)
@@ -85,7 +85,9 @@ class LoginPage(ctk.CTkFrame):
     def login(self, event=None):
 
         self.user = self.username.get()
+        
         self.passwd = self.password.get()
+        
         if self.user and self.passwd:
             if self.user in conexiones and self.passwd == conexiones[self.user][0]:
                 try:
@@ -165,14 +167,17 @@ class VeterinariaPage(ctk.CTkFrame):
 
         self.tablaFrame = Tabla(self, 640, 340)
 
+        self.ModificarPageV = ModificarPageV(self)
+
         ctk.CTkButton(self, text='Consultas', width=210,
                       height=40).place(x=20, y=30)
 
         ctk.CTkButton(self, text='Insertar', width=210,
                       height=40).place(x=20, y=100)
 
+       
         ctk.CTkButton(self, text='Modificar', width=210,
-                      height=40).place(x=20, y=170)
+                      height=40,command=self.aModificar).place(x=20, y=170)
 
         ctk.CTkButton(self, text='Eliminar', width=210,
                       height=40).place(x=20, y=240)
@@ -185,7 +190,51 @@ class VeterinariaPage(ctk.CTkFrame):
 
         ctk.CTkLabel(
             self, width=190, height=160, image=self.imagen, text='').place(x=20, y=400)
+        
+    def aModificar(self):
+        self.padre.cambioVentana(self, self.ModificarPageV, 700, 480, "Modificar Mascota")
+        
+class ModificarPageV(ctk.CTkFrame):
+    
+    def __init__(self,master:VeterinariaPage,):
+        super().__init__(master=master.padre,width=700,height=480)
+        self.padre = master
+        self.ancestro = self.padre.padre
+        
+        ctk.CTkButton(self,text='Volver',command=self.aPrincipal).place(x=10,y=10)
+        ctk.CTkLabel(self,text='Buscar').place(x=30,y=60)
+        self.textoBuscar = ctk.CTkEntry(self,width=150,height=20)
+        self.textoBuscar.place(x=30,y=90)
+        self.botonRadAlias = ctk.CTkRadioButton(self,text='Alias')
+        self.botonRadAlias.place(x=220,y=90)
+        self.botonRadFam = ctk.CTkRadioButton(self,text='Familia')
+        self.botonRadFam.place(x=315,y=90)
+        self.botonRadRaza = ctk.CTkRadioButton(self,text='Raza')
+        self.botonRadRaza.place(x=420,y=90)
+        self.CBoxRaza = ctk.CTkComboBox(self)
+        self.CBoxRaza.place(x=520,y=88)
 
+        #aqui va la tabla (por revisar)
+
+        ctk.CTkLabel(self,text='Código de Mascota').place(x=30,y=380)
+        self.textoCod = ctk.CTkEntry(self,width=120,height=30)
+        self.textoCod.place(x=30,y=410)
+        self.botonIr = ctk.CTkButton(self,text='Ir a perfil',command=self.Reporte,width=90,height=30)
+        self.botonIr.place(x=540,y=410)
+
+        self.conexion = pyodbc.connect(
+                        f'DRIVER={{SQL Server}};SERVER={conexiones["mateo_vet"][1]};DATABASE=FinalVeterinaria;UID=mateo_vet;PWD=Passw0rd')
+        self.cursor = self.conexion.cursor()
+
+        self.Reporte()
+    
+    def Reporte(self):
+        self.cursor.execute('exec ReporteAtendidos ?,?',('2022-12-10','2023-01-01'))
+        print(self.cursor.messages[0][1])
+       
+
+    def aPrincipal(self):
+        self.ancestro.cambioVentana(self, self.padre,1000,600,'Cute Pets - Veterinaria')
 
 class Tabla(ctk.CTkFrame):
     def __init__(self, master, ancho, alto):
@@ -236,7 +285,8 @@ class Tabla(ctk.CTkFrame):
 
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
-              'nangui': ['soychurro', 'BrunoPC']}
+              'nangui': ['soychurro', 'BrunoPC'],
+              'mateo_vet':['Passw0rd','MATEO\MSSQLSERVER01']}
 
 app = App()
 user = StringVar()

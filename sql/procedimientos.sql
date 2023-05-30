@@ -5,6 +5,8 @@ CREATE SEQUENCE SecIdCliente
     NO MAXVALUE;
 GO;
 
+exec ReporteAtendidos '2022-12-10','2023-01-01'
+
 --Procedimiento para registrar un cliente
 create procedure RegistrarCliente  
 @Apellido varchar(20), 
