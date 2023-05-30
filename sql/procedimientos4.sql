@@ -91,17 +91,17 @@ BEGIN
 END
 GO
 
-create procedure ReporteAtendidos2
+alter procedure ReporteAtendidos2
 @FechaInicial date,
 @FechaFinal date
 AS
 BEGIN
     DECLARE @PrintTable TABLE (PrintText NVARCHAR(MAX))
     DECLARE @PrintText NVARCHAR(MAX)
-    set @PrintText =''
-    set @PrintText += ''
-    set @PrintText += '     MASCOTAS ATENDIDAS ENTRE: '+convert(varchar(10),@FechaInicial)+' y '+convert(varchar(10),@FechaFinal)
-    set @PrintText += ''
+    set @PrintText ='' ;insert into @PrintTable values (@PrintText)    
+    set @PrintText = '';insert into @PrintTable values (@PrintText)  
+    set @PrintText = '     MASCOTAS ATENDIDAS ENTRE: '+convert(varchar(10),@FechaInicial)+' y '+convert(varchar(10),@FechaFinal);insert into @PrintTable values (@PrintText)  
+    set @PrintText = '';insert into @PrintTable values (@PrintText)  
     if exists (select 1 from Estadias where CheckIn >= @FechaInicial and CheckIn <=  @FechaFinal)
         BEGIN
         DECLARE CursorAtendidos cursor for select * from HuespedesAtendidos  
@@ -114,62 +114,63 @@ BEGIN
         @Hab char(2),
         @Dias int,
         @cantidad int = 0
-        set @PrintText += '―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――'
-        set @PrintText += '|  CHECK-IN     -     MASCOTA     -     DIAS     -     HABITACIÓN     -     CHECK-OUT     |'
-        set @PrintText += '―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――'
+        set @PrintText = '―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――';insert into @PrintTable values (@PrintText)  
+        set @PrintText = '|  CHECK-IN     -     MASCOTA     -     DIAS     -     HABITACIÓN     -     CHECK-OUT     |';insert into @PrintTable values (@PrintText)  
+        set @PrintText = '―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――';insert into @PrintTable values (@PrintText)  
         open CursorAtendidos
         fetch next from CursorAtendidos into @InAux,@OutAux,@Alias,@Especie,@Hab,@Dias
         while(@@FETCH_STATUS=0)
             BEGIN
-            set @PrintText +=   '  '+CONVERT(VARCHAR(10),@InAux) + REPLICATE(' ',10)+
+            set @PrintText =   '  '+CONVERT(VARCHAR(10),@InAux) + REPLICATE(' ',10)+
                     @Alias + REPLICATE(' ',19 - LEN(@Alias)) +
                     CONVERT(CHAR(2), @Dias) + REPLICATE(' ',16)+
                     @Hab + REPLICATE(' ',15)
                     + CONVERT(VARCHAR(10), @OutAux);
+            insert into @PrintTable values (@PrintText)  
             set @cantidad += 1
             fetch next from CursorAtendidos into @InAux,@OutAux,@Alias,@Especie,@Hab,@Dias
             END
         close CursorAtendidos
         deallocate CursorAtendidos
-        set @PrintText += ''
-        set @PrintText += ''
-        set @PrintText += 'Habiendo atendido un total de '+convert(char(3),@cantidad)+'mascota(s) entre estas fechas'
+        set @PrintText = '';insert into @PrintTable values (@PrintText)  
+        set @PrintText = '';insert into @PrintTable values (@PrintText)  
+        set @PrintText = 'Habiendo atendido un total de '+convert(char(3),@cantidad)+'mascota(s) entre estas fechas';insert into @PrintTable values (@PrintText)  
         set @cantidad=0
         END
     ELSE    
-        set @PrintText += 'No se ha registrado ningún huesped entre estas fechas'
+        set @PrintText = 'No se ha registrado ningún huesped entre estas fechas';insert into @PrintTable values (@PrintText)  
 
     if exists (select 1 from Estadias where CheckOut is NULL)
         BEGIN
-        set @PrintText += ''
-        set @PrintText += ''
-        set @PrintText += '         MASCOTAS HOSPEDADAS ACTUALMENTE'
-        set @PrintText += ''
-        set @PrintText += '――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――'
-        set @PrintText += '|  CHECK-IN     -     MASCOTA     -     DIAS     -     HABITACIÓN    |'
-        set @PrintText += '――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――'
+        set @PrintText = '';insert into @PrintTable values (@PrintText)  
+        set @PrintText = '';insert into @PrintTable values (@PrintText)  
+        set @PrintText = '         MASCOTAS HOSPEDADAS ACTUALMENTE';insert into @PrintTable values (@PrintText)  
+        set @PrintText = '';insert into @PrintTable values (@PrintText)  
+        set @PrintText = '――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――';insert into @PrintTable values (@PrintText)  
+        set @PrintText = '|  CHECK-IN     -     MASCOTA     -     DIAS     -     HABITACIÓN    |';insert into @PrintTable values (@PrintText)  
+        set @PrintText = '――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――';insert into @PrintTable values (@PrintText)  
         declare CursorHuespedes cursor for select * from HuespedesActuales
         open CursorHuespedes
         fetch next from CursorHuespedes into @InAux,@Alias,@Especie,@Hab,@Dias
         while(@@FETCH_STATUS=0)
             BEGIN 
-            set @PrintText +=   '  '+CONVERT(VARCHAR(10),@InAux) + REPLICATE(' ',10)+
+            set @PrintText =   '  '+CONVERT(VARCHAR(10),@InAux) + REPLICATE(' ',10)+
                     @Alias + REPLICATE(' ',19 - LEN(@Alias)) +
                     CONVERT(CHAR(2), @Dias) + REPLICATE(' ',16)+
                     @Hab
+            insert into @PrintTable values (@PrintText)  
             set @cantidad += 1
             fetch next from CursorHuespedes into @InAux,@Alias,@Especie,@Hab,@Dias
             END
         close CursorHuespedes
         deallocate CursorHuespedes
-        set @PrintText += ''
-        set @PrintText += ''
-        set @PrintText += 'Teniendo en este momento un total de '+convert(char(3),@cantidad)+'mascota(s) hospedadas en el hotel'
+        set @PrintText = '';insert into @PrintTable values (@PrintText)  
+        set @PrintText = '';insert into @PrintTable values (@PrintText)  
+        set @PrintText = 'Teniendo en este momento un total de '+convert(char(3),@cantidad)+'mascota(s) hospedadas en el hotel';insert into @PrintTable values (@PrintText)  
         END	
     ELSE
-        set @PrintText += 'Ningún huesped se encuentra actualmente hospedado'
-    INSERT INTO @PrintTable (PrintText) VALUES (@PrintText)
-    SELECT PrintText FROM @PrintTable
+        set @PrintText = 'Ningún huesped se encuentra actualmente hospedado' ;insert into @PrintTable values (@PrintText)
+    SELECT * FROM @PrintTable
 END
 
-exec ReporteAtendidos '2022-12-15','2023-01-01'
+exec ReporteAtendidos2 '2022-12-15','2023-01-01'
