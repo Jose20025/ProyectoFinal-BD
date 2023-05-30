@@ -219,18 +219,53 @@ class ModificarPageV(ctk.CTkFrame):
         ctk.CTkLabel(self,text='Código de Mascota').place(x=30,y=380)
         self.textoCod = ctk.CTkEntry(self,width=120,height=30)
         self.textoCod.place(x=30,y=410)
-        self.botonIr = ctk.CTkButton(self,text='Ir a perfil',command=self.Reporte,width=90,height=30)
+        self.botonIr = ctk.CTkButton(self,text='Ir a perfil',command=self.Prueba,width=90,height=30)
         self.botonIr.place(x=540,y=410)
 
         self.conexion = pyodbc.connect(
                         f'DRIVER={{SQL Server}};SERVER={conexiones["mateo_vet"][1]};DATABASE=FinalVeterinaria;UID=mateo_vet;PWD=Passw0rd')
         self.cursor = self.conexion.cursor()
 
-        self.Reporte()
+    #como es tabla si devuelve
     
+    def Prueba(self):
+        self.cursor.execute('exec BuscarAlias ?',('M0001'))
+        for k in self.cursor.messages:
+            if isinstance(k[1],str):
+                print(k[1])
+
+    #como son prints no devuelve, o hay que buscar otra manera de agarrar los prints
+
     def Reporte(self):
-        self.cursor.execute('exec ReporteAtendidos ?,?',('2022-12-10','2023-01-01'))
-        print(self.cursor.messages[0][1])
+        fecha1 = '2022-12-10'
+        fecha2='2023-01-10'
+        #exec ReporteAtendidos '2022-12-10','2023-01-01'
+        self.cursor.execute('exec ReporteAtendidos ?,?',('2022-12-10','2023-01-10'))
+        print(self.cursor.messages)
+
+        while self.cursor.nextset():
+    # Check if the current result set has rows
+            if self.cursor.rowcount > -1:
+        # Process the result set
+                for row in self.cursor.fetchall():
+            # Print the data from the result set
+                    print(row)
+
+    # Get the print statements
+        messages = self.cursor.messages
+        if messages:
+            for message in messages:
+                print(message)
+        else:
+            print ('sin mensajes')
+            c 
+        #for msg in self.cursor.messages:
+        #    if msg[0]=='print':
+        #        print(msg[1])
+
+    def Saludo(self):
+        self.cursor.execute('exec Saludo ?',('2023-05-30'))
+        print(self.cursor.messages)
        
 
     def aPrincipal(self):

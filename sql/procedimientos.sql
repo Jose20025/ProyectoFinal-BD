@@ -5,8 +5,6 @@ CREATE SEQUENCE SecIdCliente
     NO MAXVALUE;
 GO;
 
-exec ReporteAtendidos '2022-12-10','2023-01-01'
-
 --Procedimiento para registrar un cliente
 create procedure RegistrarCliente  
 @Apellido varchar(20), 
@@ -133,3 +131,21 @@ BEGIN
     delete from Personas where CI=@CI 
 END;
 GO;
+
+alter procedure Saludo
+@abcde date
+as
+    print 'Hola'+convert(char(10),@abcde)
+GO
+
+alter procedure BuscarAlias
+@CodMascota CHAR (5)
+AS
+BEGIN
+    declare @a char (5)
+    set @a = (select Alias from Mascotas where CodMascota = @CodMascota)
+    print 'La mascota con Cod: '+@CodMascota+'se llama: '+@a+'esto llega?'
+    print 'hola esto no ha llegado al parecer'
+    print 'me llamo'
+    print 'el coco'
+END
