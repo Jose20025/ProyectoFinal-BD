@@ -31,6 +31,7 @@ create procedure ModificarPeso
 AS
 BEGIN
     begin TRANSACTION
+    DECLARE @SQL NVARCHAR(MAX);
     update HistorialesPeso set Peso = @NuevoPeso 
     where CodMascota = @CodMascota and FechaPeso = @FechaPeso  
     if exists (select 1 from HistorialesPeso 
@@ -98,29 +99,34 @@ END
 GO;
 
 --Modificar una visita medica
-create procedure ModificarVisitaMed
-@FechaConsulta date,
-@CodMascota char(5),
-@Campo varchar (20),
-@NuevoValor varchar (40),
-@Check bit out
+alter PROCEDURE ModificarVisitaMed
+    @FechaConsulta DATE,
+    @CodMascota CHAR(5),
+    @Campo VARCHAR(20),
+    @NuevoValor VARCHAR(40),
+    @Check BIT OUT
 AS
 BEGIN
-    begin TRANSACTION
-    update HistorialesMedicos set @Campo = @NuevoValor
-    where FechaConsulta = @FechaConsulta and CodMascota = @CodMascota
-    if exists (select 1 from HistorialesMedicos 
-                where FechaConsulta=@FechaConsulta and CodMascota=@CodMascota and @Campo=@NuevoValor)
-        begin
-        set @Check = 1
-        SELECT @Check
-        end
-    else    
-        BEGIN
-        set @Check = 0
-        SELECT @Check
-        end
+    BEGIN TRANSACTION;
+
+    DECLARE @SQL NVARCHAR(MAX);
+
+    SET @SQL = N'UPDATE HistorialesMedicos SET ' + QUOTENAME(@Campo) + ' = @NuevoValor WHERE FechaConsulta = @FechaConsulta AND CodMascota = @CodMascota';
+
+    EXEC sp_executesql @SQL, N'@FechaConsulta DATE, @CodMascota CHAR(5), @NuevoValor VARCHAR(40)', @FechaConsulta, @CodMascota, @NuevoValor;
+
+    IF EXISTS (SELECT 1 FROM HistorialesMedicos WHERE FechaConsulta = @FechaConsulta AND CodMascota = @CodMascota AND ' + QUOTENAME(@Campo) + ' = @NuevoValor)
+    BEGIN
+        SET @Check = 1;
+        SELECT @Check;
+    END
+    ELSE
+    BEGIN
+        SET @Check = 0;
+        SELECT @Check;
+    END
 END
+
 GO;
 
 --Eliminar una visita medica
@@ -228,49 +234,55 @@ END
 GO;
 
 --Modificación de una estadía
-create procedure ModificarEstadia
-@CheckIn date,
-@CodMascota char (5),
-@NroHab char (2),
-@Campo varchar (20),
-@NuevoValor varchar (20),
-@Check bit out
-as
+alter PROCEDURE ModificarEstadia
+    @CheckIn DATE,
+    @CodMascota CHAR(5),
+    @NroHab CHAR(2),
+    @Campo VARCHAR(20),
+    @NuevoValor VARCHAR(20),
+    @Check BIT OUT
+AS
 BEGIN
-    begin TRANSACTION
-    if @Campo = 'NroHab'
+    BEGIN TRANSACTION;
+
+    IF @Campo = 'NroHab'
+    BEGIN
+        UPDATE Habitaciones SET Disponible = 'D' WHERE NroHab = @NroHab;
+        UPDATE Estadias SET NroHab = @NuevoValor WHERE CheckIn = @CheckIn AND CodMascota = @CodMascota AND NroHab = @NroHab;
+        UPDATE Habitaciones SET Disponible = 'O' WHERE NroHab = @NuevoValor;
+
+        IF EXISTS (SELECT 1 FROM Estadias WHERE CheckIn = @CheckIn AND CodMascota = @CodMascota AND NroHab = @NuevoValor)
         BEGIN
-        update Habitaciones set Disponible = 'D' where NroHab = @NroHab
-        update Estadias set NroHab = @NuevoValor 
-        where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab 
-        update Habitaciones set Disponible = 'O' where NroHab=@NuevoValor
-        if exists (select 1 from Estadias 
-                    where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NuevoValor)
-            begin
-            set @Check = 1
-            SELECT @Check
-            end
-        else
-            begin
-            set @Check = 0
-            SELECT @Check
-            end
-        END 
-    else 
-        update Estadias set @Campo = @NuevoValor
-        where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
-        if exists (select 1 from Estadias 
-                    where CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab and @Campo = @NuevoValor)
-            begin
-            set @Check = 1
-            SELECT @Check
-            end
-        else    
-            BEGIN
-            set @Check = 0
-            SELECT @Check
-            end
+            SET @Check = 1;
+            SELECT @Check;
+        END
+        ELSE
+        BEGIN
+            SET @Check = 0;
+            SELECT @Check;
+        END;
+    END
+    ELSE
+    BEGIN
+        DECLARE @SQL NVARCHAR(MAX);
+
+        SET @SQL = N'UPDATE Estadias SET ' + QUOTENAME(@Campo) + ' = @NuevoValor WHERE CheckIn = @CheckIn AND CodMascota = @CodMascota AND NroHab = @NroHab';
+
+        EXEC sp_executesql @SQL, N'@CheckIn DATE, @CodMascota CHAR(5), @NuevoValor VARCHAR(20)', @CheckIn, @CodMascota, @NuevoValor;
+
+        IF EXISTS (SELECT 1 FROM Estadias WHERE CheckIn = @CheckIn AND CodMascota = @CodMascota AND NroHab = @NroHab AND ' + QUOTENAME(@Campo) + ' = @NuevoValor)
+        BEGIN
+            SET @Check = 1;
+            SELECT @Check;
+        END
+        ELSE
+        BEGIN
+            SET @Check = 0;
+            SELECT @Check;
+        END;
+    END;
 END
+
 GO;
 
 --Eliminar una estadía
@@ -392,7 +404,7 @@ END
 GO;
 
 --Modificacion de requerimiento
-create procedure ModificarRequerimiento
+alter procedure ModificarRequerimiento
 @IdServicio char (3),
 @CheckIn date,
 @CodMascota char (5),

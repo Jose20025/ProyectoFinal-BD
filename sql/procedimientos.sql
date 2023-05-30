@@ -41,7 +41,7 @@ END
 GO;
 
 --Modificación de datos de un cliente
-create procedure ModificarCliente 
+alter procedure ModificarCliente 
 @IdCliente char (5),
 @Campo varchar(15),
 @NuevoValor varchar (20),
@@ -49,8 +49,10 @@ create procedure ModificarCliente
 AS
 BEGIN
     begin TRANSACTION
-    update Clientes set @Campo = @NuevoValor where IdCliente = @IdCliente
-    if exists (select 1 from Clientes where IdCliente=@IdCliente and @Campo=@NuevoValor)
+    declare @SQL NVARCHAR(MAX)
+    set @SQL = N'UPDATE Clientes set '+ QUOTENAME(@Campo)+' = @NuevoValor WHERE IdCliente = @IdCliente'
+    exec sp_executesql @SQL, N'@IdCliente char(5), @NuevoValor varchar(20)',@IdCliente,@NuevoValor
+    if exists (select 1 from Clientes where IdCliente=@IdCliente and (NroCuenta=@NuevoValor or Telefono=@NuevoValor))
         BEGIN
         set @Check = 1
         SELECT @Check
@@ -135,7 +137,7 @@ GO;
 
 
 --Modificación de datos de una mascota
-create procedure ModificarMascota
+alter procedure ModificarMascota
 @CodMascota char (5),
 @Campo varchar(15),
 @NuevoValor varchar (20),
@@ -143,8 +145,10 @@ create procedure ModificarMascota
 as 
 BEGIN
     begin TRANSACTION
-    update Mascotas set @Campo = @NuevoValor where CodMascota = @CodMascota
-    if exists (select 1 from Mascotas where CodMascota=@CodMascota and @Campo=@NuevoValor)
+    declare @SQL NVARCHAR(MAX)
+    set @SQL = N'UPDATE Mascotas set '+ QUOTENAME(@Campo)+' = @NuevoValor WHERE CodMascota = @CodMascota'
+    exec sp_executesql @SQL, N'@CodMascota char(5), @NuevoValor varchar(20)',@CodMascota,@NuevoValor
+    if exists (select 1 from Mascotas where CodMascota=@CodMascota and (Color_pelo=@NuevoValor or Alias=@NuevoValor or ))
         BEGIN
         set @Check = 1
         SELECT @Check
@@ -202,28 +206,6 @@ BEGIN
         insert into Encargados values (@IdCliente,@CI)
         END
 END 
-GO;
-
---Modificación de una Persona
-create procedure ModfiicarPersona
-@CI varchar (10),
-@NuevoNombre varchar (30),
-@Check bit out
-AS
-BEGIN
-    begin TRANSACTION 
-    update Personas set Nombre = @NuevoNombre where CI = @CI
-    if exists (select 1 from Personas where CI=@CI and Nombre=@NuevoNombre)
-        BEGIN
-        set @Check = 1
-        SELECT @Check
-        END
-    else
-        BEGIN
-        set @Check = 0
-        SELECT @Check
-        END
-END
 GO;
 
 --Eliminación de persona
