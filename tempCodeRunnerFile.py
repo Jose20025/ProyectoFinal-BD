@@ -1,2 +1,2 @@
 
-    def login(self, event=None):
+# Output the value of the output parameter
