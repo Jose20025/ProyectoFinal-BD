@@ -1,9 +1,3 @@
-
-select * from Mascotas
-exec RegistrarMascota 'C0001','Gato-Test3','Felino','Alien','Azul','2023-05-20','S'
-exec RegistrarEstadia '2023-05-25','M0030','01',3
-GO
-
 --Vista para huespedes actuales
 create view HuespedesActuales as
 select CheckIn,Alias,Especie,Habitaciones.NroHab,Dias from Mascotas
@@ -19,10 +13,6 @@ inner join Estadias on Estadias.CodMascota = Mascotas.CodMascota
 inner join Habitaciones on Habitaciones.NroHab = Estadias.NroHab
 where CheckOut is not NULL
 GO
-
-select * from HuespedesAtendidos
-GO
-
 
 alter procedure ReporteAtendidos
 @FechaInicial date,
@@ -99,7 +89,3 @@ BEGIN
     ELSE
         print 'Ningún huesped se encuentra actualmente hospedado'
 END
-
-exec ReporteAtendidos '2022-12-20','2023-01-10'
-
-GO
