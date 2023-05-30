@@ -148,7 +148,7 @@ BEGIN
     declare @SQL NVARCHAR(MAX)
     set @SQL = N'UPDATE Mascotas set '+ QUOTENAME(@Campo)+' = @NuevoValor WHERE CodMascota = @CodMascota'
     exec sp_executesql @SQL, N'@CodMascota char(5), @NuevoValor varchar(20)',@CodMascota,@NuevoValor
-    if exists (select 1 from Mascotas where CodMascota=@CodMascota and (Color_pelo=@NuevoValor or Alias=@NuevoValor or ))
+    if exists (select 1 from Mascotas where CodMascota=@CodMascota and (Color_pelo=@NuevoValor or Alias=@NuevoValor or Raza=@NuevoValor))
         BEGIN
         set @Check = 1
         SELECT @Check
