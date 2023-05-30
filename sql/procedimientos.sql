@@ -7,7 +7,7 @@ GO;
 
 
 --Procedimiento para registrar un cliente
-alter procedure RegistrarCliente  
+create procedure RegistrarCliente  
 @Apellido varchar(20), 
 @NroCuenta varchar(10), 
 @Direccion varchar(40), 
@@ -41,7 +41,7 @@ END
 GO;
 
 --Modificación de datos de un cliente
-alter procedure ModificarCliente 
+create procedure ModificarCliente 
 @IdCliente char (5),
 @Campo varchar(15),
 @NuevoValor varchar (20),
@@ -64,7 +64,7 @@ END
 GO;
 
 --Eliminacion de cliente
-alter procedure EliminarCliente
+create procedure EliminarCliente
 @IdCliente char (5),
 @Cuenta int,
 @Check bit out
@@ -94,7 +94,7 @@ CREATE SEQUENCE SecCodMascota
 GO;
 
 --Procedimiento para registrar una mascota 
-alter procedure RegistrarMascota  
+create procedure RegistrarMascota  
 @IdCliente varchar(20), 
 @Alias varchar(20), 
 @Especie varchar(40), 
@@ -135,7 +135,7 @@ GO;
 
 
 --Modificación de datos de una mascota
-alter procedure ModificarMascota
+create procedure ModificarMascota
 @CodMascota char (5),
 @Campo varchar(15),
 @NuevoValor varchar (20),
@@ -158,7 +158,7 @@ END
 GO;
 
 --Eliminacion de mascota
-alter procedure EliminarMascota
+create procedure EliminarMascota
 @CodMascota char (5),
 @Cuenta int,
 @Check bit out
@@ -181,7 +181,7 @@ END
 GO;
 
 --Procedimiento de registro de una persona y su asignación al cliente
-alter procedure RegistrarPersona
+create procedure RegistrarPersona
 @CI varchar(10),
 @Nombre varchar (30),
 @IdCliente char(5),
@@ -205,7 +205,7 @@ END
 GO;
 
 --Modificación de una Persona
-alter procedure ModfiicarPersona
+create procedure ModfiicarPersona
 @CI varchar (10),
 @NuevoNombre varchar (30),
 @Check bit out
@@ -227,7 +227,7 @@ END
 GO;
 
 --Eliminación de persona
-alter procedure EliminarPersona
+create procedure EliminarPersona
 @CI varchar (10),
 @Cuenta int,
 @Check bit out
