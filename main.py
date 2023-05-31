@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from tkinter import StringVar, ttk
+from tkinter import IntVar, StringVar, ttk
 from CTkMessagebox import CTkMessagebox as msg
 import pyodbc
 from PIL import Image
@@ -213,14 +213,18 @@ class ModificarPageV(ctk.CTkFrame):
         self.botonBuscar = ctk.CTkButton(self,width=80,height=25,text='Buscar',command=self.BuscarMascotas)
         self.botonBuscar.place(x=95,y=118)
         
-        self.eleccion = StringVar()
-        self.botonRadAlias = ctk.CTkRadioButton(self,text='Alias',variable=self.eleccion,value='Alias',command=self.EleccionCampo)
+        self.eleccionCampo = StringVar()
+        self.eleccionEspecie = StringVar()
+        self.eleccionRaza = IntVar()
+        self.botonRadAlias = ctk.CTkRadioButton(self,text='Alias',variable=self.eleccionCampo,value='Alias',command=self.EleccionCampo)
         self.botonRadAlias.place(x=220,y=90)
-        self.botonRadFam = ctk.CTkRadioButton(self,text='Familia',variable=self.eleccion,value='Apellido',command=self.EleccionCampo)
+        self.botonRadFam = ctk.CTkRadioButton(self,text='Familia',variable=self.eleccionCampo,value='Apellido',command=self.EleccionCampo)
         self.botonRadFam.place(x=315,y=90)
-        self.botonRadRaza = ctk.CTkRadioButton(self,text='Raza',variable=self.eleccion,value='Raza',command=self.EleccionCampo)
+        self.botonRadRaza = ctk.CTkRadioButton(self,text='Raza',variable=self.eleccionCampo,value='Raza',command=self.EleccionCampo)
         self.botonRadRaza.place(x=420,y=90)
-        self.CBoxRaza = ctk.CTkComboBox(self,values=['', 'Hotel'], state='readonly')
+        self.CBoxEspecie = ctk.CTkComboBox(self,variable=self.eleccionEspecie,values=['Canino', 'Felino'], state='readonly',command=self.ElegirEspecie)
+        self.CBoxEspecie.place(x=520,y=60)
+        self.CBoxRaza = ctk.CTkComboBox(self, state='readonly',command=self.MostarEspecies)
         self.CBoxRaza.place(x=520,y=88)
         
         self.Tabla = ctk.CTkFrame(self,width=640,height=210)
@@ -242,10 +246,8 @@ class ModificarPageV(ctk.CTkFrame):
         for r in resultados:
             print(r)
 
-        
-    
     def EleccionCampo(self):
-        self.campoElegido = str(self.eleccion.get())
+        self.campoElegido = str(self.eleccionCampo.get())
 
     def Reporte(self):
         self.cursor.execute('exec ReporteAtendidos2 ?,? ',('2022-12-15','2023-01-01'))
@@ -253,7 +255,16 @@ class ModificarPageV(ctk.CTkFrame):
         for r in resultados:
             print(r)  
 
+    def ElegirEspecie(self):
+        self.especieElegida = int(self.CBoxEspecie.get())
+        if self.especieElegida==1:
+            
+        if self.especieElegida==2:
 
+        
+    def MostarEspecies(self):
+        
+    
     def aPrincipal(self):
         self.ancestro.cambioVentana(self, self.padre,1000,600,'Cute Pets - Veterinaria')
 
