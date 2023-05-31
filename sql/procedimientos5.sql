@@ -23,6 +23,18 @@ exec ModificarMascota 'M0001','Color_pelo','Verde',1
 select * from Mascotas	
 
 --hay que modficarlo de acuerdo a lo que se deberia mostrar cuando se busca una
-
-select CodMascota,Alias,Apellido,Especie,Color_pelo from Mascotas
+go
+create procedure InfoMascota
+@CodMascota char(5)
+AS
+begin
+select Alias,Color_pelo,Raza,Tamaño,Apellido from Mascotas
 inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente
+where CodMascota = @CodMascota
+end
+
+
+
+
+GO
+

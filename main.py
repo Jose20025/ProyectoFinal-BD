@@ -196,7 +196,7 @@ class VeterinariaPage(ctk.CTkFrame):
         
 class ModificarPageV(ctk.CTkFrame):
     
-    def __init__(self,master:VeterinariaPage,):
+    def __init__(self,master:VeterinariaPage):
         super().__init__(master=master.padre,width=700,height=480)
         
         self.padre = master
@@ -204,7 +204,7 @@ class ModificarPageV(ctk.CTkFrame):
         self.conexion = pyodbc.connect(
                         f'DRIVER={{SQL Server}};SERVER={conexiones["mateo_vet"][1]};DATABASE=FinalVeterinaria;UID=mateo_vet;PWD=Passw0rd')
         self.cursor = self.conexion.cursor()
-        
+
         ctk.CTkButton(self,text='Volver',command=self.aPrincipal).place(x=10,y=10)
 
         ctk.CTkLabel(self,text='Buscar').place(x=30,y=60)
@@ -214,59 +214,124 @@ class ModificarPageV(ctk.CTkFrame):
         self.botonBuscar.place(x=95,y=118)
         
         self.eleccionCampo = StringVar()
-        self.eleccionEspecie = StringVar()
-        self.eleccionRaza = IntVar()
         self.botonRadAlias = ctk.CTkRadioButton(self,text='Alias',variable=self.eleccionCampo,value='Alias',command=self.EleccionCampo)
         self.botonRadAlias.place(x=220,y=90)
         self.botonRadFam = ctk.CTkRadioButton(self,text='Familia',variable=self.eleccionCampo,value='Apellido',command=self.EleccionCampo)
-        self.botonRadFam.place(x=315,y=90)
-        self.botonRadRaza = ctk.CTkRadioButton(self,text='Raza',variable=self.eleccionCampo,value='Raza',command=self.EleccionCampo)
-        self.botonRadRaza.place(x=420,y=90)
-        self.CBoxEspecie = ctk.CTkComboBox(self,variable=self.eleccionEspecie,values=['Canino', 'Felino'], state='readonly',command=self.ElegirEspecie)
-        self.CBoxEspecie.place(x=520,y=60)
-        self.CBoxRaza = ctk.CTkComboBox(self, state='readonly',command=self.MostarEspecies)
-        self.CBoxRaza.place(x=520,y=88)
+        self.botonRadFam.place(x=310,y=90)
+        self.botonRadEspecie = ctk.CTkRadioButton(self,text='Especie',variable=self.eleccionCampo,value='Especie',command=self.EleccionCampo)
+        self.botonRadEspecie.place(x=410,y=90)
+        
+        self.eleccionEspecie = StringVar()
+        self.CBoxEspecie = ctk.CTkComboBox(self,variable=self.eleccionEspecie,values=['Canino', 'Felino'], state='disabled')
+        self.CBoxEspecie.place(x=520,y=88)
         
         self.Tabla = ctk.CTkFrame(self,width=640,height=210)
         self.Tabla.place(x=35,y=160)
-
-        #aqui va la tabla (por revisar)
-
+       
+        self.Cod = StringVar()
         ctk.CTkLabel(self,text='Código de Mascota').place(x=32,y=390)
-        self.textoCod = ctk.CTkEntry(self,width=120,height=30)
+        self.textoCod = ctk.CTkEntry(self,width=120,height=30,textvariable=self.Cod)
         self.textoCod.place(x=30,y=420)
-        self.botonIr = ctk.CTkButton(self,text='Ir a perfil',width=90,height=30,command=self.Reporte)
+        self.botonIr = ctk.CTkButton(self,text='Ir a perfil',width=90,height=30,command=self.aPerfil)
         self.botonIr.place(x=570,y=420)
-
-    def BuscarMascotas(self):
-        self.textoBuscar = self.espacioBuscar.get()
-        print(self.campoElegido,self.textoBuscar)
-        self.cursor.execute('exec BuscarMascota ?,? ',(self.campoElegido,self.textoBuscar))
-        resultados = self.cursor.fetchall()
-        for r in resultados:
-            print(r)
+        
+        self.atributos=[]
 
     def EleccionCampo(self):
         self.campoElegido = str(self.eleccionCampo.get())
+        if self.campoElegido == 'Especie':
+            self.espacioBuscar.delete(0,30)
+            self.espacioBuscar.configure(state='disabled')
+            self.CBoxEspecie.configure(state='normal')
+        else:
+            self.CBoxEspecie.set('')
+            self.espacioBuscar.configure(state='normal')
+            self.CBoxEspecie.configure(state='disabled')
 
+    def BuscarMascotas(self):
+        if self.campoElegido=='Especie':
+            self.textoBuscar = self.eleccionEspecie.get()
+        else:
+            self.textoBuscar = self.espacioBuscar.get()
+        
+        self.cursor.execute('exec BuscarMascota ?,? ',(self.campoElegido,self.textoBuscar))
+        resultados = self.cursor.fetchall()
+        print(' ')
+        for r in resultados:
+            print(r)
+    
     def Reporte(self):
         self.cursor.execute('exec ReporteAtendidos2 ?,? ',('2022-12-15','2023-01-01'))
         resultados = self.cursor.fetchall()
         for r in resultados:
-            print(r)  
-
-    def ElegirEspecie(self):
-        self.especieElegida = int(self.CBoxEspecie.get())
-        if self.especieElegida==1:
-            
-        if self.especieElegida==2:
-
-        
-    def MostarEspecies(self):
-        
+            print(r) 
     
     def aPrincipal(self):
         self.ancestro.cambioVentana(self, self.padre,1000,600,'Cute Pets - Veterinaria')
+
+    def aPerfil(self):
+        
+        self.cursor.execute('exec InfoMascota ?',str(self.Cod.get()))
+        info = self.cursor.fetchone()
+        for k in info:
+            self.atributos.append(k)
+        print(self.atributos)
+        
+        self.PerfilMascotaV = PerfilMascotaV(self,self.atributos)
+        self.atributos=[]
+        self.ancestro.cambioVentana(self, self.PerfilMascotaV,290,540, "Perfil")
+
+class PerfilMascotaV(ctk.CTkFrame):
+    def __init__(self, master:ModificarPageV, atributos):
+        super().__init__(master=master.padre.padre,width=290,height=540)
+        self.padre = master
+        self.atributos = atributos
+        print(self.atributos)
+        self.ancestro = self.padre.padre.padre
+        self.conexion = pyodbc.connect(
+                        f'DRIVER={{SQL Server}};SERVER={conexiones["mateo_vet"][1]};DATABASE=FinalVeterinaria;UID=mateo_vet;PWD=Passw0rd')
+        self.cursor = self.conexion.cursor()
+
+        ctk.CTkButton(self,text='Cerrar',command=self.aModificar).place(x=10,y=10)
+        ctk.CTkLabel(self,text='Código de').place(x=36,y=70)
+        ctk.CTkLabel(self,text='Mascota').place(x=41,y=92)
+        self.CodMuestra = ctk.CTkEntry(self,state='readonly',textvariable=self.padre.Cod,width=70,height=20)
+        self.CodMuestra.place(x=120,y=78)
+
+        ctk.CTkLabel(self,text='Datos Personales').place(x=105,y=150)
+    
+        ctk.CTkLabel(self,text='Alias').place(x=20,y=180)
+        self.aliasNuevo = ctk.CTkEntry(self,width=90,height=20)
+        self.aliasNuevo.place(x=18,y=205)
+        self.aliasNuevo.insert(0,self.atributos[0])
+
+        ctk.CTkLabel(self,text='Color de pelo').place(x=20,y=270)
+        self.peloNuevo = ctk.CTkComboBox(self,width=90,height=20)
+        self.peloNuevo.place(x=18,y=295)
+        self.peloNuevo.set(self.atributos[1])
+
+        ctk.CTkLabel(self,text='Raza').place(x=190,y=270)
+        self.razaNuevo = ctk.CTkComboBox(self,width=90,height=20)
+        self.razaNuevo.place(x=188,y=295)
+        self.razaNuevo.set(self.atributos[2])
+
+        ctk.CTkLabel(self,text='Tamaño').place(x=20,y=360)
+        self.sizeNuevo = ctk.CTkComboBox(self,width=90,height=20,values=['S','M','G'])
+        self.sizeNuevo.place(x=18,y=385)
+        self.sizeNuevo.set(self.atributos[3])
+
+        ctk.CTkLabel(self,text='Familia').place(x=190,y=360)
+        self.famNuevo = ctk.CTkEntry(self,width=90,height=20)
+        self.famNuevo.place(x=188,y=385)
+        self.famBuscarBoton = ctk.CTkButton(self,text='Ver familias',width=60,height=20)
+        self.famBuscarBoton.place(x=188,y=410)
+        self.famNuevo.insert(0,self.atributos[4])
+
+        self.guardarBoton = ctk.CTkButton(self,text='Guardar cambios')
+        self.guardarBoton.place(x=78,y=480)
+
+    def aModificar(self):
+        self.ancestro.cambioVentana(self, self.padre,700,480,'')
 
 class Tabla(ctk.CTkFrame):
     def __init__(self, master, ancho, alto):
