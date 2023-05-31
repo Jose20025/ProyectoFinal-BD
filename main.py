@@ -216,11 +216,11 @@ class ModificarPageV(ctk.CTkFrame):
         self.eleccion = StringVar()
         self.botonRadAlias = ctk.CTkRadioButton(self,text='Alias',variable=self.eleccion,value='Alias',command=self.EleccionCampo)
         self.botonRadAlias.place(x=220,y=90)
-        self.botonRadFam = ctk.CTkRadioButton(self,text='Familia',variable=self.eleccion,value='Familia',command=self.EleccionCampo)
+        self.botonRadFam = ctk.CTkRadioButton(self,text='Familia',variable=self.eleccion,value='Apellido',command=self.EleccionCampo)
         self.botonRadFam.place(x=315,y=90)
         self.botonRadRaza = ctk.CTkRadioButton(self,text='Raza',variable=self.eleccion,value='Raza',command=self.EleccionCampo)
         self.botonRadRaza.place(x=420,y=90)
-        self.CBoxRaza = ctk.CTkComboBox(self)
+        self.CBoxRaza = ctk.CTkComboBox(self,values=['', 'Hotel'], state='readonly')
         self.CBoxRaza.place(x=520,y=88)
         
         self.Tabla = ctk.CTkFrame(self,width=640,height=210)
@@ -231,22 +231,28 @@ class ModificarPageV(ctk.CTkFrame):
         ctk.CTkLabel(self,text='Código de Mascota').place(x=32,y=390)
         self.textoCod = ctk.CTkEntry(self,width=120,height=30)
         self.textoCod.place(x=30,y=420)
-        self.botonIr = ctk.CTkButton(self,text='Ir a perfil',width=90,height=30)
+        self.botonIr = ctk.CTkButton(self,text='Ir a perfil',width=90,height=30,command=self.Reporte)
         self.botonIr.place(x=570,y=420)
 
     def BuscarMascotas(self):
         self.textoBuscar = self.espacioBuscar.get()
         print(self.campoElegido,self.textoBuscar)
         self.cursor.execute('exec BuscarMascota ?,? ',(self.campoElegido,self.textoBuscar))
-        print(self.cursor.fetchall())
+        resultados = self.cursor.fetchall()
+        for r in resultados:
+            print(r)
+
+        
     
     def EleccionCampo(self):
         self.campoElegido = str(self.eleccion.get())
 
     def Reporte(self):
-
         self.cursor.execute('exec ReporteAtendidos2 ?,? ',('2022-12-15','2023-01-01'))
-        print(self.cursor.fetchall())    
+        resultados = self.cursor.fetchall()
+        for r in resultados:
+            print(r)  
+
 
     def aPrincipal(self):
         self.ancestro.cambioVentana(self, self.padre,1000,600,'Cute Pets - Veterinaria')
@@ -284,7 +290,7 @@ class Tabla(ctk.CTkFrame):
             else:
                 self.tabla.column(titulo, width=100, anchor=ctk.CENTER)
                 self.tabla.heading(titulo, text=titulo)
-
+    
         for mascota in mascotas:
             atributos = []
             for atributo in mascota:
