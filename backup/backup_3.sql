@@ -74,3 +74,28 @@ BEGIN
     ELSE   
         print 'Ya se ha realizado este Checkout'
 END
+
+select * from Servicios
+
+exec RegistrarMascota 'C0001','Gato-Test','Felino','Rara','Morado','2023-05-25','M'
+exec RegistrarMascota 'C0001','Gato-Test2','Felino','Rara','Verde','2023-05-25','M'
+select * from Mascotas
+
+exec RegistrarEstadia '2023-05-26','M0029','01',3
+
+exec RegistrarRequerimiento 'M0029','S01','2023-05-26',2,'01',2
+exec RegistrarRequerimiento 'M0029','S02','2023-05-26',17,'01',2 --aunque ponemos 17 cortes de uñas, el procedimiento registra solo 1
+exec RegistrarRequerimiento 'M0029','S03','2023-05-26',4,'01',2
+exec RegistrarRequerimiento 'M0029','S04','2023-05-26',285,'01',2 --aunque ponemos 285 alimentaciones especiales, se pone null la cantidad porque es un servicio especial y se cobra por dia
+exec RegistrarRequerimiento 'M0029','S05','2023-05-26',128,'01',2 -- igual con este
+exec RegistrarRequerimiento 'M0029','S06','2023-05-26',3,'01',2
+
+select * from Requerimientos
+
+select * from Estadias
+
+select * from Habitaciones -- solo la 1 estaria ocupada
+
+exec CheckOutHuesped '2023-05-26','2023-05-27','M0029','01'
+
+select * from Estadias
