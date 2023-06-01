@@ -161,7 +161,7 @@ BEGIN
 END
 GO;
 
-exec ModificarMascota 'M0047','Alias','Vegeta777',1
+exec ModificarMascota 'M0047','Color_pelo','Manchado',1
 commit
 
 select * from Mascotas

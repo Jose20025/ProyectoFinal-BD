@@ -157,11 +157,6 @@ class ModificarPageV(ttk.Frame):
         super().__init__(master=master.padre, width=700, height=480)
 
         self.padre = master
-        print(self.padre)
-        self.conexion = pyodbc.connect(
-            f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}')
-        self.cursor = self.conexion.cursor()
-
         ttk.Button(self, text='Volver',command=self.aPrincipal).place(x=10, y=10)
 
         ttk.Label(self, text='Buscar').place(x=26, y=60)
@@ -209,34 +204,32 @@ class ModificarPageV(ttk.Frame):
         else:
             self.textoBuscar = self.espacioBuscar.get()
 
-        self.cursor.execute('exec BuscarMascota ?,? ',(self.campoElegido, self.textoBuscar))
-        resultados = self.cursor.fetchall()
-        print(' ')
-        for r in resultados:
-            print(r)
-
-    def Reporte(self):
-        self.cursor.execute('exec ReporteAtendidos2 ?,? ',('2022-12-15', '2023-01-01'))
-        resultados = self.cursor.fetchall()
-        for r in resultados:
-            print(r)
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            cursor.execute('exec BuscarMascota ?,? ',(self.campoElegido, self.textoBuscar))
+            resultados = cursor.fetchall()
+            print(' ')
+            for r in resultados:
+                print(r)
 
     def aPrincipal(self):
         self.padre.padre.cambioVentana(self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
 
     def aPerfil(self):
-        print(self.Cod.get())
-        self.cursor.execute('exec InfoMascota ?', self.Cod.get())
-        print('despuecito')
-        info = self.cursor.fetchone()
-        for k in info:
-            self.atributos.append(k)
-        print(self.atributos)
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            print(self.Cod.get())
+            cursor.execute('exec InfoMascota ?', self.Cod.get())
+            print('despuecito')
+            info = cursor.fetchone()
+            for k in info:
+                self.atributos.append(k)
+            print(self.atributos)
 
-        self.PerfilMascotaV = PerfilMascotaV(self, self.atributos)
-        self.atributos = []
-        self.padre.padre.cambioVentana(
-            self, self.PerfilMascotaV, [410, 600], "Perfil")
+            self.PerfilMascotaV = PerfilMascotaV(self, self.atributos)
+            self.atributos = []
+            self.padre.padre.cambioVentana(
+                self, self.PerfilMascotaV, [410, 600], "Perfil")
 
 
 class PerfilMascotaV(ttk.Frame):
@@ -246,9 +239,6 @@ class PerfilMascotaV(ttk.Frame):
         self.atributos = atributos
         print(self.atributos)
         self.ancestro = self.padre.padre.padre
-        self.conexion = pyodbc.connect(
-            f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}')
-        self.cursor = self.conexion.cursor()
 
         ttk.Button(self, text='Cerrar',command=self.aAnterior).place(x=10, y=10)
         ttk.Label(self, text='Código de').place(x=36, y=70)
@@ -314,35 +304,43 @@ class PerfilMascotaV(ttk.Frame):
         self.destroy()
 
     def ModificarMascota(self):
-        respuesta = askquestion('Confirmación','¿Desea guardar los cambios?')
-        if respuesta=='yes':
-            print('se guardaron los cambios')
-            
-            if self.aliasNuevo.get() != self.atributos[0]:
-                print('distinto alias')
-                self.cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Alias',self.aliasNuevo.get(),0))
-                self.conexion.commit()
-                print(self.cursor.execute(f"select * from Mascotas where CodMascota = '{self.atributos[7]}' "))
-                print(self.cursor.fetchone())
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            respuesta = askquestion('Confirmación','¿Desea guardar los cambios?')
+            if respuesta=='yes':
+                print('se guardaron los cambios')
                 
-            if self.peloNuevo.get() != self.atributos[1]:
-                print('distinto color de pelo')
-                self.cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Color_pelo',self.peloNuevo.get(),0))
+                if self.aliasNuevo.get() != self.atributos[0]:
+                    print('distinto alias')
+                    cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Alias',self.aliasNuevo.get(),0))
+                    cursor.commit()
+                    
+                if self.peloNuevo.get() != self.atributos[1]:
+                    print('distinto color de pelo')
+                    print(self.peloNuevo.get())
+                    cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Color_pelo',self.peloNuevo.get(),0))
+                    cursor.commit()
+                    
+                if self.sizeNuevo.get() != self.atributos[3]:
+                    print('distinto tamaño')
+                    cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Tamaño',self.sizeNuevo.get(),0))
+                    cursor.commit()
 
-            if self.sizeNuevo.get() != self.atributos[3]:
-                print('distinto tamaño')
-                self.cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Tamaño',self.peloNuevo.get(),0))
+                if self.razaNuevo.get() != self.atributos[2]:
+                    print('distinta raza')
+                    cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Raza',self.razaNuevo.get(),0))
+                    cursor.commit()
 
-            if self.razaNuevo.get() != self.atributos[2]:
-                print('distinta raza')
-                self.cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Raza',self.peloNuevo.get(),0))
-
-            if self.IdCliente.get() != self.atributos[5]:
-                print('asociado a nuevo cliente')
-                self.cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'IdCliente',self.peloNuevo.get(),0))
-        else:
-            print('que maricon')
-       
+                if self.IdCliente.get() != self.atributos[5]:
+                    print('asociado a nuevo cliente')
+                    cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'IdCliente',self.IdCliente.get(),0))
+                    cursor.commit()
+            else:
+                print('que maricon')
+            conexion.commit()
+            cursor.execute(f"select * from Mascotas where CodMascota = '{self.atributos[7]}' ")
+            print(cursor.fetchone())
+            cursor.close()
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
               'nangui': ['soychurro', 'BrunoPC'],
