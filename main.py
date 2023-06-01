@@ -1,10 +1,11 @@
 from tkinter import ttk
-from tkinter.messagebox import showerror, showwarning, showinfo
+from tkinter.messagebox import showerror, showwarning, showinfo,askquestion 
 import tkinter as tk
 import pyodbc
 from PIL import ImageTk, Image
+import ctypes
 
-
+ctypes.windll.shcore.SetProcessDpiAwareness(2)
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -47,7 +48,7 @@ class LoginPage(ttk.Frame):
         self.padre = master
 
         self.userFrame = ttk.Frame(
-            self, width=400, height=230, style='Card.TFrame')
+            self, width=400, height=245, style='Card.TFrame')
 
         self.imagen = ImageTk.PhotoImage(Image.open(
             './image/logo-transparente.png').resize((400, 370)))
@@ -57,18 +58,18 @@ class LoginPage(ttk.Frame):
 
         ttk.Label(self.userFrame, text='Username').place(x=40, y=20)
 
-        self.username = ttk.Entry(self.userFrame, width=46)
+        self.username = ttk.Entry(self.userFrame, width=36)
         self.username.place(x=30, y=45)
 
         ttk.Label(self.userFrame, text='Password').place(x=40, y=100)
 
-        self.password = ttk.Entry(self.userFrame, width=46, show='*')
+        self.password = ttk.Entry(self.userFrame, width=36, show='*')
         self.password.place(x=30, y=125)
         self.password.bind('<Return>', self.login)
 
         self.loginBoton = ttk.Button(
             self.userFrame, text='Login', style='Accent.TButton', command=self.login)
-        self.loginBoton.place(x=275, y=180)
+        self.loginBoton.place(x=260, y=180)
 
         self.lugarCBox = ttk.Combobox(self.userFrame, values=[
                                       'Veterinaria', 'Hotel'], state='readonly')
@@ -161,41 +162,31 @@ class ModificarPageV(ttk.Frame):
             f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}')
         self.cursor = self.conexion.cursor()
 
-        ttk.Button(self, text='Volver',
-                   command=self.aPrincipal).place(x=10, y=10)
+        ttk.Button(self, text='Volver',command=self.aPrincipal).place(x=10, y=10)
 
-        ttk.Label(self, text='Buscar').place(x=30, y=60)
-        self.espacioBuscar = ttk.Entry(self, width=150)
-        self.espacioBuscar.place(x=30, y=90)
-        self.botonBuscar = ttk.Button(
-            self, width=80, text='Buscar', command=self.BuscarMascotas)
-        self.botonBuscar.place(x=95, y=118)
+        ttk.Label(self, text='Buscar').place(x=26, y=60)
+        self.espacioBuscar = ttk.Entry(self, width=16)
+        self.espacioBuscar.place(x=28, y=90)
+        self.botonBuscar = ttk.Button(self, width=8, text='Buscar', command=self.BuscarMascotas)
+        self.botonBuscar.place(x=90, y=135)
 
-        self.eleccionCampo = ''
-        self.botonRadAlias = ttk.Radiobutton(
-            self, text='Alias', variable=self.eleccionCampo, value='Alias', command=self.EleccionCampo)
-        self.botonRadAlias.place(x=220, y=90)
-        self.botonRadFam = ttk.Radiobutton(
-            self, text='Familia', variable=self.eleccionCampo, value='Apellido', command=self.EleccionCampo)
-        self.botonRadFam.place(x=310, y=90)
-        self.botonRadEspecie = ttk.Radiobutton(
-            self, text='Especie', variable=self.eleccionCampo, value='Especie', command=self.EleccionCampo)
-        self.botonRadEspecie.place(x=410, y=90)
+        self.eleccionCampo = tk.StringVar()
+        self.botonRadAlias = ttk.Radiobutton(self, text='Alias', variable=self.eleccionCampo, value='Alias', command=self.EleccionCampo)
+        self.botonRadAlias.place(x=205, y=90)
+        self.botonRadFam = ttk.Radiobutton(self, text='Familia', variable=self.eleccionCampo, value='Apellido', command=self.EleccionCampo)
+        self.botonRadFam.place(x=300, y=90)
+        self.botonRadEspecie = ttk.Radiobutton(self, text='Especie', variable=self.eleccionCampo, value='Especie', command=self.EleccionCampo)
+        self.botonRadEspecie.place(x=405, y=90)
 
-        self.eleccionEspecie = ''
-        self.CBoxEspecie = ttk.Combobox(
-            self, values=['Canino', 'Felino'], state='disabled')
+        self.eleccionEspecie = tk.StringVar()
+        self.CBoxEspecie = ttk.Combobox(self, values=['Canino', 'Felino'], state='disabled',width=12)
         self.CBoxEspecie.place(x=520, y=88)
 
-        self.Tabla = ttk.Frame(self, width=640, height=210)
-        self.Tabla.place(x=35, y=160)
-
-        self.Cod = ''
+        self.Cod = tk.StringVar()
         ttk.Label(self, text='Código de Mascota').place(x=32, y=390)
-        self.textoCod = ttk.Entry(self, width=120, textvariable=self.Cod)
+        self.textoCod = ttk.Entry(self, width=12, textvariable=self.Cod)
         self.textoCod.place(x=30, y=420)
-        self.botonIr = ttk.Button(
-            self, text='Ir a perfil', width=90, command=self.aPerfil)
+        self.botonIr = ttk.Button(self, text='Ir a perfil', width=10, command=self.aPerfil)
         self.botonIr.place(x=570, y=420)
 
         self.atributos = []
@@ -212,28 +203,27 @@ class ModificarPageV(ttk.Frame):
             self.CBoxEspecie.configure(state='disabled')
 
     def BuscarMascotas(self):
+        print(self.campoElegido)
         if self.campoElegido == 'Especie':
-            self.textoBuscar = self.eleccionEspecie.get()
+            self.textoBuscar = self.CBoxEspecie.get()
+            print(self.textoBuscar)
         else:
             self.textoBuscar = self.espacioBuscar.get()
 
-        self.cursor.execute('exec BuscarMascota ?,? ',
-                            (self.campoElegido, self.textoBuscar))
+        self.cursor.execute('exec BuscarMascota ?,? ',(self.campoElegido, self.textoBuscar))
         resultados = self.cursor.fetchall()
         print(' ')
         for r in resultados:
             print(r)
 
     def Reporte(self):
-        self.cursor.execute('exec ReporteAtendidos2 ?,? ',
-                            ('2022-12-15', '2023-01-01'))
+        self.cursor.execute('exec ReporteAtendidos2 ?,? ',('2022-12-15', '2023-01-01'))
         resultados = self.cursor.fetchall()
         for r in resultados:
             print(r)
 
     def aPrincipal(self):
-        self.padre.padre.cambioVentana(
-            self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+        self.padre.padre.cambioVentana(self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
 
     def aPerfil(self):
 
@@ -246,12 +236,12 @@ class ModificarPageV(ttk.Frame):
         self.PerfilMascotaV = PerfilMascotaV(self, self.atributos)
         self.atributos = []
         self.padre.padre.cambioVentana(
-            self, self.PerfilMascotaV, [290, 540], "Perfil")
+            self, self.PerfilMascotaV, [410, 600], "Perfil")
 
 
 class PerfilMascotaV(ttk.Frame):
     def __init__(self, master: ModificarPageV, atributos):
-        super().__init__(master=master.padre.padre, width=290, height=540)
+        super().__init__(master=master.padre.padre, width=410, height=600)
         self.padre = master
         self.atributos = atributos
         print(self.atributos)
@@ -260,90 +250,88 @@ class PerfilMascotaV(ttk.Frame):
             f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}')
         self.cursor = self.conexion.cursor()
 
-        ttk.Button(self, text='Cerrar',
-                   command=self.aModificar).place(x=10, y=10)
+        ttk.Button(self, text='Cerrar',command=self.aModificar).place(x=10, y=10)
         ttk.Label(self, text='Código de').place(x=36, y=70)
         ttk.Label(self, text='Mascota').place(x=41, y=92)
-        self.CodMuestra = ttk.Entry(
-            self, state='readonly', textvariable=self.padre.Cod, width=70)
-        self.CodMuestra.place(x=120, y=78)
+        self.CodMuestra = ttk.Entry(self, state='readonly', textvariable=self.padre.Cod, width=10)
+        self.CodMuestra.place(x=130, y=78)
 
-        ttk.Label(self, text='Datos Personales').place(x=105, y=150)
+        ttk.Label(self, text='Datos Personales',background='#7ce6dd',foreground='#000000',anchor='center').place(x=130, y=150)
 
-        ttk.Label(self, text='Alias').place(x=20, y=180)
-        self.aliasNuevo = ttk.Entry(self, width=90)
-        self.aliasNuevo.place(x=18, y=205)
+        ttk.Label(self, text='Alias').place(x=20, y=190)
+        self.aliasNuevo = ttk.Entry(self, width=15)
+        self.aliasNuevo.place(x=18, y=215)
         self.aliasNuevo.insert(0, self.atributos[0])
 
-        self.pelo = ''
+        self.pelo = tk.StringVar()
         self.colores = {
             'Felino': ['Negro', 'Blanco', 'Gris', 'Naranja', 'Cafe', 'Manchado'],
             'Canino': ['Negro', 'Blanco', 'Gris', 'Dorado', 'Cafe', 'Manchado']
         }
-        ttk.Label(self, text='Color de pelo').place(x=20, y=270)
-        self.peloNuevo = ttk.Combobox(self, width=90, height=20, variable=self.pelo,
-                                      values=self.colores[self.atributos[6]], state='readonly')
-        self.peloNuevo.place(x=18, y=295)
+        ttk.Label(self, text='Color de pelo').place(x=20, y=280)
+        self.peloNuevo = ttk.Combobox(self, width=15, height=20, textvariable=self.pelo,values=self.colores[self.atributos[6]], state='readonly')
+        self.peloNuevo.place(x=18, y=305)
         self.peloNuevo.set(self.atributos[1])
 
-        self.size = ''
-        ttk.Label(self, text='Tamaño').place(x=20, y=360)
-        self.sizeNuevo = ttk.Combobox(self, width=90, height=20, values=[
-                                      'S', 'M', 'G'], variable=self.size, state='readonly')
-        self.sizeNuevo.place(x=18, y=385)
+        self.size = tk.StringVar()
+        ttk.Label(self, text='Tamaño').place(x=20, y=370)
+        self.sizeNuevo = ttk.Combobox(self, width=15, height=20, values=['S', 'M', 'G'],textvariable=self.size,state='readonly')
+        self.sizeNuevo.place(x=18, y=395)
         self.sizeNuevo.set(self.atributos[3])
 
-        self.raza = ''
+        self.raza = tk.StringVar()
         self.razas = {
             'Felino': ['Siames', 'Siberiano', 'Mestizo', 'Bengali', 'Yoda', 'Birmano', 'Persa', 'Azul ruso'],
             'Canino': ['Labrador', 'Pastor Aleman', 'Caniche', 'Cocker', 'Chihuahua', 'Bulldog', 'Yorkshire', 'Pastor Ingles', 'Pincher']
         }
-        ttk.Label(self, text='Raza').place(x=170, y=180)
-        self.razaNuevo = ttk.Combobox(
-            self, width=90, height=20, variable=self.raza, values=self.razas[self.atributos[6]], state='readonly')
-        self.razaNuevo.place(x=168, y=205)
+        ttk.Label(self, text='Raza').place(x=230, y=190)
+        self.razaNuevo = ttk.Combobox(self, width=15, height=20, textvariable=self.raza, values=self.razas[self.atributos[6]], state='readonly')
+        self.razaNuevo.place(x=230, y=215)
         self.razaNuevo.set(self.atributos[2])
 
-        self.aux = ''
+        self.aux = tk.StringVar()
         self.aux.set(self.atributos[4])
-        ttk.Label(self, text='Familia').place(x=170, y=270)
-        self.famNuevo = ttk.Entry(
-            self, width=90, state='readonly', textvariable=self.aux)
-        self.famNuevo.place(x=168, y=295)
+        ttk.Label(self, text='Familia').place(x=230, y=280)
+        self.famNuevo = ttk.Entry(self, width=15, state='readonly', textvariable=self.aux)
+        self.famNuevo.place(x=230, y=305)
 
-        ttk.Label(self, text='Codigo Familia').place(x=170, y=325)
-        self.IdCliente = ttk.Entry(self, width=90)
-        self.IdCliente.place(x=168, y=350)
+        ttk.Label(self, text='Codigo Familia').place(x=230, y=370)
+        self.IdCliente = ttk.Entry(self, width=15)
+        self.IdCliente.place(x=230, y=395)
         self.IdCliente.insert(0, self.atributos[5])
 
-        self.famBuscarBoton = ttk.Button(self, text='Ver familias', width=60)
-        self.famBuscarBoton.place(x=170, y=390)
+        self.famBuscarBoton = ttk.Button(self, text='Ver familias', width=12)
+        self.famBuscarBoton.place(x=230, y=440)
 
-        self.guardarBoton = ttk.Button(
-            self, text='Guardar cambios', command=self.ModificarMascota)
-        self.guardarBoton.place(x=78, y=480)
+        self.guardarBoton = ttk.Button(self, text='Guardar cambios', command=self.ModificarMascota)
+        self.guardarBoton.place(x=230, y=530)
 
     def aModificar(self):
-        self.ancestro.cambioVentana(
-            self, self.padre, 700, 480, 'Modificar Mascota')
+        self.ancestro.cambioVentana(self, self.padre, [700, 480], 'Modificar Mascota')
 
     def ModificarMascota(self):
-        self.comprobando = []
-        if self.aliasNuevo.get() != self.atributos[0]:
-            print('distinto alias')
-            self.comprobando.append('exec ')
-        if self.peloNuevo.get() != self.atributos[1]:
-            print('distinto color de pelo')
+        respuesta = askquestion('Confirmación','¿Desea guardar los cambios?')
+        if respuesta=='yes':
+            print('se guardaron los cambios')
+            
+            if self.aliasNuevo.get() != self.atributos[0]:
+                print('distinto alias')
+                self.cursor.execute('exec ModificarMascota ?,?,?'(''))
+            
+            if self.peloNuevo.get() != self.atributos[1]:
+                print('distinto color de pelo')
 
-        if self.sizeNuevo.get() != self.atributos[3]:
-            print('distinto tamaño')
+            if self.sizeNuevo.get() != self.atributos[3]:
+                print('distinto tamaño')
 
-        if self.razaNuevo.get() != self.atributos[2]:
-            print('distinta raza')
+            if self.razaNuevo.get() != self.atributos[2]:
+                print('distinta raza')
 
-        if self.IdCliente.get() != self.atributos[5]:
-            print('asociado a nuevo cliente')
-
+            if self.IdCliente.get() != self.atributos[5]:
+                print('asociado a nuevo cliente')
+        else:
+            print('que maricon')
+       
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
               'nangui': ['soychurro', 'BrunoPC'],
