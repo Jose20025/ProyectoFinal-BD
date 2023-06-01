@@ -269,10 +269,10 @@ class InsertarPageV(ttk.Frame):
                     showwarning(title='Error en campos',
                                 message='Todos los campos tienen que estar llenados')
             else:
-                showerror(self, title='Error en la fecha',
+                showerror(title='Error en la fecha',
                           message='Error en el formato de la fecha')
         else:
-            showwarning(self, title='Error en campos',
+            showwarning(title='Error en campos',
                         message='Todos los campos tienen que estar llenados')
 
     def verificarFecha(self, fecha):
