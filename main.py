@@ -94,7 +94,6 @@ class LoginPage(ttk.Frame):
                 else:
                     user.set(self.user)
                     password.set(self.passwd)
-                    print(user.get())
                     self.eleccion(self.lugarCBox.get())
             else:
                 showerror(title='Error en la conexion',
