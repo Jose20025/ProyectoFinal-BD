@@ -1,11 +1,13 @@
-from datetime import datetime
-from models.cliente import Cliente
-from tkinter import ttk
-from tkinter.messagebox import showerror, showwarning, showinfo, askquestion
-import tkinter as tk
-import pyodbc
-from PIL import ImageTk, Image
 import ctypes
+import tkinter as tk
+from datetime import datetime
+from tkinter import ttk
+from tkinter.messagebox import askquestion, showerror, showinfo, showwarning
+
+import pyodbc
+from PIL import Image, ImageTk
+
+from models.cliente import Cliente
 
 
 class App(tk.Tk):
@@ -236,17 +238,13 @@ class InsertarPageV(ttk.Frame):
             if respuesta == 'yes':
                 self.padre.padre.cambioVentana(
                     self, self.padre, [1000, 600], 'Veterinaria - Cute Pets')
-
-                self.alias.delete(0, tk.END)
-                self.sizeCBox.set('')
-                self.colorCBox.set('')
-                self.razaCBox.set('')
-                self.fechaNac.delete(0, tk.END)
+                self.destroy()
             else:
                 return
         else:
             self.padre.padre.cambioVentana(
                 self, self.padre, 1000, 600, 'Veterinaria - Cute Pets')
+            self.destroy()
 
     def confirmar(self):
         fecha = self.fechaNac.get()
@@ -322,43 +320,52 @@ class EleccionCliente(ttk.Frame):
                    command=self.existente, style='Accent.TButton').place(x=20, y=140)
 
         ttk.Button(self, text='Nuevo Cliente', width=15,
-                   style='Accent.TButton').place(x=225, y=140)
+                   style='Accent.TButton', command=self.nuevo).place(x=225, y=140)
 
     def existente(self):
         self.clienteExistentePage = ClienteExistentePage(
             self.padre, self.mascota)
         self.padre.padre.cambioVentana(
-            self, self.clienteExistentePage, [300, 200], 'Cliente Existente')
+            self, self.clienteExistentePage, [300, 300], 'Cliente Existente')
 
-    # TODO
     def nuevo(self):
-        pass
+        self.clienteNuevoPage = NuevoClientePage(self.padre, self.mascota)
+        self.padre.padre.cambioVentana(
+            self, self.clienteNuevoPage, [400, 450], 'Nuevo Cliente')
 
 
 class ClienteExistentePage(ttk.Frame):
     def __init__(self, master: VeterinariaPage, mascota):
-        super().__init__(master=master.padre, width=300, height=200)
+        super().__init__(master=master.padre, width=300, height=300)
 
         self.padre = master
         self.mascota = mascota
         self.cliente = None
 
-        ttk.Label(self, text='Familia a buscar').place(x=20, y=10)
+        ttk.Button(self, width=10, text='Cancelar',
+                   command=self.cancelar).place(x=10, y=10)
 
-        self.label = ttk.Label(self, text='').place(x=80, y=100)
+        ttk.Label(self, text='Familia a buscar').place(x=20, y=70)
+
+        self.label = ttk.Label(self, text='').place(x=80, y=120)
 
         self.familia = ttk.Entry(self, width=25)
-        self.familia.place(x=20, y=40)
+        self.familia.place(x=20, y=100)
 
         ttk.Button(self, text='Buscar', width=6,
-                   command=self.buscar).place(x=180, y=85)
+                   command=self.buscar).place(x=180, y=145)
 
         ttk.Button(self, text='Ver Familias', width=10,
-                   command=self.verFamilias).place(x=20, y=85)
+                   command=self.verFamilias).place(x=20, y=145)
 
         self.aceptarBoton = ttk.Button(
             self, text='Aceptar', state='disabled', command=self.aceptar)
-        self.aceptarBoton.place(x=175, y=150)
+        self.aceptarBoton.place(x=175, y=250)
+
+    def cancelar(self):
+        self.padre.padre.cambioVentana(
+            self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+        self.destroy()
 
     def verFamilias(self):
         popup = tk.Toplevel(self, width=500, height=500)
@@ -457,6 +464,44 @@ class ClienteExistentePage(ttk.Frame):
                 cursor.rollback()
                 showerror(title='Error',
                           message='Ha ocurrido un error al agregar la mascota')
+
+
+class NuevoClientePage(ttk.Frame):
+    def __init__(self, master: VeterinariaPage = None, mascota: list = None):
+        super().__init__(master.padre, height=450, width=400)
+
+        self.mascota = mascota
+        self.padre = master
+
+        ttk.Button(self, text='Cancelar', command=self.cancelar,
+                   width=8).place(x=10, y=10)
+
+        ttk.Label(self, text='Apellido').place(x=20, y=90)
+        self.apellido = ttk.Entry(self, width=38).place(x=20, y=120)
+
+        ttk.Label(self, text='Numero de Cuenta').place(x=20, y=180)
+        self.nrocuenta = ttk.Entry(self, width=18).place(x=20, y=210)
+
+        ttk.Label(self, text='Telefono').place(x=215, y=180)
+        self.telefono = ttk.Entry(self, width=16).place(x=215, y=210)
+
+        ttk.Label(self, text='Direccion').place(x=20, y=270)
+        self.direccion = ttk.Entry(self, width=38).place(x=20, y=300)
+
+        ttk.Button(self, text='Aceptar',
+                   command=self.aceptar).place(x=275, y=400)
+
+    def cancelar(self):
+        respuesta = askquestion(title='Confirmacion',
+                                message='¿Estas seguro de salir?')
+
+        if respuesta == 'yes':
+            self.padre.padre.cambioVentana(
+                self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+            self.destroy()
+
+    def aceptar(self):
+        pass
 
 
 if __name__ == '__main__':
