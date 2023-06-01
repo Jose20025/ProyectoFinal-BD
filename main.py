@@ -510,7 +510,15 @@ class NuevoClientePage(ttk.Frame):
         telefono = self.telefono.get()
         direccion = self.direccion.get()
 
-        atributos = [apellido, nrocuenta, direccion, telefono]
+        try:
+            nrocuenta = int(nrocuenta)
+            telefono = int(telefono)
+        except Exception:
+            showwarning(title='Error',
+                        message='Uno de los datos esta en mal formato')
+            return
+
+        atributos = [apellido, nrocuenta, direccion, telefono, 0]
 
         if any(elemento == '' for elemento in atributos):
             showwarning(title='Error',
@@ -521,12 +529,11 @@ class NuevoClientePage(ttk.Frame):
                 f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
 
-            cursor.execute('exec RegistrarCliente ?,?,?,?', atributos)
+            cursor.execute('exec RegistrarCliente ?,?,?,?,?', atributos)
 
-            info = cursor.fetchone()
+            info = cursor.fetchall()
 
-            idcliente = info[0]
-            print(idcliente)
+            print(info)
 
 
 if __name__ == '__main__':
