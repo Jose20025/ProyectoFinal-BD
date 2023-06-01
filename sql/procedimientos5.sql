@@ -38,3 +38,6 @@ select * from Mascotas
 
 GO
 
+select Alias,Color_pelo,Raza,Tamaño,Apellido,Clientes.IdCliente,Especie,CodMascota from Mascotas
+inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente
+where CodMascota = @CodMascota

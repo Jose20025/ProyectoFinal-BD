@@ -188,7 +188,6 @@ class ModificarPageV(ttk.Frame):
         self.textoCod.place(x=30, y=420)
         self.botonIr = ttk.Button(self, text='Ir a perfil', width=10, command=self.aPerfil)
         self.botonIr.place(x=570, y=420)
-
         self.atributos = []
 
     def EleccionCampo(self):
@@ -226,8 +225,9 @@ class ModificarPageV(ttk.Frame):
         self.padre.padre.cambioVentana(self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
 
     def aPerfil(self):
-
-        self.cursor.execute('exec InfoMascota ?', str(self.Cod.get()))
+        print(self.Cod.get())
+        self.cursor.execute('exec InfoMascota ?', self.Cod.get())
+        print('despuecito')
         info = self.cursor.fetchone()
         for k in info:
             self.atributos.append(k)
@@ -250,7 +250,7 @@ class PerfilMascotaV(ttk.Frame):
             f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}')
         self.cursor = self.conexion.cursor()
 
-        ttk.Button(self, text='Cerrar',command=self.aModificar).place(x=10, y=10)
+        ttk.Button(self, text='Cerrar',command=self.aAnterior).place(x=10, y=10)
         ttk.Label(self, text='Código de').place(x=36, y=70)
         ttk.Label(self, text='Mascota').place(x=41, y=92)
         self.CodMuestra = ttk.Entry(self, state='readonly', textvariable=self.padre.Cod, width=10)
@@ -306,8 +306,12 @@ class PerfilMascotaV(ttk.Frame):
         self.guardarBoton = ttk.Button(self, text='Guardar cambios', command=self.ModificarMascota)
         self.guardarBoton.place(x=230, y=530)
 
-    def aModificar(self):
+    def aAnterior(self):
+        self.atributos = []
+        self.padre.atributos = []
+        self.padre.textoCod.delete(0,tk.END)
         self.ancestro.cambioVentana(self, self.padre, [700, 480], 'Modificar Mascota')
+        self.destroy()
 
     def ModificarMascota(self):
         respuesta = askquestion('Confirmación','¿Desea guardar los cambios?')
@@ -316,23 +320,26 @@ class PerfilMascotaV(ttk.Frame):
             
             if self.aliasNuevo.get() != self.atributos[0]:
                 print('distinto alias')
-                self.cursor.execute('exec ModificarMascota ?,?,?'(self.atributos[7],'Alias',self.aliasNuevo.get()))
-            
+                self.cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Alias',self.aliasNuevo.get(),0))
+                self.conexion.commit()
+                print(self.cursor.execute(f"select * from Mascotas where CodMascota = '{self.atributos[7]}' "))
+                print(self.cursor.fetchone())
+                
             if self.peloNuevo.get() != self.atributos[1]:
                 print('distinto color de pelo')
-                self.cursor.execute('exec ModificarMascota ?,?,?'(self.atributos[7],'Color_pelo',self.peloNuevo.get()))
+                self.cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Color_pelo',self.peloNuevo.get(),0))
 
             if self.sizeNuevo.get() != self.atributos[3]:
                 print('distinto tamaño')
-                self.cursor.execute('exec ModificarMascota ?,?,?'(self.atributos[7],'Tamaño',self.peloNuevo.get()))
+                self.cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Tamaño',self.peloNuevo.get(),0))
 
             if self.razaNuevo.get() != self.atributos[2]:
                 print('distinta raza')
-                self.cursor.execute('exec ModificarMascota ?,?,?'(self.atributos[7],'Raza',self.peloNuevo.get()))
+                self.cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'Raza',self.peloNuevo.get(),0))
 
             if self.IdCliente.get() != self.atributos[5]:
                 print('asociado a nuevo cliente')
-                self.cursor.execute('exec ModificarMascota ?,?,?'(self.atributos[7],'IdCliente',self.peloNuevo.get()))
+                self.cursor.execute('exec ModificarMascota ?,?,?,?',(self.atributos[7],'IdCliente',self.peloNuevo.get(),0))
         else:
             print('que maricon')
        

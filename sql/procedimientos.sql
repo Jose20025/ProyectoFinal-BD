@@ -148,7 +148,7 @@ BEGIN
     declare @SQL NVARCHAR(MAX)
     set @SQL = N'UPDATE Mascotas set '+ QUOTENAME(@Campo)+' = @NuevoValor WHERE CodMascota = @CodMascota'
     exec sp_executesql @SQL, N'@CodMascota char(5), @NuevoValor varchar(20)',@CodMascota,@NuevoValor
-    if exists (select 1 from Mascotas where CodMascota=@CodMascota and (Color_pelo=@NuevoValor or Alias=@NuevoValor or Raza=@NuevoValor))
+    if exists (select 1 from Mascotas where CodMascota=@CodMascota and (Color_pelo=@NuevoValor or Alias=@NuevoValor or Raza=@NuevoValor or IdCliente=@NuevoValor or Tamaño=@NuevoValor))
         BEGIN
         set @Check = 1
         SELECT @Check
@@ -160,6 +160,11 @@ BEGIN
         END
 END
 GO;
+
+exec ModificarMascota 'M0047','Alias','Vegeta777',1
+commit
+
+select * from Mascotas
 
 --Eliminacion de mascota
 create procedure EliminarMascota
