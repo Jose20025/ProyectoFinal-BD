@@ -212,6 +212,8 @@ class InsertarPageV(ttk.Frame):
         self.sizeCBox.set('')
         self.sizeCBox.place(x=50, y=255)
 
+        ttk.Label(self, text='Fecha (yyyy-mm-dd)').place(x=160, y=230)
+
         self.fechaNac = ttk.Entry(self, width=15, state='disabled')
         self.fechaNac.place(x=160, y=255)
 
@@ -351,11 +353,53 @@ class ClienteExistentePage(ttk.Frame):
         ttk.Button(self, text='Buscar', width=6,
                    command=self.buscar).place(x=220, y=40)
 
-        ttk.Button(self, text='Ver Familias', width=10).place(x=20, y=80)
+        ttk.Button(self, text='Ver Familias', width=10,
+                   command=self.verFamilias).place(x=20, y=80)
 
         self.aceptarBoton = ttk.Button(
             self, text='Aceptar', state='disabled', command=self.aceptar)
         self.aceptarBoton.place(x=190, y=150)
+
+    def verFamilias(self):
+        popup = tk.Toplevel(self, width=500, height=500)
+        popup.title('Familias')
+
+        familiasFrame = ttk.Frame(popup, width=500, height=500)
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute('select Apellido, IdCliente from Clientes')
+
+            titulos = []
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            clientes = cursor.fetchall()
+
+            cursor.close()
+
+        tabla = ttk.Treeview(familiasFrame, height=20, columns=titulos[1:])
+
+        for i, titulo in enumerate(titulos):
+            if i == 0:
+                tabla.column('#0', width=100, anchor=tk.CENTER)
+                tabla.heading('#0', text=titulo, anchor=tk.CENTER)
+            else:
+                tabla.column(titulo, width=100, anchor=tk.CENTER)
+                tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+        for cliente in clientes:
+            atributos = []
+            for atributo in cliente:
+                atributos.append(atributo)
+
+            tabla.insert('', tk.END, text=atributos[0], values=atributos[1:])
+
+        tabla.pack()
+
+        familiasFrame.pack()
 
     def buscar(self):
         familia = self.familia.get()
