@@ -109,11 +109,11 @@ class LoginPage(ttk.Frame):
 
     def eleccion(self, lugar):
         if lugar == 'Veterinaria':
-            self.padre.veterinaria = VeterinariaPage()
+            self.padre.veterinaria = VeterinariaPage(self.padre)
             self.padre.cambioVentana(
                 self, self.padre.veterinaria, [1000, 600], 'Cute Pets - Veterinaria')
         else:
-            self.padre.hotel = HotelPage()
+            self.padre.hotel = HotelPage(self.padre)
             self.padre.cambioVentana(
                 self, self.padre.hotel, [1000, 600], 'Cute Pets - Hotel')
 
