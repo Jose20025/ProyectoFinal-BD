@@ -215,6 +215,9 @@ class InsertarPageV(ttk.Frame):
         self.fechaNac = ttk.Entry(self, width=15, state='disabled')
         self.fechaNac.place(x=160, y=255)
 
+        ttk.Button(self, text='Aceptar', style='Accent.TButton',
+                   command=self.confirmar).place(x=190, y=350)
+
     def volverAtras(self):
         alias = self.alias.get()
         size = self.sizeCBox.get()
@@ -323,7 +326,11 @@ class EleccionCliente(ttk.Frame):
         self.clienteExistentePage = ClienteExistentePage(
             self.padre, self.mascota)
         self.padre.padre.cambioVentana(
-            self, self.clienteExistentePage, 300, 200, 'Cliente Existente')
+            self, self.clienteExistentePage, [300, 200], 'Cliente Existente')
+
+    # TODO
+    def nuevo(self):
+        pass
 
 
 class ClienteExistentePage(ttk.Frame):
