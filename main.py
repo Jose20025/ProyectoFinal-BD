@@ -316,19 +316,23 @@ class PerfilMascotaV(ttk.Frame):
             
             if self.aliasNuevo.get() != self.atributos[0]:
                 print('distinto alias')
-                self.cursor.execute('exec ModificarMascota ?,?,?'(''))
+                self.cursor.execute('exec ModificarMascota ?,?,?'(self.atributos[7],'Alias',self.aliasNuevo.get()))
             
             if self.peloNuevo.get() != self.atributos[1]:
                 print('distinto color de pelo')
+                self.cursor.execute('exec ModificarMascota ?,?,?'(self.atributos[7],'Color_pelo',self.peloNuevo.get()))
 
             if self.sizeNuevo.get() != self.atributos[3]:
                 print('distinto tamaño')
+                self.cursor.execute('exec ModificarMascota ?,?,?'(self.atributos[7],'Tamaño',self.peloNuevo.get()))
 
             if self.razaNuevo.get() != self.atributos[2]:
                 print('distinta raza')
+                self.cursor.execute('exec ModificarMascota ?,?,?'(self.atributos[7],'Raza',self.peloNuevo.get()))
 
             if self.IdCliente.get() != self.atributos[5]:
                 print('asociado a nuevo cliente')
+                self.cursor.execute('exec ModificarMascota ?,?,?'(self.atributos[7],'IdCliente',self.peloNuevo.get()))
         else:
             print('que maricon')
        

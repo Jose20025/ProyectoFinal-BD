@@ -28,13 +28,13 @@ alter procedure InfoMascota
 @CodMascota char(5)
 AS
 begin
-select Alias,Color_pelo,Raza,Tamaño,Apellido,Clientes.IdCliente,Especie from Mascotas
+select Alias,Color_pelo,Raza,Tamaño,Apellido,Clientes.IdCliente,Especie,CodMascota from Mascotas
 inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente
 where CodMascota = @CodMascota
 end
 
 
-
+select * from Mascotas
 
 GO
 
