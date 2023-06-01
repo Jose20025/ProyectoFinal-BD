@@ -5,6 +5,7 @@ from tkinter.messagebox import showerror, showwarning, showinfo, askquestion
 import tkinter as tk
 import pyodbc
 from PIL import ImageTk, Image
+import ctypes
 
 
 class App(tk.Tk):
@@ -49,7 +50,7 @@ class LoginPage(ttk.Frame):
         self.padre = master
 
         self.userFrame = ttk.Frame(
-            self, width=400, height=230, style='Card.TFrame')
+            self, width=400, height=245, style='Card.TFrame')
 
         self.imagen = ImageTk.PhotoImage(Image.open(
             './image/logo-transparente.png').resize((400, 370)))
@@ -59,18 +60,18 @@ class LoginPage(ttk.Frame):
 
         ttk.Label(self.userFrame, text='Username').place(x=40, y=20)
 
-        self.username = ttk.Entry(self.userFrame, width=46)
+        self.username = ttk.Entry(self.userFrame, width=36)
         self.username.place(x=30, y=45)
 
         ttk.Label(self.userFrame, text='Password').place(x=40, y=100)
 
-        self.password = ttk.Entry(self.userFrame, width=46, show='*')
+        self.password = ttk.Entry(self.userFrame, width=36, show='*')
         self.password.place(x=30, y=125)
         self.password.bind('<Return>', self.login)
 
         self.loginBoton = ttk.Button(
             self.userFrame, text='Login', style='Accent.TButton', command=self.login)
-        self.loginBoton.place(x=275, y=180)
+        self.loginBoton.place(x=260, y=180)
 
         self.lugarCBox = ttk.Combobox(self.userFrame, values=[
                                       'Veterinaria', 'Hotel'], state='readonly')
@@ -152,12 +153,12 @@ class VeterinariaPage(ttk.Frame):
     def aInsertar(self):
         self.insertarPage = InsertarPageV(self)
         self.padre.cambioVentana(self, self.insertarPage, [
-                                 300, 400], 'Insertar Mascota')
+                                 400, 400], 'Insertar Mascota')
 
 
 class InsertarPageV(ttk.Frame):
     def __init__(self, master: VeterinariaPage = None):
-        super().__init__(master.padre, width=300, height=400)
+        super().__init__(master.padre, width=400, height=400)
 
         self.atributos = []
 
@@ -178,18 +179,18 @@ class InsertarPageV(ttk.Frame):
 
         ttk.Label(self, text='Alias').place(x=20, y=70)
 
-        self.alias = ttk.Entry(self, width=35, state='disabled')
+        self.alias = ttk.Entry(self, width=38, state='disabled')
         self.alias.place(x=20, y=95)
 
-        ttk.Label(self, text='Elige una especie').place(x=130, y=10)
+        ttk.Label(self, text='Elige una especie').place(x=180, y=10)
 
         self.especie = tk.StringVar()
 
         self.cambioEspecieVar = tk.IntVar()
         ttk.Radiobutton(self, text='Felino', value=1, variable=self.cambioEspecieVar,
-                        command=self.cambioEspecie).place(x=100, y=40)
+                        command=self.cambioEspecie).place(x=160, y=40)
         ttk.Radiobutton(self, text='Canino', value=2, variable=self.cambioEspecieVar,
-                        command=self.cambioEspecie).place(x=190, y=40)
+                        command=self.cambioEspecie).place(x=250, y=40)
 
         ttk.Label(self, text='Raza').place(x=20, y=150)
 
@@ -197,12 +198,12 @@ class InsertarPageV(ttk.Frame):
         self.razaCBox.set('')
         self.razaCBox.place(x=20, y=175)
 
-        ttk.Label(self, text='Color').place(x=160, y=150)
+        ttk.Label(self, text='Color').place(x=225, y=150)
 
         self.colorCBox = ttk.Combobox(
             self, state='disabled', values=self.colores, width=15)
         self.colorCBox.set('')
-        self.colorCBox.place(x=160, y=175)
+        self.colorCBox.place(x=225, y=175)
 
         ttk.Label(self, text='Tamaño').place(x=50, y=230)
 
@@ -211,13 +212,13 @@ class InsertarPageV(ttk.Frame):
         self.sizeCBox.set('')
         self.sizeCBox.place(x=50, y=255)
 
-        ttk.Label(self, text='Fecha (yyyy-mm-dd)').place(x=160, y=230)
+        ttk.Label(self, text='Fecha (yyyy-mm-dd)').place(x=220, y=230)
 
         self.fechaNac = ttk.Entry(self, width=15, state='disabled')
-        self.fechaNac.place(x=160, y=255)
+        self.fechaNac.place(x=220, y=255)
 
         ttk.Button(self, text='Aceptar', style='Accent.TButton',
-                   command=self.confirmar).place(x=190, y=350)
+                   command=self.confirmar).place(x=275, y=350)
 
     def volverAtras(self):
         alias = self.alias.get()
@@ -315,13 +316,13 @@ class EleccionCliente(ttk.Frame):
         self.mascota = mascota
 
         ttk.Label(self, text='¿A que cliente quieres enlazar?').place(
-            x=110, y=50)
+            x=90, y=50)
 
-        ttk.Button(self, text='Existente', width=20,
+        ttk.Button(self, text='Existente', width=15,
                    command=self.existente, style='Accent.TButton').place(x=20, y=140)
 
-        ttk.Button(self, text='Nuevo Cliente', width=20,
-                   style='Accent.TButton').place(x=215, y=140)
+        ttk.Button(self, text='Nuevo Cliente', width=15,
+                   style='Accent.TButton').place(x=225, y=140)
 
     def existente(self):
         self.clienteExistentePage = ClienteExistentePage(
@@ -342,7 +343,7 @@ class ClienteExistentePage(ttk.Frame):
         self.mascota = mascota
         self.cliente = None
 
-        ttk.Label(self, text='Familia a buscar').place(x=20, y=15)
+        ttk.Label(self, text='Familia a buscar').place(x=20, y=10)
 
         self.label = ttk.Label(self, text='').place(x=80, y=100)
 
@@ -350,14 +351,14 @@ class ClienteExistentePage(ttk.Frame):
         self.familia.place(x=20, y=40)
 
         ttk.Button(self, text='Buscar', width=6,
-                   command=self.buscar).place(x=220, y=40)
+                   command=self.buscar).place(x=180, y=85)
 
         ttk.Button(self, text='Ver Familias', width=10,
-                   command=self.verFamilias).place(x=20, y=80)
+                   command=self.verFamilias).place(x=20, y=85)
 
         self.aceptarBoton = ttk.Button(
             self, text='Aceptar', state='disabled', command=self.aceptar)
-        self.aceptarBoton.place(x=190, y=150)
+        self.aceptarBoton.place(x=175, y=150)
 
     def verFamilias(self):
         popup = tk.Toplevel(self, width=500, height=500)
@@ -459,6 +460,8 @@ class ClienteExistentePage(ttk.Frame):
 
 
 if __name__ == '__main__':
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)
+
     conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
                   'nangui': ['soychurro', 'BrunoPC']}
 
