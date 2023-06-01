@@ -477,16 +477,20 @@ class NuevoClientePage(ttk.Frame):
                    width=8).place(x=10, y=10)
 
         ttk.Label(self, text='Apellido').place(x=20, y=90)
-        self.apellido = ttk.Entry(self, width=38).place(x=20, y=120)
+        self.apellido = ttk.Entry(self, width=38)
+        self.apellido.place(x=20, y=120)
 
         ttk.Label(self, text='Numero de Cuenta').place(x=20, y=180)
-        self.nrocuenta = ttk.Entry(self, width=18).place(x=20, y=210)
+        self.nrocuenta = ttk.Entry(self, width=18)
+        self.nrocuenta.place(x=20, y=210)
 
         ttk.Label(self, text='Telefono').place(x=215, y=180)
-        self.telefono = ttk.Entry(self, width=16).place(x=215, y=210)
+        self.telefono = ttk.Entry(self, width=16)
+        self.telefono.place(x=215, y=210)
 
         ttk.Label(self, text='Direccion').place(x=20, y=270)
-        self.direccion = ttk.Entry(self, width=38).place(x=20, y=300)
+        self.direccion = ttk.Entry(self, width=38)
+        self.direccion.place(x=20, y=300)
 
         ttk.Button(self, text='Aceptar',
                    command=self.aceptar).place(x=275, y=400)
@@ -501,7 +505,28 @@ class NuevoClientePage(ttk.Frame):
             self.destroy()
 
     def aceptar(self):
-        pass
+        apellido = self.apellido.get()
+        nrocuenta = self.nrocuenta.get()
+        telefono = self.telefono.get()
+        direccion = self.direccion.get()
+
+        atributos = [apellido, nrocuenta, direccion, telefono]
+
+        if any(elemento == '' for elemento in atributos):
+            showwarning(title='Error',
+                        message='Todos los campos deben estar llenos')
+            return
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute('exec RegistrarCliente ?,?,?,?', atributos)
+
+            info = cursor.fetchone()
+
+            idcliente = info[0]
+            print(idcliente)
 
 
 if __name__ == '__main__':
