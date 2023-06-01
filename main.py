@@ -162,7 +162,7 @@ class ModificarPageV(ttk.Frame):
         ttk.Label(self, text='Buscar').place(x=26, y=60)
         self.espacioBuscar = ttk.Entry(self, width=16)
         self.espacioBuscar.place(x=28, y=90)
-        self.botonBuscar = ttk.Button(self, width=8, text='Buscar', command=self.BuscarMascotas)
+        self.botonBuscar = ttk.Button(self, width=8, text='Buscar', command=self.Buscar)
         self.botonBuscar.place(x=90, y=135)
 
         self.eleccionCampo = tk.StringVar()
@@ -196,7 +196,7 @@ class ModificarPageV(ttk.Frame):
             self.espacioBuscar.configure(state='normal')
             self.CBoxEspecie.configure(state='disabled')
 
-    def BuscarMascotas(self):
+    def Buscar(self):
         print(self.campoElegido)
         if self.campoElegido == 'Especie':
             self.textoBuscar = self.CBoxEspecie.get()
@@ -204,6 +204,8 @@ class ModificarPageV(ttk.Frame):
         else:
             self.textoBuscar = self.espacioBuscar.get()
 
+        tablaFrame = ttk.Frame(self,width=500, height=500)
+        
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
             cursor.execute('exec BuscarMascota ?,? ',(self.campoElegido, self.textoBuscar))
@@ -211,6 +213,32 @@ class ModificarPageV(ttk.Frame):
             print(' ')
             for r in resultados:
                 print(r)
+
+            titulos = []
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            resultados = cursor.fetchall()
+            cursor.close()
+
+            tablaEncontrados = ttk.Treeview(tablaFrame, height=20, columns=titulos[1:])
+            for i, titulo in enumerate(titulos):
+                if i == 0:
+                    tablaEncontrados.column('#0', width=100, anchor=tk.CENTER)
+                    tablaEncontrados.heading('#0', text=titulo, anchor=tk.CENTER)
+                else:
+                    tablaEncontrados.column(titulo, width=100, anchor=tk.CENTER)
+                    tablaEncontrados.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+            for cliente in resultados:
+                atributos = []
+                for atributo in cliente:
+                    atributos.append(atributo)
+
+                tablaEncontrados.insert('', tk.END, text=atributos[0], values=atributos[1:])
+
+            tablaEncontrados.pack()
+            tablaFrame.place(x=40,y=170)
 
     def aPrincipal(self):
         self.padre.padre.cambioVentana(self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
