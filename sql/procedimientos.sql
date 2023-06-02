@@ -21,6 +21,7 @@ BEGIN
         begin
         set @Check = 0
         select @Check
+        rollback
     end
     ELSE
         set @Check = 1
@@ -39,6 +40,7 @@ BEGIN
     insert into Clientes
     values
         (@pIdCliente, @Apellido, @NroCuenta, @Direccion, @Telefono)
+    commit
 END
 GO;
 
@@ -120,6 +122,7 @@ BEGIN
         BEGIN
         set @Check = 0
         select @Check
+        rollback
     END
     else
         BEGIN
@@ -139,6 +142,7 @@ BEGIN
         insert into Mascotas
         values
             (@pCodMascota, @IdCliente, @Alias, @Especie, @Raza, @Color_pelo, @FechaNac, @Tamaño)
+        commit
     END
 END
 GO;

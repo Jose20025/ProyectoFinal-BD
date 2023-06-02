@@ -162,8 +162,6 @@ class InsertarPageV(ttk.Frame):
     def __init__(self, master: VeterinariaPage = None):
         super().__init__(master.padre, width=400, height=400)
 
-        self.atributos = []
-
         self.padre = master
 
         self.razas = {
@@ -243,7 +241,7 @@ class InsertarPageV(ttk.Frame):
                 return
         else:
             self.padre.padre.cambioVentana(
-                self, self.padre, 1000, 600, 'Veterinaria - Cute Pets')
+                self, self.padre, [1000, 600], 'Veterinaria - Cute Pets')
             self.destroy()
 
     def confirmar(self):
@@ -465,6 +463,9 @@ class ClienteExistentePage(ttk.Frame):
                 showerror(title='Error',
                           message='Ha ocurrido un error al agregar la mascota')
 
+            cursor.close()
+            conexion.commit()
+
 
 class NuevoClientePage(ttk.Frame):
     def __init__(self, master: VeterinariaPage = None, mascota: list = None):
@@ -528,10 +529,13 @@ class NuevoClientePage(ttk.Frame):
         with pyodbc.connect(
                 f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
+            print('hola')
 
             cursor.execute('exec RegistrarCliente ?,?,?,?,?', atributos)
 
             info = cursor.fetchall()
+
+            print(info)
 
             bit, idcliente = info[0]
 
@@ -542,20 +546,28 @@ class NuevoClientePage(ttk.Frame):
                 cursor.execute(
                     'exec RegistrarMascota ?,?,?,?,?,?,?,?', self.mascota)
 
-                info = cursor.fetchone()
+                info = cursor.fetchall()
+                print(info)
 
-                bit = info[0]
+                bit = info[0][0]
 
                 if bit:
                     cursor.commit()
                 else:
                     cursor.rollback()
 
+                showinfo(
+                    title='Exito', message='El cliente ha sido agregado satisfactoriamente')
+                self.padre.padre.cambioVentana(
+                    self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+                self.destroy()
+
             else:
                 cursor.rollback()
                 showerror(title='Error',
                           message='Ha ocurrido un error en la insercion')
 
+            cursor.close()
             conexion.commit()
 
 
