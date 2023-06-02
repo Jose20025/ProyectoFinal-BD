@@ -140,9 +140,6 @@ class VeterinariaPage(ttk.Frame):
         self.tabview.add(self.clienteFrame, text='Clientes')
         self.tabview.pack()
 
-        # Declarando variables para ventanas
-        self.insertarPage = None
-
         # ===============================> MascotaFrame
         ttk.Button(self.mascotaFrame, text='Consultas',
                    width=40).place(x=20, y=30)
