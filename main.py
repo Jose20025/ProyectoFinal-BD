@@ -134,13 +134,16 @@ class VeterinariaPage(ttk.Frame):
         self.tabview = ttk.Notebook(self)
 
         self.mascotaFrame = ttk.Frame(self.tabview, width=1000, height=600)
+        self.clienteFrame = ttk.Frame(self.tabview, width=1000, height=600)
 
         self.tabview.add(self.mascotaFrame, text='Mascotas')
+        self.tabview.add(self.clienteFrame, text='Clientes')
         self.tabview.pack()
 
         # Declarando variables para ventanas
         self.insertarPage = None
 
+        # ===============================> MascotaFrame
         ttk.Button(self.mascotaFrame, text='Consultas',
                    width=40).place(x=20, y=30)
 
@@ -160,6 +163,7 @@ class VeterinariaPage(ttk.Frame):
             './image/logo-transparente.png').resize((220, 200)))
 
         ttk.Label(self.mascotaFrame, image=self.imagen).place(x=20, y=350)
+        # ==============================> MascotaFrame
 
     def aInsertarM(self):
         self.eleccionCliente = EleccionCliente(self)
