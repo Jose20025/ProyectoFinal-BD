@@ -1,1 +1,3 @@
 
+
+        self.loginPage = LoginPage(self)

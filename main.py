@@ -4,6 +4,7 @@ import tkinter as tk
 import pyodbc
 from PIL import ImageTk, Image
 import ctypes
+from ttkthemes import ThemedTk
 
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
 class App(tk.Tk):
@@ -148,16 +149,17 @@ class VeterinariaPage(ttk.Frame):
         ttk.Label(self, image=self.imagen).place(x=20, y=350)
 
     def aModificar(self):
-        self.padre.cambioVentana(self, self.ModificarPageV, [
-            700, 480], "Modificar Mascota")
+        self.padre.cambioVentana(self, self.ModificarPageV, [700, 520], "Modificar Mascota")
 
 
 class ModificarPageV(ttk.Frame):
     def __init__(self, master: VeterinariaPage):
-        super().__init__(master=master.padre, width=700, height=480)
+        super().__init__(master=master.padre, width=700, height=520)
 
         self.padre = master
         ttk.Button(self, text='Volver',command=self.aPrincipal).place(x=10, y=10)
+
+        self.tablaFrame = None
 
         ttk.Label(self, text='Buscar').place(x=26, y=60)
         self.espacioBuscar = ttk.Entry(self, width=16)
@@ -178,11 +180,11 @@ class ModificarPageV(ttk.Frame):
         self.CBoxEspecie.place(x=520, y=88)
 
         self.Cod = tk.StringVar()
-        ttk.Label(self, text='Código de Mascota').place(x=32, y=390)
+        ttk.Label(self, text='Código de Mascota').place(x=32, y=420)
         self.textoCod = ttk.Entry(self, width=12, textvariable=self.Cod)
-        self.textoCod.place(x=30, y=420)
+        self.textoCod.place(x=30, y=445)
         self.botonIr = ttk.Button(self, text='Ir a perfil', width=10, command=self.aPerfil)
-        self.botonIr.place(x=570, y=420)
+        self.botonIr.place(x=570, y=445)
         self.atributos = []
 
     def EleccionCampo(self):
@@ -197,6 +199,11 @@ class ModificarPageV(ttk.Frame):
             self.CBoxEspecie.configure(state='disabled')
 
     def Buscar(self):
+
+        if self.tablaFrame:
+            self.tablaFrame.pack_forget()
+            self.tablaFrame.destroy()
+
         print(self.campoElegido)
         if self.campoElegido == 'Especie':
             self.textoBuscar = self.CBoxEspecie.get()
@@ -204,24 +211,27 @@ class ModificarPageV(ttk.Frame):
         else:
             self.textoBuscar = self.espacioBuscar.get()
 
-        tablaFrame = ttk.Frame(self,width=500, height=500)
+        self.tablaFrame = ttk.Frame(self,width=200, height=100)
         
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
             cursor.execute('exec BuscarMascota ?,? ',(self.campoElegido, self.textoBuscar))
             resultados = cursor.fetchall()
             print(' ')
-            for r in resultados:
-                print(r)
 
             titulos = []
             for titulo in cursor.description:
                 titulos.append(titulo[0])
 
-            resultados = cursor.fetchall()
+            print(resultados)
             cursor.close()
+            style = ttk.Style()
+            style.configure("Custom.Treeview.Heading",
+                background="#a2b1bd",  # Darker background color
+                foreground="#FFFFFF",  # Brighter text color
+                font=("Helvetica", 10))  # Custom font with increased brightness
 
-            tablaEncontrados = ttk.Treeview(tablaFrame, height=20, columns=titulos[1:])
+            tablaEncontrados = ttk.Treeview(self.tablaFrame, height=6, columns=titulos[1:],style='Custom.Treeview')
             for i, titulo in enumerate(titulos):
                 if i == 0:
                     tablaEncontrados.column('#0', width=100, anchor=tk.CENTER)
@@ -230,15 +240,15 @@ class ModificarPageV(ttk.Frame):
                     tablaEncontrados.column(titulo, width=100, anchor=tk.CENTER)
                     tablaEncontrados.heading(titulo, text=titulo, anchor=tk.CENTER)
 
-            for cliente in resultados:
+            for dato in resultados:
                 atributos = []
-                for atributo in cliente:
+                for atributo in dato:
                     atributos.append(atributo)
 
                 tablaEncontrados.insert('', tk.END, text=atributos[0], values=atributos[1:])
 
             tablaEncontrados.pack()
-            tablaFrame.place(x=40,y=170)
+            self.tablaFrame.place(x=60,y=210)
 
     def aPrincipal(self):
         self.padre.padre.cambioVentana(self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
@@ -328,7 +338,7 @@ class PerfilMascotaV(ttk.Frame):
         self.atributos = []
         self.padre.atributos = []
         self.padre.textoCod.delete(0,tk.END)
-        self.ancestro.cambioVentana(self, self.padre, [700, 480], 'Modificar Mascota')
+        self.ancestro.cambioVentana(self, self.padre, [700, 520], 'Modificar Mascota')
         self.destroy()
 
     def ModificarMascota(self):
@@ -369,6 +379,17 @@ class PerfilMascotaV(ttk.Frame):
             cursor.execute(f"select * from Mascotas where CodMascota = '{self.atributos[7]}' ")
             print(cursor.fetchone())
             cursor.close()
+
+    def verFamilias(self):
+        ventana = ThemedTk('equilux')
+        tk.Label(text='Familia').place
+        self.espacioFamilia = tk.Entry(self,width=15)
+        familia = self.espacioFamilia.get()
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            cursor.execute('exec ')
+        
+
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
               'nangui': ['soychurro', 'BrunoPC'],
