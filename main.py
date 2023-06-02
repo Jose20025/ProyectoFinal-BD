@@ -533,7 +533,30 @@ class NuevoClientePage(ttk.Frame):
 
             info = cursor.fetchall()
 
-            print(info)
+            bit, idcliente = info[0]
+
+            if bit:
+                cursor.commit()
+
+                self.mascota.insert(0, idcliente)
+                cursor.execute(
+                    'exec RegistrarMascota ?,?,?,?,?,?,?,?', self.mascota)
+
+                info = cursor.fetchone()
+
+                bit = info[0]
+
+                if bit:
+                    cursor.commit()
+                else:
+                    cursor.rollback()
+
+            else:
+                cursor.rollback()
+                showerror(title='Error',
+                          message='Ha ocurrido un error en la insercion')
+
+            conexion.commit()
 
 
 if __name__ == '__main__':
