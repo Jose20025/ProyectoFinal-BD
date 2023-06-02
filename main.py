@@ -153,16 +153,17 @@ class VeterinariaPage(ttk.Frame):
         ttk.Label(self, image=self.imagen).place(x=20, y=350)
 
     def aInsertar(self):
-        self.insertarPage = InsertarPageV(self)
-        self.padre.cambioVentana(self, self.insertarPage, [
-                                 400, 400], 'Insertar Mascota')
+        self.eleccionCliente = EleccionCliente(self)
+        self.padre.cambioVentana(self, self.eleccionCliente, [
+                                 400, 200], 'Eleccion de Cliente')
 
 
 class InsertarPageV(ttk.Frame):
-    def __init__(self, master: VeterinariaPage = None):
+    def __init__(self, master: VeterinariaPage = None, cliente: Cliente = None):
         super().__init__(master.padre, width=400, height=400)
 
         self.padre = master
+        self.cliente: Cliente = cliente
 
         self.razas = {
             1: ['Siames', 'Siberiano', 'Mestizo', 'Bengali', 'Yoda', 'Birmano', 'Persa', 'Azul ruso'],
@@ -257,9 +258,33 @@ class InsertarPageV(ttk.Frame):
                 lista = [alias, especie, raza, color, fecha, size, 0]
 
                 if all(elemento != '' for elemento in lista):
-                    self.eleccionCliente = EleccionCliente(self.padre, lista)
-                    self.padre.padre.cambioVentana(
-                        self, self.eleccionCliente, [400, 200], 'Enlazar Cliente')
+                    lista.insert(0, self.cliente.getId())
+                    with pyodbc.connect(
+                            f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+                        cursor = conexion.cursor()
+
+                        cursor.execute(
+                            'exec RegistrarMascota ?,?,?,?,?,?,?,?', lista)
+
+                        bit = cursor.fetchone()
+                        bit = bit[0]
+
+                        if bit:
+                            cursor.commit()
+                            respuesta = showinfo(title='Exito',
+                                                 message='Se ha agregado a la mascota correctamente!')
+
+                            if respuesta:
+                                self.padre.padre.cambioVentana(
+                                    self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+
+                        else:
+                            cursor.rollback()
+                            showerror(title='Error',
+                                      message='Ha ocurrido un error al agregar la mascota')
+
+                        cursor.close()
+                        conexion.commit()
 
                 else:
                     showwarning(title='Error en campos',
@@ -305,11 +330,10 @@ class InsertarPageV(ttk.Frame):
 
 
 class EleccionCliente(ttk.Frame):
-    def __init__(self, master: VeterinariaPage, mascota):
+    def __init__(self, master: VeterinariaPage):
         super().__init__(master=master.padre, width=400, height=200)
 
         self.padre = master
-        self.mascota = mascota
 
         ttk.Label(self, text='¿A que cliente quieres enlazar?').place(
             x=90, y=50)
@@ -322,22 +346,23 @@ class EleccionCliente(ttk.Frame):
 
     def existente(self):
         self.clienteExistentePage = ClienteExistentePage(
-            self.padre, self.mascota)
+            self.padre)
         self.padre.padre.cambioVentana(
             self, self.clienteExistentePage, [300, 300], 'Cliente Existente')
+        self.destroy()
 
     def nuevo(self):
-        self.clienteNuevoPage = NuevoClientePage(self.padre, self.mascota)
+        self.clienteNuevoPage = NuevoClientePage(self.padre)
         self.padre.padre.cambioVentana(
             self, self.clienteNuevoPage, [400, 450], 'Nuevo Cliente')
+        self.destroy()
 
 
 class ClienteExistentePage(ttk.Frame):
-    def __init__(self, master: VeterinariaPage, mascota):
+    def __init__(self, master: VeterinariaPage):
         super().__init__(master=master.padre, width=300, height=300)
 
         self.padre = master
-        self.mascota = mascota
         self.cliente = None
 
         ttk.Button(self, width=10, text='Cancelar',
@@ -436,42 +461,16 @@ class ClienteExistentePage(ttk.Frame):
             cursor.close()
 
     def aceptar(self):
-        self.mascota.insert(0, self.cliente.getId())
-        print(self.mascota)
-
-        with pyodbc.connect(
-                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
-            cursor = conexion.cursor()
-
-            cursor.execute(
-                'exec RegistrarMascota ?,?,?,?,?,?,?,?', self.mascota)
-
-            bit = cursor.fetchone()
-            bit = bit[0]
-
-            if bit:
-                cursor.commit()
-                respuesta = showinfo(title='Exito',
-                                     message='Se ha agregado a la mascota correctamente!')
-
-                if respuesta:
-                    self.padre.padre.cambioVentana(
-                        self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
-
-            else:
-                cursor.rollback()
-                showerror(title='Error',
-                          message='Ha ocurrido un error al agregar la mascota')
-
-            cursor.close()
-            conexion.commit()
+        self.insertarPage = InsertarPageV(self.padre, self.cliente)
+        self.padre.padre.cambioVentana(self, self.insertarPage, [
+                                       400, 400], 'Insertar Mascota')
+        self.destroy()
 
 
 class NuevoClientePage(ttk.Frame):
-    def __init__(self, master: VeterinariaPage = None, mascota: list = None):
+    def __init__(self, master: VeterinariaPage = None):
         super().__init__(master.padre, height=450, width=400)
 
-        self.mascota = mascota
         self.padre = master
 
         ttk.Button(self, text='Cancelar', command=self.cancelar,
@@ -529,43 +528,25 @@ class NuevoClientePage(ttk.Frame):
         with pyodbc.connect(
                 f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
-            print('hola')
 
             cursor.execute('exec RegistrarCliente ?,?,?,?,?', atributos)
 
             info = cursor.fetchall()
 
-            print(info)
-
             bit, idcliente = info[0]
 
             if bit:
-                cursor.commit()
-
-                self.mascota.insert(0, idcliente)
-                cursor.execute(
-                    'exec RegistrarMascota ?,?,?,?,?,?,?,?', self.mascota)
-
-                info = cursor.fetchall()
-                print(info)
-
-                bit = info[0][0]
-
-                if bit:
-                    cursor.commit()
-                else:
-                    cursor.rollback()
-
-                showinfo(
-                    title='Exito', message='El cliente ha sido agregado satisfactoriamente')
-                self.padre.padre.cambioVentana(
-                    self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+                atributos.insert(0, idcliente)
+                self.cliente = Cliente(atributos)
+                showinfo(title='Exito',
+                         message='El cliente se ha creado con exito!')
+                self.insertarPage = InsertarPageV(self.padre, self.cliente)
+                self.padre.padre.cambioVentana(self, self.insertarPage, [
+                                               400, 400], 'Insertar Mascota')
                 self.destroy()
-
             else:
-                cursor.rollback()
-                showerror(title='Error',
-                          message='Ha ocurrido un error en la insercion')
+                showerror(
+                    title='Error', message='Ha ocurrido un error al insertar el cliente')
 
             cursor.close()
             conexion.commit()
