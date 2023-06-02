@@ -131,28 +131,37 @@ class VeterinariaPage(ttk.Frame):
         super().__init__(master=master, width=1000, height=600)
 
         self.padre = master
+        self.tabview = ttk.Notebook(self)
+
+        self.mascotaFrame = ttk.Frame(self.tabview, width=1000, height=600)
+
+        self.tabview.add(self.mascotaFrame, text='Mascotas')
+        self.tabview.pack()
 
         # Declarando variables para ventanas
         self.insertarPage = None
 
-        ttk.Button(self, text='Consultas', width=40).place(x=20, y=30)
+        ttk.Button(self.mascotaFrame, text='Consultas',
+                   width=40).place(x=20, y=30)
 
-        ttk.Button(self, text='Insertar', width=40,
-                   command=self.aInsertar).place(x=20, y=100)
+        ttk.Button(self.mascotaFrame, text='Insertar', width=40,
+                   command=self.aInsertarM).place(x=20, y=100)
 
-        ttk.Button(self, text='Modificar', width=40).place(x=20, y=170)
+        ttk.Button(self.mascotaFrame, text='Modificar',
+                   width=40).place(x=20, y=170)
 
-        ttk.Button(self, text='Eliminar', width=40).place(x=20, y=240)
+        ttk.Button(self.mascotaFrame, text='Eliminar',
+                   width=40).place(x=20, y=240)
 
-        ttk.Button(self, text='Consulta Personalizada',
+        ttk.Button(self.mascotaFrame, text='Consulta Personalizada',
                    width=40).place(x=20, y=310)
 
         self.imagen = ImageTk.PhotoImage(Image.open(
             './image/logo-transparente.png').resize((220, 200)))
 
-        ttk.Label(self, image=self.imagen).place(x=20, y=350)
+        ttk.Label(self.mascotaFrame, image=self.imagen).place(x=20, y=350)
 
-    def aInsertar(self):
+    def aInsertarM(self):
         self.eleccionCliente = EleccionCliente(self)
         self.padre.cambioVentana(self, self.eleccionCliente, [
                                  400, 200], 'Eleccion de Cliente')
