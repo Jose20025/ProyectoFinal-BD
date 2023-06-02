@@ -5,6 +5,7 @@ CREATE SEQUENCE SecIdCliente
     NO MAXVALUE;
 GO;
 
+
 --Procedimiento para registrar un cliente
 alter procedure RegistrarCliente
     @Apellido varchar(20),
@@ -55,20 +56,23 @@ BEGIN
     begin TRANSACTION
     declare @SQL NVARCHAR(MAX)
     set @SQL = N'UPDATE Clientes set '+ QUOTENAME(@Campo)+' = @NuevoValor WHERE IdCliente = @IdCliente'
-    exec sp_executesql @SQL, N'@IdCliente char(5), @NuevoValor varchar(20)',@IdCliente,@NuevoValor
+    where IdCliente=@IdCliente and
+    (NroCuenta=@NuevoValor or Telefono=@NuevoValor))
+    BEGIN
+        set @Check = 1
+        SELECT @Check
+    END
+    =======
     if exists (select 1
     from Clientes
     where IdCliente=@IdCliente and (NroCuenta=@NuevoValor or Telefono=@NuevoValor))
         BEGIN
         set @Check = 1
-        SELECT @Check
     END
+    >>>>>>> ModificarVet
     ELSE
-        BEGIN
+    BEGIN
         set @Check = 0
-        SELECT @Check
-    END
-END
 GO;
 
 --Eliminacion de cliente
@@ -131,7 +135,6 @@ BEGIN
         DECLARE
         @DatoCod int = next value for SecCodMascota,
         @pCodMascota char(5)
-
         IF @DatoCod<100
             set @pCodMascota = CONCAT('M00', CONVERT(char(2),@DatoCod))
         Else IF @DatoCod<1000
@@ -174,6 +177,12 @@ BEGIN
     END
 END
 GO;
+
+exec ModificarMascota 'M0047','Color_pelo','Manchado',1
+commit
+
+select *
+from Mascotas
 
 --Eliminacion de mascota
 create procedure EliminarMascota
