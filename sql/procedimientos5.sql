@@ -32,12 +32,24 @@ select Alias,Color_pelo,Raza,Tamaño,Apellido,Clientes.IdCliente,Especie,CodMasc
 inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente
 where CodMascota = @CodMascota
 end
+go
 
+alter procedure VerificarExistenciaCliente
+@IdCliente char(5),
+@Check bit out
+AS
+begin 
+    if exists (select 1 from Clientes where IdCliente = @IdCliente)
+        BEGIN
+        set @Check = 1
+        select @Check
+        END
+    else
+        BEGIN
+        set @Check = 0
+        select @Check
+        END
+END
 
-select * from Mascotas
-
-GO
-
-select Alias,Color_pelo,Raza,Tamaño,Apellido,Clientes.IdCliente,Especie,CodMascota from Mascotas
+select Alias,Apellido from Mascotas
 inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente
-where CodMascota = @CodMascota

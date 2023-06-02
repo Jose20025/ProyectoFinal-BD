@@ -380,38 +380,36 @@ class PerfilMascotaV(ttk.Frame):
             cursor.close()
             
     def buscarFamilia(self):
-        self.eleccionFamilia = EleccionFamilia(self,self.atributos[7])
+        self.eleccionFamilia = EleccionFamilia(self)
         self.ancestro.cambioVentana(self,self.eleccionFamilia,[400,200],'Eleccion de Familia')
 
 class EleccionFamilia(ttk.Frame):
-    def __init__(self, master: PerfilMascotaV,codMascota):
+    def __init__(self, master: PerfilMascotaV):
         super().__init__(master=master.padre.padre.padre, width=400, height=200)
 
         self.padre = master
-        self.mascota = codMascota
         self.ancestro = self.padre.padre.padre.padre
         ttk.Button(self,text='Cancelar',command=self.cancelar).place(x=10, y=10)
         ttk.Label(self, text='¿Que familia quiere buscar?').place(x=90, y=70)
         ttk.Button(self, text='Existente', width=15, command=self.existente, style='Accent.TButton').place(x=20, y=140)
-        ttk.Button(self, text='Nuevo Cliente', width=15,style='Accent.TButton', command=self.nuevo).place(x=225, y=140)
+        ttk.Button(self, text='Nueva Familia', width=15,style='Accent.TButton', command=self.nuevo).place(x=225, y=140)
 
     def existente(self):
-        self.clienteExistentePage = ClienteExistentePage(self,self.mascota)
-        self.padre.padre.cambioVentana(self, self.clienteExistentePage, [300, 300], 'Cliente Existente')
+        self.clienteExistentePage = FamiliaExistentePage(self)
+        self.ancestro.cambioVentana(self, self.clienteExistentePage, [380, 340], 'Cliente Existente')
 
     def nuevo(self):
-        self.clienteNuevoPage = NuevoClientePage(self,self.mascota)
-        self.padre.padre.cambioVentana(self, self.clienteNuevoPage, [400, 450], 'Nueva Familia')
+        self.clienteNuevoPage = NuevaFamiliaPage(self)
+        self.ancestro.cambioVentana(self, self.clienteNuevoPage, [400, 450], 'Nueva Familia')
 
     def cancelar(self):
         self.ancestro.cambioVentana(self,self.padre,[410, 600], "Perfil")
 
-class ClienteExistentePage(ttk.Frame):
-    def __init__(self, master: EleccionFamilia, Codmascota):
-        super().__init__(master=master.padre.padre.padre.padre, width=300, height=300)
+class FamiliaExistentePage(ttk.Frame):
+    def __init__(self, master: EleccionFamilia):
+        super().__init__(master=master.padre.padre.padre.padre, width=380, height=340)
 
         self.padre = master
-        self.mascota = Codmascota
         self.ancestro = self.padre.padre.padre.padre.padre
         self.cliente = None
 
@@ -423,92 +421,149 @@ class ClienteExistentePage(ttk.Frame):
         self.familia = ttk.Entry(self, width=25)
         self.familia.place(x=20, y=100)
 
-        ttk.Button(self, text='Buscar', width=6,command=self.buscar).place(x=180, y=145)
-        ttk.Button(self, text='Ver Familias', width=10,command=self.verFamilias).place(x=20, y=145)
+        ttk.Button(self, text='Ver todas', width=10,command=self.verFamilias).place(x=135, y=160)
+        ttk.Button(self, text='Buscar', width=6,command=self.buscar).place(x=275, y=100)
 
+
+        self.IdCli = tk.StringVar()
+        ttk.Label(self, text='Código Cliente').place(x=20, y=255)
+        self.campoId = ttk.Entry(self, width=12, textvariable=self.IdCli)
+        self.campoId.place(x=20, y=280)
         self.aceptarBoton = ttk.Button(self, text='Aceptar', state='disabled', command=self.aceptar)
-        self.aceptarBoton.place(x=175, y=250)
+        self.aceptarBoton.place(x=250, y=280)
+
+        self.familiasFrame = None
+        self.familiasBuscFrame  = None
 
     def cancelar(self):
-        self.padre.padre.cambioVentana(self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+        self.ancestro.cambioVentana(self, self.padre,[400,200], 'Elección de familia')
         self.destroy()
 
     def verFamilias(self):
+
+        if self.familiasFrame:
+            self.familiasFrame.pack_forget()
+            self.familiasFrame.destroy()
+
         popup = tk.Toplevel(self, width=500, height=500)
         popup.title('Familias')
 
-        familiasFrame = ttk.Frame(popup, width=500, height=500)
+        self.familiasFrame = ttk.Frame(popup, width=500, height=500)
 
-        with pyodbc.connect(
-                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
-
-            cursor.execute('select Apellido, IdCliente from Clientes')
-
+            cursor.execute('select Apellido,NroCuenta,Telefono,IdCliente from Clientes')
             titulos = []
             for titulo in cursor.description:
                 titulos.append(titulo[0])
 
             clientes = cursor.fetchall()
-
             cursor.close()
 
-        tabla = ttk.Treeview(familiasFrame, height=20, columns=titulos[1:])
+            tabla = ttk.Treeview(self.familiasFrame, height=20, columns=titulos[1:])
 
-        for i, titulo in enumerate(titulos):
-            if i == 0:
-                tabla.column('#0', width=100, anchor=tk.CENTER)
-                tabla.heading('#0', text=titulo, anchor=tk.CENTER)
-            else:
-                tabla.column(titulo, width=100, anchor=tk.CENTER)
-                tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
+            for i, titulo in enumerate(titulos):
+                if i == 0:
+                    tabla.column('#0', width=100, anchor=tk.CENTER)
+                    tabla.heading('#0', text=titulo, anchor=tk.CENTER)
+                else:
+                    tabla.column(titulo, width=100, anchor=tk.CENTER)
+                    tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
 
-        for cliente in clientes:
-            atributos = []
-            for atributo in cliente:
-                atributos.append(atributo)
+            for cliente in clientes:
+                atributos = []
+                for atributo in cliente:
+                    atributos.append(atributo)
 
-            tabla.insert('', tk.END, text=atributos[0], values=atributos[1:])
+                tabla.insert('', tk.END, text=atributos[0], values=atributos[1:])
 
-        tabla.pack()
-
-        familiasFrame.pack()
+            tabla.pack()
+            self.familiasFrame.pack()
 
     def buscar(self):
-        familia = self.familia.get()
+        if self.familiasBuscFrame:
+            self.familiasBuscFrame.pack_forget()
+            self.familiasBuscFrame.destroy()
 
+        familia = self.familia.get()
         if familia == '':
-            showwarning(title='Error',
-                        message='El campo debe de estar lleno')
+            showwarning(title='Error',message='El campo debe de estar lleno')
             return
+        
+        popup = tk.Toplevel(self, width=500, height=500)
+        popup.title('Familias')
+        self.familiasBuscFrame = ttk.Frame(popup, width=500, height=500)
+
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+
+            cursor = conexion.cursor()
+            cursor.execute('select * from Clientes where Apellido = ?', familia)
+            
+            resultados = cursor.fetchall()
+            
+            titulos=[]
+            for t in cursor.description:
+                titulos.append(t[0])
+            
+            cursor.close()
+
+            print(len(resultados))
+            if len(resultados) >= 1:
+                self.aceptarBoton.configure(state='normal', style='Accent.TButton')
+                showinfo(title='Exito', message='Familia(s) encontrada(s)')
+            else:
+                showerror(title='Error', message='Cliente(s) no encontrado(s)')
+            
+            tabla = ttk.Treeview(self.familiasBuscFrame, height=20, columns=titulos[1:])
+
+            for i, titulo in enumerate(titulos):
+                if i == 0:
+                    tabla.column('#0', width=100, anchor=tk.CENTER)
+                    tabla.heading('#0', text=titulo, anchor=tk.CENTER)
+                else:
+                    tabla.column(titulo, width=100, anchor=tk.CENTER)
+                    tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+            for cliente in resultados:
+                atributos = []
+                for atributo in cliente:
+                    atributos.append(atributo)
+                print(atributos)
+                tabla.insert('', tk.END, text=atributos[0], values=atributos[1:])
+
+            tabla.pack()
+            self.familiasBuscFrame.pack()
+    
+    def aceptar(self):
+        IdEscrito = self.campoId.get()
+        print(self.mascota)
 
         with pyodbc.connect(
                 f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
-
             cursor = conexion.cursor()
-
-            cursor.execute(
-                'select * from Clientes where Apellido = ?', familia)
-
-            resultado = cursor.fetchall()
-
-            if len(resultado) == 1:
-                self.cliente = Cliente(resultado[0])
-                self.aceptarBoton.configure(
-                    state='normal', style='Accent.TButton')
-                showinfo(
-                    title='Exito', message='El cliente ha sido encontrado con exito, aceptar para continuar')
+            cursor.execute('exec VerificarExistenciaCliente ?,?',(IdEscrito,1))
+            bit = cursor.fetchone()
+            bit = bit[0]
+            if bit:
+                cursor.execute('select Apellido from Clientes where IdCliente = ?',(IdEscrito))
+                resultado = cursor.fetchone()
+                apellido = resultado[0]
+                print(apellido)
+                cursor.close()
+                self.padre.padre.aux.set(apellido)
+                self.padre.padre.IdCliente.delete(0,30)
+                self.padre.padre.IdCliente.insert(0,IdEscrito)
+                respuesta = showinfo(title='Exito', message='Se ha enviado el Id del Cliente a la modificación')
+                if respuesta:
+                    self.ancestro.cambioVentana(self, self.padre.padre, [410, 600], "Perfil")
             else:
-                showerror(title='Error', message='Cliente no encontrado')
-
-            cursor.close()
+                cursor.rollback()
+                showerror(title='Error',message='El cliente no existe. Agréguelo o escriba otro correctamente')
     
-
-class NuevoClientePage(ttk.Frame):
-    def __init__(self, master: VeterinariaPage = None, mascota: list = None):
+class NuevaFamiliaPage(ttk.Frame):
+    def __init__(self, master: EleccionFamilia):
         super().__init__(master.padre, height=450, width=400)
 
-        self.mascota = mascota
         self.padre = master
 
         ttk.Button(self, text='Cancelar', command=self.cancelar,width=8).place(x=10, y=10)
