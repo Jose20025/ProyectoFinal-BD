@@ -183,8 +183,6 @@ class InsertarPageV(ttk.Frame):
         self.colores = ['Cafe', 'Blanco', 'Negro',
                         'Gris', 'Dorado', 'Verde', 'Naranja']
 
-        self.eleccionCliente = None
-
         ttk.Button(self, text='Volver', command=self.volverAtras,
                    width=6).place(x=10, y=10)
 
@@ -223,7 +221,7 @@ class InsertarPageV(ttk.Frame):
         self.sizeCBox.set('')
         self.sizeCBox.place(x=50, y=255)
 
-        ttk.Label(self, text='Fecha (yyyy-mm-dd)').place(x=220, y=230)
+        ttk.Label(self, text='Fecha (dia-mes-año)').place(x=220, y=230)
 
         self.fechaNac = ttk.Entry(self, width=15, state='disabled')
         self.fechaNac.place(x=220, y=255)
@@ -259,6 +257,7 @@ class InsertarPageV(ttk.Frame):
         fecha = self.fechaNac.get()
         if fecha != '':
             if self.verificarFecha(fecha):
+                fecha = self.fechaOrdenada(fecha)
                 alias = self.alias.get()
                 size = self.sizeCBox.get()
                 color = self.colorCBox.get()
@@ -311,7 +310,7 @@ class InsertarPageV(ttk.Frame):
             fecha_descompuesta = fecha.split('-')
 
             if len(fecha_descompuesta) == 3:
-                año, mes, dia = map(int, fecha_descompuesta)
+                dia, mes, año = map(int, fecha_descompuesta)
                 try:
                     datetime(año, mes, dia)
                 except ValueError:
@@ -322,6 +321,16 @@ class InsertarPageV(ttk.Frame):
                 return False
         else:
             return False
+
+    def fechaOrdenada(self, fecha):
+        fecha_descompuesta = fecha.split('-')
+
+        dia, mes, año = map(int, fecha_descompuesta)
+
+        fechaTemp = datetime(año, mes, dia)
+        fechaEscrita = f'{fechaTemp.date()}'
+
+        return fechaEscrita
 
     def cambioEspecie(self):
         especie = self.cambioEspecieVar.get()
@@ -547,7 +556,7 @@ class NuevoClientePage(ttk.Frame):
 
             if bit:
                 atributos.insert(0, idcliente)
-                self.cliente = Cliente(atributos)
+                self.cliente = Cliente(atributos[:-1])
                 showinfo(title='Exito',
                          message='El cliente se ha creado con exito!')
                 self.insertarPage = InsertarPageV(self.padre, self.cliente)
