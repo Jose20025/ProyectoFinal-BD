@@ -388,7 +388,137 @@ class PerfilMascotaV(ttk.Frame):
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
             cursor.execute('exec ')
-        
+            
+class EleccionCliente(ttk.Frame):
+    def __init__(self, master: VeterinariaPage, mascota):
+        super().__init__(master=master.padre, width=400, height=200)
+
+        self.padre = master
+        self.mascota = mascota
+
+        ttk.Label(self, text='¿A que cliente quieres enlazar?').place(
+            x=90, y=50)
+
+        ttk.Button(self, text='Existente', width=15,
+                   command=self.existente, style='Accent.TButton').place(x=20, y=140)
+
+        ttk.Button(self, text='Nuevo Cliente', width=15,
+                   style='Accent.TButton', command=self.nuevo).place(x=225, y=140)
+
+    def existente(self):
+        self.clienteExistentePage = ClienteExistentePage(
+            self.padre, self.mascota)
+        self.padre.padre.cambioVentana(
+            self, self.clienteExistentePage, [300, 300], 'Cliente Existente')
+
+    def nuevo(self):
+        self.clienteNuevoPage = NuevoClientePage(self.padre, self.mascota)
+        self.padre.padre.cambioVentana(
+            self, self.clienteNuevoPage, [400, 450], 'Nuevo Cliente')
+
+
+class ClienteExistentePage(ttk.Frame):
+    def __init__(self, master: VeterinariaPage, mascota):
+        super().__init__(master=master.padre, width=300, height=300)
+
+        self.padre = master
+        self.mascota = mascota
+        self.cliente = None
+
+        ttk.Button(self, width=10, text='Cancelar',
+                   command=self.cancelar).place(x=10, y=10)
+
+        ttk.Label(self, text='Familia a buscar').place(x=20, y=70)
+
+        self.label = ttk.Label(self, text='').place(x=80, y=120)
+
+        self.familia = ttk.Entry(self, width=25)
+        self.familia.place(x=20, y=100)
+
+        ttk.Button(self, text='Buscar', width=6,
+                   command=self.buscar).place(x=180, y=145)
+
+        ttk.Button(self, text='Ver Familias', width=10,
+                   command=self.verFamilias).place(x=20, y=145)
+
+        self.aceptarBoton = ttk.Button(
+            self, text='Aceptar', state='disabled', command=self.aceptar)
+        self.aceptarBoton.place(x=175, y=250)
+
+    def cancelar(self):
+        self.padre.padre.cambioVentana(
+            self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+        self.destroy()
+
+    def verFamilias(self):
+        popup = tk.Toplevel(self, width=500, height=500)
+        popup.title('Familias')
+
+        familiasFrame = ttk.Frame(popup, width=500, height=500)
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute('select Apellido, IdCliente from Clientes')
+
+            titulos = []
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            clientes = cursor.fetchall()
+
+            cursor.close()
+
+        tabla = ttk.Treeview(familiasFrame, height=20, columns=titulos[1:])
+
+        for i, titulo in enumerate(titulos):
+            if i == 0:
+                tabla.column('#0', width=100, anchor=tk.CENTER)
+                tabla.heading('#0', text=titulo, anchor=tk.CENTER)
+            else:
+                tabla.column(titulo, width=100, anchor=tk.CENTER)
+                tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+        for cliente in clientes:
+            atributos = []
+            for atributo in cliente:
+                atributos.append(atributo)
+
+            tabla.insert('', tk.END, text=atributos[0], values=atributos[1:])
+
+        tabla.pack()
+
+        familiasFrame.pack()
+
+    def buscar(self):
+        familia = self.familia.get()
+
+        if familia == '':
+            showwarning(title='Error',
+                        message='El campo debe de estar lleno')
+            return
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+
+            cursor = conexion.cursor()
+
+            cursor.execute(
+                'select * from Clientes where Apellido = ?', familia)
+
+            resultado = cursor.fetchall()
+
+            if len(resultado) == 1:
+                self.cliente = Cliente(resultado[0])
+                self.aceptarBoton.configure(
+                    state='normal', style='Accent.TButton')
+                showinfo(
+                    title='Exito', message='El cliente ha sido encontrado con exito, aceptar para continuar')
+            else:
+                showerror(title='Error', message='Cliente no encontrado')
+
+            cursor.close()
 
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
