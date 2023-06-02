@@ -134,7 +134,6 @@ class VeterinariaPage(ttk.Frame):
 
         self.padre = master
         self.tabview = ttk.Notebook(self, padding=5)
-        self.ModificarPageV = ModificarPageV(self)
 
         self.mascotaFrame = ttk.Frame(self.tabview, width=1000, height=600)
         self.clienteFrame = ttk.Frame(self.tabview, width=1000, height=600)
@@ -150,8 +149,6 @@ class VeterinariaPage(ttk.Frame):
         # ===============================> MascotaFrame
         self.botonesFrameM = ttk.Frame(
             self.mascotaFrame, style='Card.TFrame', width=430, height=360)
-        ttk.Button(self, text='Modificar', width=40,
-                   command=self.aModificar).place(x=20, y=170)
 
         ttk.Button(self.botonesFrameM, text='Consultas',
                    width=40).place(x=20, y=20)
@@ -159,7 +156,7 @@ class VeterinariaPage(ttk.Frame):
         ttk.Button(self.botonesFrameM, text='Nueva Mascota', width=40,
                    command=self.aInsertarM).place(x=20, y=90)
 
-        ttk.Button(self.botonesFrameM, text='Modificar una mascota',
+        ttk.Button(self.botonesFrameM, text='Modificar una mascota',command=self.aModificarM,
                    width=40).place(x=20, y=160)
 
         ttk.Button(self.botonesFrameM, text='Eliminar una mascota',
@@ -208,7 +205,8 @@ class VeterinariaPage(ttk.Frame):
         self.padre.cambioVentana(self, self.nuevoCliente, [
                                  400, 450], 'Eleccion de Cliente')
 
-    def aModificar(self):
+    def aModificarM(self):
+        self.ModificarPageV = ModificarPageV(self)
         self.padre.cambioVentana(self, self.ModificarPageV, [
                                  700, 520], "Modificar Mascota")
 
@@ -547,7 +545,6 @@ class FamiliaExistentePage(ttk.Frame):
     def verFamilias(self):
 
         if self.familiasFrame:
-            self.familiasFrame.pack_forget()
             self.familiasFrame.destroy()
 
         popup = tk.Toplevel(self, width=500, height=500)
@@ -590,7 +587,6 @@ class FamiliaExistentePage(ttk.Frame):
 
     def buscar(self):
         if self.familiasBuscFrame:
-            self.familiasBuscFrame.pack_forget()
             self.familiasBuscFrame.destroy()
 
         familia = self.familia.get()
@@ -648,7 +644,6 @@ class FamiliaExistentePage(ttk.Frame):
 
     def aceptar(self):
         IdEscrito = self.campoId.get()
-        print(self.mascota)
 
         with pyodbc.connect(
                 f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
