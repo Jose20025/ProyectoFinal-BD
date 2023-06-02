@@ -144,28 +144,55 @@ class VeterinariaPage(ttk.Frame):
         ttk.Button(self.mascotaFrame, text='Consultas',
                    width=40).place(x=20, y=30)
 
-        ttk.Button(self.mascotaFrame, text='Insertar', width=40,
+        ttk.Button(self.mascotaFrame, text='Nueva Mascota', width=40,
                    command=self.aInsertarM).place(x=20, y=100)
 
-        ttk.Button(self.mascotaFrame, text='Modificar',
+        ttk.Button(self.mascotaFrame, text='Modificar una mascota',
                    width=40).place(x=20, y=170)
 
-        ttk.Button(self.mascotaFrame, text='Eliminar',
+        ttk.Button(self.mascotaFrame, text='Eliminar una mascota',
                    width=40).place(x=20, y=240)
 
         ttk.Button(self.mascotaFrame, text='Consulta Personalizada',
                    width=40).place(x=20, y=310)
 
-        self.imagen = ImageTk.PhotoImage(Image.open(
+        self.imagenM = ImageTk.PhotoImage(Image.open(
             './image/logo-transparente.png').resize((220, 200)))
 
-        ttk.Label(self.mascotaFrame, image=self.imagen).place(x=20, y=350)
+        ttk.Label(self.mascotaFrame, image=self.imagenM).place(x=20, y=350)
         # ==============================> MascotaFrame
+
+        # ==============================> ClienteFrame
+        ttk.Button(self.clienteFrame, text='Consultas',
+                   width=40).place(x=20, y=30)
+
+        ttk.Button(self.clienteFrame, text='Nuevo Cliente', width=40,
+                   command=self.aInsertarC).place(x=20, y=100)
+
+        ttk.Button(self.clienteFrame, text='Modificar un cliente',
+                   width=40).place(x=20, y=170)
+
+        ttk.Button(self.clienteFrame, text='Eliminar un cliente',
+                   width=40).place(x=20, y=240)
+
+        ttk.Button(self.clienteFrame, text='Consulta Personalizada',
+                   width=40).place(x=20, y=310)
+
+        self.imagenC = ImageTk.PhotoImage(Image.open(
+            './image/logo-transparente.png').resize((220, 200)))
+
+        ttk.Label(self.clienteFrame, image=self.imagenC).place(x=20, y=350)
+        # ==============================> ClienteFrame
 
     def aInsertarM(self):
         self.eleccionCliente = EleccionCliente(self)
         self.padre.cambioVentana(self, self.eleccionCliente, [
                                  400, 200], 'Eleccion de Cliente')
+
+    def aInsertarC(self):
+        self.nuevoCliente = NuevoClientePageOnly(self)
+        self.padre.cambioVentana(self, self.nuevoCliente, [
+                                 400, 450], 'Eleccion de Cliente')
 
 
 class InsertarPageV(ttk.Frame):
@@ -484,6 +511,85 @@ class ClienteExistentePage(ttk.Frame):
         self.padre.padre.cambioVentana(self, self.insertarPage, [
                                        400, 400], 'Insertar Mascota')
         self.destroy()
+
+
+class NuevoClientePageOnly(ttk.Frame):
+    def __init__(self, master: VeterinariaPage = None):
+        super().__init__(master.padre, height=450, width=400)
+
+        self.padre = master
+
+        ttk.Button(self, text='Cancelar', command=self.cancelar,
+                   width=8).place(x=10, y=10)
+
+        ttk.Label(self, text='Apellido').place(x=20, y=90)
+        self.apellido = ttk.Entry(self, width=38)
+        self.apellido.place(x=20, y=120)
+
+        ttk.Label(self, text='Numero de Cuenta').place(x=20, y=180)
+        self.nrocuenta = ttk.Entry(self, width=18)
+        self.nrocuenta.place(x=20, y=210)
+
+        ttk.Label(self, text='Telefono').place(x=215, y=180)
+        self.telefono = ttk.Entry(self, width=16)
+        self.telefono.place(x=215, y=210)
+
+        ttk.Label(self, text='Direccion').place(x=20, y=270)
+        self.direccion = ttk.Entry(self, width=38)
+        self.direccion.place(x=20, y=300)
+
+        ttk.Button(self, text='Aceptar',
+                   command=self.aceptar).place(x=275, y=400)
+
+    def cancelar(self):
+        respuesta = askquestion(title='Confirmacion',
+                                message='¿Estas seguro de salir?')
+
+        if respuesta == 'yes':
+            self.padre.padre.cambioVentana(
+                self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+            self.destroy()
+
+    def aceptar(self):
+        apellido = self.apellido.get()
+        nrocuenta = self.nrocuenta.get()
+        telefono = self.telefono.get()
+        direccion = self.direccion.get()
+
+        try:
+            nrocuenta = int(nrocuenta)
+            telefono = int(telefono)
+        except Exception:
+            showwarning(title='Error',
+                        message='Uno de los datos esta en mal formato')
+            return
+
+        atributos = [apellido, nrocuenta, direccion, telefono, 0]
+
+        if any(elemento == '' for elemento in atributos):
+            showwarning(title='Error',
+                        message='Todos los campos deben estar llenos')
+            return
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute('exec RegistrarCliente ?,?,?,?,?', atributos)
+
+            info = cursor.fetchall()
+
+            bit, idcliente = info[0]
+
+            if bit:
+                cursor.commit()
+            else:
+                showerror(
+                    title='Error', message='Ha ocurrido un error al insertar el cliente')
+                cursor.rollback()
+
+            cursor.close()
+            conexion.commit()
 
 
 class NuevoClientePage(ttk.Frame):
