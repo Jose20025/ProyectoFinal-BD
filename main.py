@@ -266,8 +266,7 @@ class ModificarPageV(ttk.Frame):
 
             self.PerfilMascotaV = PerfilMascotaV(self, self.atributos)
             self.atributos = []
-            self.padre.padre.cambioVentana(
-                self, self.PerfilMascotaV, [410, 600], "Perfil")
+            self.padre.padre.cambioVentana(self, self.PerfilMascotaV, [410, 600], "Perfil")
 
 
 class PerfilMascotaV(ttk.Frame):
@@ -328,7 +327,7 @@ class PerfilMascotaV(ttk.Frame):
         self.IdCliente.place(x=230, y=395)
         self.IdCliente.insert(0, self.atributos[5])
 
-        self.famBuscarBoton = ttk.Button(self, text='Ver familias', width=12)
+        self.famBuscarBoton = ttk.Button(self, text='Ver familias', width=12,command=self.buscarFamilia)
         self.famBuscarBoton.place(x=230, y=440)
 
         self.guardarBoton = ttk.Button(self, text='Guardar cambios', command=self.ModificarMascota)
@@ -379,55 +378,44 @@ class PerfilMascotaV(ttk.Frame):
             cursor.execute(f"select * from Mascotas where CodMascota = '{self.atributos[7]}' ")
             print(cursor.fetchone())
             cursor.close()
-
-    def verFamilias(self):
-        ventana = ThemedTk('equilux')
-        tk.Label(text='Familia').place
-        self.espacioFamilia = tk.Entry(self,width=15)
-        familia = self.espacioFamilia.get()
-        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
-            cursor = conexion.cursor()
-            cursor.execute('exec ')
             
-class EleccionCliente(ttk.Frame):
-    def __init__(self, master: VeterinariaPage, mascota):
-        super().__init__(master=master.padre, width=400, height=200)
+    def buscarFamilia(self):
+        self.eleccionFamilia = EleccionFamilia(self,self.atributos[7])
+        self.ancestro.cambioVentana(self,self.eleccionFamilia,[400,200],'Eleccion de Familia')
+
+class EleccionFamilia(ttk.Frame):
+    def __init__(self, master: PerfilMascotaV,codMascota):
+        super().__init__(master=master.padre.padre.padre, width=400, height=200)
 
         self.padre = master
-        self.mascota = mascota
-
-        ttk.Label(self, text='¿A que cliente quieres enlazar?').place(
-            x=90, y=50)
-
-        ttk.Button(self, text='Existente', width=15,
-                   command=self.existente, style='Accent.TButton').place(x=20, y=140)
-
-        ttk.Button(self, text='Nuevo Cliente', width=15,
-                   style='Accent.TButton', command=self.nuevo).place(x=225, y=140)
+        self.mascota = codMascota
+        self.ancestro = self.padre.padre.padre.padre
+        ttk.Button(self,text='Cancelar',command=self.cancelar).place(x=10, y=10)
+        ttk.Label(self, text='¿Que familia quiere buscar?').place(x=90, y=70)
+        ttk.Button(self, text='Existente', width=15, command=self.existente, style='Accent.TButton').place(x=20, y=140)
+        ttk.Button(self, text='Nuevo Cliente', width=15,style='Accent.TButton', command=self.nuevo).place(x=225, y=140)
 
     def existente(self):
-        self.clienteExistentePage = ClienteExistentePage(
-            self.padre, self.mascota)
-        self.padre.padre.cambioVentana(
-            self, self.clienteExistentePage, [300, 300], 'Cliente Existente')
+        self.clienteExistentePage = ClienteExistentePage(self,self.mascota)
+        self.padre.padre.cambioVentana(self, self.clienteExistentePage, [300, 300], 'Cliente Existente')
 
     def nuevo(self):
-        self.clienteNuevoPage = NuevoClientePage(self.padre, self.mascota)
-        self.padre.padre.cambioVentana(
-            self, self.clienteNuevoPage, [400, 450], 'Nuevo Cliente')
+        self.clienteNuevoPage = NuevoClientePage(self,self.mascota)
+        self.padre.padre.cambioVentana(self, self.clienteNuevoPage, [400, 450], 'Nueva Familia')
 
+    def cancelar(self):
+        self.ancestro.cambioVentana(self,self.padre,[410, 600], "Perfil")
 
 class ClienteExistentePage(ttk.Frame):
-    def __init__(self, master: VeterinariaPage, mascota):
-        super().__init__(master=master.padre, width=300, height=300)
+    def __init__(self, master: EleccionFamilia, Codmascota):
+        super().__init__(master=master.padre.padre.padre.padre, width=300, height=300)
 
         self.padre = master
-        self.mascota = mascota
+        self.mascota = Codmascota
+        self.ancestro = self.padre.padre.padre.padre.padre
         self.cliente = None
 
-        ttk.Button(self, width=10, text='Cancelar',
-                   command=self.cancelar).place(x=10, y=10)
-
+        ttk.Button(self, width=10, text='Cancelar',command=self.cancelar).place(x=10, y=10)
         ttk.Label(self, text='Familia a buscar').place(x=20, y=70)
 
         self.label = ttk.Label(self, text='').place(x=80, y=120)
@@ -435,19 +423,14 @@ class ClienteExistentePage(ttk.Frame):
         self.familia = ttk.Entry(self, width=25)
         self.familia.place(x=20, y=100)
 
-        ttk.Button(self, text='Buscar', width=6,
-                   command=self.buscar).place(x=180, y=145)
+        ttk.Button(self, text='Buscar', width=6,command=self.buscar).place(x=180, y=145)
+        ttk.Button(self, text='Ver Familias', width=10,command=self.verFamilias).place(x=20, y=145)
 
-        ttk.Button(self, text='Ver Familias', width=10,
-                   command=self.verFamilias).place(x=20, y=145)
-
-        self.aceptarBoton = ttk.Button(
-            self, text='Aceptar', state='disabled', command=self.aceptar)
+        self.aceptarBoton = ttk.Button(self, text='Aceptar', state='disabled', command=self.aceptar)
         self.aceptarBoton.place(x=175, y=250)
 
     def cancelar(self):
-        self.padre.padre.cambioVentana(
-            self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+        self.padre.padre.cambioVentana(self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
         self.destroy()
 
     def verFamilias(self):
@@ -519,7 +502,75 @@ class ClienteExistentePage(ttk.Frame):
                 showerror(title='Error', message='Cliente no encontrado')
 
             cursor.close()
+    
 
+class NuevoClientePage(ttk.Frame):
+    def __init__(self, master: VeterinariaPage = None, mascota: list = None):
+        super().__init__(master.padre, height=450, width=400)
+
+        self.mascota = mascota
+        self.padre = master
+
+        ttk.Button(self, text='Cancelar', command=self.cancelar,width=8).place(x=10, y=10)
+
+        ttk.Label(self, text='Apellido').place(x=20, y=90)
+        self.apellido = ttk.Entry(self, width=38)
+        self.apellido.place(x=20, y=120)
+
+        ttk.Label(self, text='Numero de Cuenta').place(x=20, y=180)
+        self.nrocuenta = ttk.Entry(self, width=18)
+        self.nrocuenta.place(x=20, y=210)
+
+        ttk.Label(self, text='Telefono').place(x=215, y=180)
+        self.telefono = ttk.Entry(self, width=16)
+        self.telefono.place(x=215, y=210)
+
+        ttk.Label(self, text='Direccion').place(x=20, y=270)
+        self.direccion = ttk.Entry(self, width=38)
+        self.direccion.place(x=20, y=300)
+
+        ttk.Button(self, text='Aceptar',
+                   command=self.aceptar).place(x=275, y=400)
+
+    def cancelar(self):
+        respuesta = askquestion(title='Confirmacion',
+                                message='¿Estas seguro de salir?')
+
+        if respuesta == 'yes':
+            self.padre.padre.cambioVentana(
+                self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+            self.destroy()
+
+    def aceptar(self):
+        apellido = self.apellido.get()
+        nrocuenta = self.nrocuenta.get()
+        telefono = self.telefono.get()
+        direccion = self.direccion.get()
+
+        try:
+            nrocuenta = int(nrocuenta)
+            telefono = int(telefono)
+        except Exception:
+            showwarning(title='Error',
+                        message='Uno de los datos esta en mal formato')
+            return
+
+        atributos = [apellido, nrocuenta, direccion, telefono, 0]
+
+        if any(elemento == '' for elemento in atributos):
+            showwarning(title='Error',
+                        message='Todos los campos deben estar llenos')
+            return
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute('exec RegistrarCliente ?,?,?,?,?', atributos)
+
+            info = cursor.fetchall()
+
+            print(info)
 
 conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
               'nangui': ['soychurro', 'BrunoPC'],
