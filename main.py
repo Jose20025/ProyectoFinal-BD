@@ -135,31 +135,40 @@ class VeterinariaPage(ttk.Frame):
 
         self.mascotaFrame = ttk.Frame(self.tabview, width=1000, height=600)
         self.clienteFrame = ttk.Frame(self.tabview, width=1000, height=600)
+        self.pesoFrame = ttk.Frame(self.tabview, width=1000, height=600)
+        self.vacunaFrame = ttk.Frame(self.tabview, width=1000, height=600)
 
         self.tabview.add(self.mascotaFrame, text='Mascotas')
         self.tabview.add(self.clienteFrame, text='Clientes')
+        self.tabview.add(self.pesoFrame, text='Pesos')
+        self.tabview.add(self.vacunaFrame, text='Vacunas')
         self.tabview.pack()
 
         # ===============================> MascotaFrame
-        ttk.Button(self.mascotaFrame, text='Consultas',
-                   width=40).place(x=20, y=30)
+        self.botonesFrameM = ttk.Frame(
+            self.mascotaFrame, style='Card.TFrame', width=430, height=360)
 
-        ttk.Button(self.mascotaFrame, text='Nueva Mascota', width=40,
-                   command=self.aInsertarM).place(x=20, y=100)
+        ttk.Button(self.botonesFrameM, text='Consultas',
+                   width=40).place(x=20, y=20)
 
-        ttk.Button(self.mascotaFrame, text='Modificar una mascota',
-                   width=40).place(x=20, y=170)
+        ttk.Button(self.botonesFrameM, text='Nueva Mascota', width=40,
+                   command=self.aInsertarM).place(x=20, y=90)
 
-        ttk.Button(self.mascotaFrame, text='Eliminar una mascota',
-                   width=40).place(x=20, y=240)
+        ttk.Button(self.botonesFrameM, text='Modificar una mascota',
+                   width=40).place(x=20, y=160)
 
-        ttk.Button(self.mascotaFrame, text='Consulta Personalizada',
-                   width=40).place(x=20, y=310)
+        ttk.Button(self.botonesFrameM, text='Eliminar una mascota',
+                   width=40).place(x=20, y=230)
+
+        ttk.Button(self.botonesFrameM, text='Consulta Personalizada',
+                   width=40).place(x=20, y=300)
 
         self.imagenM = ImageTk.PhotoImage(Image.open(
-            './image/logo-transparente.png').resize((220, 200)))
+            './image/logo-transparente.png').resize((200, 170)))
 
-        ttk.Label(self.mascotaFrame, image=self.imagenM).place(x=20, y=350)
+        ttk.Label(self.mascotaFrame, image=self.imagenM).place(x=-25, y=390)
+
+        self.botonesFrameM.place(x=10, y=10)
         # ==============================> MascotaFrame
 
         # ==============================> ClienteFrame
