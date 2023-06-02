@@ -131,7 +131,7 @@ class VeterinariaPage(ttk.Frame):
         super().__init__(master=master, width=1000, height=600)
 
         self.padre = master
-        self.tabview = ttk.Notebook(self)
+        self.tabview = ttk.Notebook(self, padding=5)
 
         self.mascotaFrame = ttk.Frame(self.tabview, width=1000, height=600)
         self.clienteFrame = ttk.Frame(self.tabview, width=1000, height=600)
@@ -188,9 +188,9 @@ class VeterinariaPage(ttk.Frame):
                    width=40).place(x=20, y=310)
 
         self.imagenC = ImageTk.PhotoImage(Image.open(
-            './image/logo-transparente.png').resize((220, 200)))
+            './image/logo-transparente.png').resize((200, 170)))
 
-        ttk.Label(self.clienteFrame, image=self.imagenC).place(x=20, y=350)
+        ttk.Label(self.clienteFrame, image=self.imagenC).place(x=-25, y=390)
         # ==============================> ClienteFrame
 
     def aInsertarM(self):
@@ -592,6 +592,10 @@ class NuevoClientePageOnly(ttk.Frame):
 
             if bit:
                 cursor.commit()
+                showinfo(title='Exito',
+                         message='El cliente ha sido agregado correctamente!')
+                self.padre.padre.cambioVentana(
+                    self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
             else:
                 showerror(
                     title='Error', message='Ha ocurrido un error al insertar el cliente')
