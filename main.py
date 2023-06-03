@@ -156,7 +156,7 @@ class VeterinariaPage(ttk.Frame):
         ttk.Button(self.botonesFrameM, text='Nueva Mascota', width=40,
                    command=self.aInsertarM).place(x=20, y=90)
 
-        ttk.Button(self.botonesFrameM, text='Modificar una mascota',command=self.aModificarM,
+        ttk.Button(self.botonesFrameM, text='Modificar una mascota', command=self.aModificarM,
                    width=40).place(x=20, y=160)
 
         ttk.Button(self.botonesFrameM, text='Eliminar una mascota',
@@ -168,7 +168,7 @@ class VeterinariaPage(ttk.Frame):
         self.imagenM = ImageTk.PhotoImage(Image.open(
             './image/logo-transparente.png').resize((200, 170)))
 
-        ttk.Label(self.mascotaFrame, image=self.imagenM).place(x=-25, y=390)
+        ttk.Label(self.mascotaFrame, image=self.imagenM).place(x=-25, y=370)
 
         self.botonesFrameM.place(x=10, y=10)
         # ==============================> MascotaFrame
@@ -192,7 +192,7 @@ class VeterinariaPage(ttk.Frame):
         self.imagenC = ImageTk.PhotoImage(Image.open(
             './image/logo-transparente.png').resize((200, 170)))
 
-        ttk.Label(self.clienteFrame, image=self.imagenC).place(x=-25, y=390)
+        ttk.Label(self.clienteFrame, image=self.imagenC).place(x=-25, y=370)
         # ==============================> ClienteFrame
 
     def aInsertarM(self):
@@ -1003,7 +1003,12 @@ class ClienteExistentePage(ttk.Frame):
 
             cursor.close()
 
-        tabla = ttk.Treeview(familiasFrame, height=20, columns=titulos[1:])
+        scroll = ttk.Scrollbar(popup, orient='vertical')
+
+        tabla = ttk.Treeview(familiasFrame, height=20,
+                             columns=titulos[1:], yscrollcommand=scroll.set)
+
+        scroll.config(command=tabla.yview)
 
         for i, titulo in enumerate(titulos):
             if i == 0:
@@ -1021,6 +1026,7 @@ class ClienteExistentePage(ttk.Frame):
             tabla.insert('', tk.END, text=atributos[0], values=atributos[1:])
 
         tabla.pack()
+        scroll.pack(side='right', fill='y')
 
         familiasFrame.pack()
 
@@ -1109,6 +1115,11 @@ class NuevoClientePageOnly(ttk.Frame):
         except Exception:
             showwarning(title='Error',
                         message='Uno de los datos esta en mal formato')
+            return
+
+        if len(str(nrocuenta)) >= 16:
+            showwarning(
+                title='Error', message='El numero de cuenta es invalido (max 16 caracteres)')
             return
 
         atributos = [apellido, nrocuenta, direccion, telefono, 0]
