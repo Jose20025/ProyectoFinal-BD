@@ -993,8 +993,10 @@ class ClienteExistentePage(ttk.Frame):
 
     def verFamilias(self):
 
-        self.popup = tk.Toplevel(self, width=500, height=500)
+        self.popup = tk.Toplevel(self)
         self.popup.title('Familias')
+        self.popup.geometry(
+            f'+{self.winfo_screenwidth()//2}+{self.winfo_screenmmheight()//2}')
 
         self.familiasFrame = ttk.Frame(self.popup, width=500, height=500)
 
@@ -1043,7 +1045,7 @@ class ClienteExistentePage(ttk.Frame):
 
     def seleccion(self, event=None):
         familia = self.tabla.focus()
-        print(self.tabla.item(familia)['text'])
+        # print(self.tabla.item(familia)['text'])
         codigo = self.tabla.item(familia)['values'][0]
 
         self.familia.config(state='normal')
