@@ -22,7 +22,6 @@ BEGIN
         begin
         set @Check = 0
         select @Check
-        rollback
     end
     ELSE
         set @Check = 1
@@ -41,7 +40,7 @@ BEGIN
     insert into Clientes
     values
         (@pIdCliente, @Apellido, @NroCuenta, @Direccion, @Telefono)
-    commit
+
 END
 GO;
 
@@ -116,7 +115,7 @@ alter procedure RegistrarMascota
     @Color_pelo varchar (15),
     @FechaNac date,
     @Tamaño char(2),
-    @Check bit out
+    @Check bit out,
 AS 
 BEGIN
     begin TRANSACTION

@@ -55,7 +55,3 @@ begin
         select @Check
     END
 END
-
-select Alias, Apellido
-from Mascotas
-    inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente

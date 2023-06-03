@@ -171,9 +171,7 @@ class VeterinariaPage(ttk.Frame):
         ttk.Label(self.mascotaFrame, image=self.imagenM).place(x=-25, y=390)
 
         self.botonesFrameM.place(x=10, y=10)
-        # ==============================> MascotaFrame
-
-        # ==============================> ClienteFrame
+        
         ttk.Button(self.clienteFrame, text='Consultas',
                    width=40).place(x=20, y=30)
 
@@ -193,7 +191,6 @@ class VeterinariaPage(ttk.Frame):
             './image/logo-transparente.png').resize((200, 170)))
 
         ttk.Label(self.clienteFrame, image=self.imagenC).place(x=-25, y=390)
-        # ==============================> ClienteFrame
 
     def aInsertarM(self):
         self.eleccionCliente = EleccionCliente(self)
@@ -209,7 +206,6 @@ class VeterinariaPage(ttk.Frame):
         self.ModificarPageV = ModificarPageV(self)
         self.padre.cambioVentana(self, self.ModificarPageV, [
                                  700, 520], "Modificar Mascota")
-
 
 class ModificarPageV(ttk.Frame):
     def __init__(self, master: VeterinariaPage):
@@ -290,7 +286,6 @@ class ModificarPageV(ttk.Frame):
             for titulo in cursor.description:
                 titulos.append(titulo[0])
 
-            print(resultados)
             cursor.close()
             style = ttk.Style()
             style.configure("Custom.Treeview.Heading",
@@ -341,7 +336,6 @@ class ModificarPageV(ttk.Frame):
             self.atributos = []
             self.padre.padre.cambioVentana(
                 self, self.PerfilMascotaV, [410, 600], "Perfil")
-
 
 class PerfilMascotaV(ttk.Frame):
     def __init__(self, master: ModificarPageV, atributos):
@@ -420,6 +414,9 @@ class PerfilMascotaV(ttk.Frame):
         self.atributos = []
         self.padre.atributos = []
         self.padre.textoCod.delete(0, tk.END)
+        if self.padre.tablaFrame:
+            self.padre.tablaFrame.pack_forget()
+            self.padre.tablaFrame.destroy()
         self.ancestro.cambioVentana(
             self, self.padre, [700, 520], 'Modificar Mascota')
         self.destroy()
@@ -462,19 +459,16 @@ class PerfilMascotaV(ttk.Frame):
                     cursor.execute('exec ModificarMascota ?,?,?,?',
                                    (self.atributos[7], 'IdCliente', self.IdCliente.get(), 0))
                     cursor.commit()
-            else:
-                print('que maricon')
-            conexion.commit()
-            cursor.execute(
-                f"select * from Mascotas where CodMascota = '{self.atributos[7]}' ")
-            print(cursor.fetchone())
-            cursor.close()
+            cursor.execute('commit')
+            if self.padre.tablaFrame:
+                self.padre.tablaFrame.pack_forget()
+                self.padre.tablaFrame.destroy()
+            self.ancestro.cambioVentana(self,self.padre,[700, 520], 'Modificar Mascota')
 
     def buscarFamilia(self):
         self.eleccionFamilia = EleccionFamilia(self)
         self.ancestro.cambioVentana(self, self.eleccionFamilia, [
-                                    400, 200], 'Eleccion de Familia')
-
+                                    400, 200], 'Elección de Familia')
 
 class EleccionFamilia(ttk.Frame):
     def __init__(self, master: PerfilMascotaV):
@@ -502,7 +496,6 @@ class EleccionFamilia(ttk.Frame):
 
     def cancelar(self):
         self.ancestro.cambioVentana(self, self.padre, [410, 600], "Perfil")
-
 
 class FamiliaExistentePage(ttk.Frame):
     def __init__(self, master: EleccionFamilia):
@@ -672,12 +665,12 @@ class FamiliaExistentePage(ttk.Frame):
                 showerror(
                     title='Error', message='El cliente no existe. Agréguelo o escriba otro correctamente')
 
-
 class NuevaFamiliaPage(ttk.Frame):
     def __init__(self, master: EleccionFamilia):
-        super().__init__(master.padre, height=450, width=400)
+        super().__init__(master.padre.padre.padre.padre, height=450, width=400)
 
         self.padre = master
+        self.ancestro = self.padre.padre.padre.padre.padre
 
         ttk.Button(self, text='Cancelar', command=self.cancelar,
                    width=8).place(x=10, y=10)
@@ -702,12 +695,8 @@ class NuevaFamiliaPage(ttk.Frame):
                    command=self.aceptar).place(x=275, y=400)
 
     def cancelar(self):
-        respuesta = askquestion(title='Confirmacion',
-                                message='¿Estas seguro de salir?')
-
-        if respuesta == 'yes':
-            self.padre.padre.cambioVentana(
-                self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+            self.ancestro.cambioVentana(
+                self, self.padre, [400, 200], 'Elección de Familia')
             self.destroy()
 
     def aceptar(self):
@@ -734,14 +723,23 @@ class NuevaFamiliaPage(ttk.Frame):
         with pyodbc.connect(
                 f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
-
+            print('hola1')
             cursor.execute('exec RegistrarCliente ?,?,?,?,?', atributos)
-
-            info = cursor.fetchall()
-
-            print(info)
-
-
+            print('hola')
+            resultados = cursor.fetchall()
+            verificacion = resultados[0][0]
+            IdParaPerfil = resultados[0][1]
+            if verificacion:
+                cursor.execute('commit')
+                showinfo('Exito','Cliente registrado exitosamente')
+                self.padre.padre.aux.set(apellido)
+                self.padre.padre.IdCliente.delete(0, 30)
+                self.padre.padre.IdCliente.insert(0, IdParaPerfil)
+                self.ancestro.cambioVentana(self,self.padre.padre,[410, 600], "Perfil")
+            else:
+                cursor.execute('rollback')
+                showwarning('Error en la inserción. Posible cliente duplicado o datos erroneos')
+            
 class InsertarPageV(ttk.Frame):
     def __init__(self, master: VeterinariaPage = None, cliente: Cliente = None):
         super().__init__(master.padre, width=400, height=400)
@@ -921,7 +919,6 @@ class InsertarPageV(ttk.Frame):
         self.razaCBox.config(values=self.razas[especie], state='readonly')
         self.razaCBox.set(self.razas[especie][0])
 
-
 class EleccionCliente(ttk.Frame):
     def __init__(self, master: VeterinariaPage):
         super().__init__(master=master.padre, width=400, height=200)
@@ -949,7 +946,6 @@ class EleccionCliente(ttk.Frame):
         self.padre.padre.cambioVentana(
             self, self.clienteNuevoPage, [400, 450], 'Nuevo Cliente')
         self.destroy()
-
 
 class ClienteExistentePage(ttk.Frame):
     def __init__(self, master: VeterinariaPage):
@@ -1059,7 +1055,6 @@ class ClienteExistentePage(ttk.Frame):
                                        400, 400], 'Insertar Mascota')
         self.destroy()
 
-
 class NuevoClientePageOnly(ttk.Frame):
     def __init__(self, master: VeterinariaPage = None):
         super().__init__(master.padre, height=450, width=400)
@@ -1141,7 +1136,6 @@ class NuevoClientePageOnly(ttk.Frame):
 
             cursor.close()
             conexion.commit()
-
 
 class NuevoClientePage(ttk.Frame):
     def __init__(self, master: VeterinariaPage = None):
@@ -1226,7 +1220,6 @@ class NuevoClientePage(ttk.Frame):
 
             cursor.close()
             conexion.commit()
-
 
 if __name__ == '__main__':
     ctypes.windll.shcore.SetProcessDpiAwareness(2)
