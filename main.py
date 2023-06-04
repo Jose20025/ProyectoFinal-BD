@@ -46,7 +46,6 @@ class App(tk.Tk):
         y = (self.winfo_screenheight() // 2) - (dimensiones[1] // 2)
         self.geometry(f'{dimensiones[0]}x{dimensiones[1]}+{x}+{y-20}')
 
-
 class LoginPage(ttk.Frame):
     def __init__(self, master: App = None):
         super().__init__(master, width=500, height=700)
@@ -123,10 +122,8 @@ class LoginPage(ttk.Frame):
             self.padre.cambioVentana(
                 self, self.padre.hotel, [1000, 600], 'Cute Pets - Hotel')
 
-
 class HotelPage(ttk.Frame):
     pass
-
 
 class VeterinariaPage(ttk.Frame):
     def __init__(self, master: App = None):
@@ -265,22 +262,23 @@ class ModificarPageV(ttk.Frame):
         if self.tablaFrame:
             self.tablaFrame.pack_forget()
             self.tablaFrame.destroy()
-
-        print(self.campoElegido)
-        if self.campoElegido == 'Especie':
-            self.textoBuscar = self.CBoxEspecie.get()
-            print(self.textoBuscar)
-        else:
-            self.textoBuscar = self.espacioBuscar.get()
-
+        self.textoBuscar = self.espacioBuscar.get()
+      
+        if self.espacioBuscar.get() == '':
+            if self.campoElegido == 'Especie':
+                self.textoBuscar = self.CBoxEspecie.get()
+            else:
+                if self.textoBuscar == '':
+                    print('es numero')
+                    showwarning(title='Error de campo',
+                            message='Formato de búsqueda no válido')
+                    return 
         self.tablaFrame = ttk.Frame(self, width=200, height=100)
-
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
             cursor.execute('exec BuscarMascota ?,? ',
-                           (self.campoElegido, self.textoBuscar))
+                        (self.campoElegido, self.textoBuscar))
             resultados = cursor.fetchall()
-            print(' ')
 
             titulos = []
             for titulo in cursor.description:
@@ -293,17 +291,18 @@ class ModificarPageV(ttk.Frame):
                             foreground="#FFFFFF",  # Brighter text color
                             font=("Helvetica", 10))  # Custom font with increased brightness
 
-            tablaEncontrados = ttk.Treeview(
+            self.tablaEncontrados = ttk.Treeview(
                 self.tablaFrame, height=6, columns=titulos[1:], style='Custom.Treeview')
+            self.tablaEncontrados.bind('<Double-1>', self.seleccion)
             for i, titulo in enumerate(titulos):
                 if i == 0:
-                    tablaEncontrados.column('#0', width=100, anchor=tk.CENTER)
-                    tablaEncontrados.heading(
+                    self.tablaEncontrados.column('#0', width=100, anchor=tk.CENTER)
+                    self.tablaEncontrados.heading(
                         '#0', text=titulo, anchor=tk.CENTER)
                 else:
-                    tablaEncontrados.column(
+                    self.tablaEncontrados.column(
                         titulo, width=100, anchor=tk.CENTER)
-                    tablaEncontrados.heading(
+                    self.tablaEncontrados.heading(
                         titulo, text=titulo, anchor=tk.CENTER)
 
             for dato in resultados:
@@ -311,11 +310,20 @@ class ModificarPageV(ttk.Frame):
                 for atributo in dato:
                     atributos.append(atributo)
 
-                tablaEncontrados.insert(
+                self.tablaEncontrados.insert(
                     '', tk.END, text=atributos[0], values=atributos[1:])
 
-            tablaEncontrados.pack()
+            self.tablaEncontrados.pack()
             self.tablaFrame.place(x=60, y=210)
+    
+    def seleccion(self, event=None):
+        familia = self.tablaEncontrados.focus()
+        codigo = self.tablaEncontrados.item(familia)['text']
+
+        self.textoCod.config(state='normal')
+        self.textoCod.delete(0, tk.END)
+        self.textoCod.insert(0, codigo)
+        self.textoCod.config(state='readonly')
 
     def aPrincipal(self):
         self.padre.padre.cambioVentana(
@@ -430,10 +438,15 @@ class PerfilMascotaV(ttk.Frame):
                 print('se guardaron los cambios')
 
                 if self.aliasNuevo.get() != self.atributos[0]:
-                    print('distinto alias')
-                    cursor.execute('exec ModificarMascota ?,?,?,?',
-                                   (self.atributos[7], 'Alias', self.aliasNuevo.get(), 0))
-                    cursor.commit()
+                    if self.aliasNuevo.get().isnumeric():
+                        print('alias es numerico')
+                        showerror('Error de campo','El Alias no puede ser numérico')
+                        return
+                    else:
+                        print('distinto alias')
+                        cursor.execute('exec ModificarMascota ?,?,?,?',
+                                    (self.atributos[7], 'Alias', self.aliasNuevo.get(), 0))
+                        cursor.commit()
 
                 if self.peloNuevo.get() != self.atributos[1]:
                     print('distinto color de pelo')
@@ -487,7 +500,7 @@ class EleccionFamilia(ttk.Frame):
     def existente(self):
         self.clienteExistentePage = FamiliaExistentePage(self)
         self.ancestro.cambioVentana(self, self.clienteExistentePage, [
-                                    380, 340], 'Cliente Existente')
+                                    380, 340], 'Familia Existente')
 
     def nuevo(self):
         self.clienteNuevoPage = NuevaFamiliaPage(self)
@@ -517,7 +530,7 @@ class FamiliaExistentePage(ttk.Frame):
         ttk.Button(self, text='Ver todas', width=10,
                    command=self.verFamilias).place(x=135, y=160)
         ttk.Button(self, text='Buscar', width=6,
-                   command=self.buscar).place(x=275, y=100)
+                   command=self.buscarFamilia).place(x=275, y=100)
 
         self.IdCli = tk.StringVar()
         ttk.Label(self, text='Código Cliente').place(x=20, y=255)
@@ -527,8 +540,8 @@ class FamiliaExistentePage(ttk.Frame):
             self, text='Aceptar', state='disabled', command=self.aceptar)
         self.aceptarBoton.place(x=250, y=280)
 
-        self.familiasFrame = None
-        self.familiasBuscFrame = None
+        self.popupFam = None
+        self.popupBuscFam = None
 
     def cancelar(self):
         self.ancestro.cambioVentana(
@@ -537,13 +550,15 @@ class FamiliaExistentePage(ttk.Frame):
 
     def verFamilias(self):
 
-        if self.familiasFrame:
-            self.familiasFrame.destroy()
+        if self.popupFam:
+            self.popupFam.destroy()
+        if self.popupBuscFam:
+            self.popupBuscFam.destroy()
 
-        popup = tk.Toplevel(self, width=500, height=500)
-        popup.title('Familias')
+        self.popupFam = tk.Toplevel(self, width=500, height=500)
+        self.popupFam.title('Familias')
 
-        self.familiasFrame = ttk.Frame(popup, width=500, height=500)
+        self.familiasFrame = ttk.Frame(self.popupFam, width=500, height=500)
 
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
@@ -556,46 +571,59 @@ class FamiliaExistentePage(ttk.Frame):
             clientes = cursor.fetchall()
             cursor.close()
 
-            tabla = ttk.Treeview(self.familiasFrame,
+            self.tablaFamilias = ttk.Treeview(self.familiasFrame,
                                  height=20, columns=titulos[1:])
+            self.tablaFamilias.bind('<Double-1>', self.seleccion)
 
             for i, titulo in enumerate(titulos):
                 if i == 0:
-                    tabla.column('#0', width=100, anchor=tk.CENTER)
-                    tabla.heading('#0', text=titulo, anchor=tk.CENTER)
+                    self.tablaFamilias.column('#0', width=100, anchor=tk.CENTER)
+                    self.tablaFamilias.heading('#0', text=titulo, anchor=tk.CENTER)
                 else:
-                    tabla.column(titulo, width=100, anchor=tk.CENTER)
-                    tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
+                    self.tablaFamilias.column(titulo, width=100, anchor=tk.CENTER)
+                    self.tablaFamilias.heading(titulo, text=titulo, anchor=tk.CENTER)
 
             for cliente in clientes:
                 atributos = []
                 for atributo in cliente:
                     atributos.append(atributo)
 
-                tabla.insert(
+                self.tablaFamilias.insert(
                     '', tk.END, text=atributos[0], values=atributos[1:])
 
-            tabla.pack()
+            self.tablaFamilias.pack()
             self.familiasFrame.pack()
+    
+    def seleccion(self, event=None):
+        familia = self.tablaFamilias.focus()
+        codigo = self.tablaFamilias.item(familia)['values'][2]
 
-    def buscar(self):
-        if self.familiasBuscFrame:
-            self.familiasBuscFrame.destroy()
+        self.campoId.config(state='normal')
+        self.campoId.delete(0, tk.END)
+        self.campoId.insert(0, codigo)
+        self.campoId.config(state='readonly')
+        self.aceptarBoton.config(state='normal', style='Accent.TButton')
+
+    def buscarFamilia(self):
+        if self.popupFam:
+            self.popupFam.destroy()
+        if self.popupBuscFam:
+            self.popupBuscFam.destroy()
 
         familia = self.familia.get()
         if familia == '':
             showwarning(title='Error', message='El campo debe de estar lleno')
             return
 
-        popup = tk.Toplevel(self, width=500, height=500)
-        popup.title('Familias')
-        self.familiasBuscFrame = ttk.Frame(popup, width=500, height=500)
+        self.popupBuscFam = tk.Toplevel(self, width=500, height=500)
+        self.popupBuscFam.title('Familias')
+        self.familiasBuscFrame = ttk.Frame(self.popupBuscFam, width=500, height=500)
 
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
 
             cursor = conexion.cursor()
             cursor.execute(
-                'select * from Clientes where Apellido = ?', familia)
+                'select Apellido,NroCuenta,Telefono,IdCliente from Clientes where Apellido = ?', familia)
 
             resultados = cursor.fetchall()
 
@@ -613,31 +641,45 @@ class FamiliaExistentePage(ttk.Frame):
             else:
                 showerror(title='Error', message='Cliente(s) no encontrado(s)')
 
-            tabla = ttk.Treeview(self.familiasBuscFrame,
+            self.tablaBuscarFam = ttk.Treeview(self.familiasBuscFrame,
                                  height=20, columns=titulos[1:])
-
+        
+            self.tablaBuscarFam.bind('<Double-1>', self.seleccionBusc)
             for i, titulo in enumerate(titulos):
                 if i == 0:
-                    tabla.column('#0', width=100, anchor=tk.CENTER)
-                    tabla.heading('#0', text=titulo, anchor=tk.CENTER)
+                    self.tablaBuscarFam.column('#0', width=100, anchor=tk.CENTER)
+                    self.tablaBuscarFam.heading('#0', text=titulo, anchor=tk.CENTER)
                 else:
-                    tabla.column(titulo, width=100, anchor=tk.CENTER)
-                    tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
+                    self.tablaBuscarFam.column(titulo, width=100, anchor=tk.CENTER)
+                    self.tablaBuscarFam.heading(titulo, text=titulo, anchor=tk.CENTER)
 
             for cliente in resultados:
                 atributos = []
                 for atributo in cliente:
                     atributos.append(atributo)
                 print(atributos)
-                tabla.insert(
+                self.tablaBuscarFam.insert(
                     '', tk.END, text=atributos[0], values=atributos[1:])
 
-            tabla.pack()
+            self.tablaBuscarFam.pack()
             self.familiasBuscFrame.pack()
 
-    def aceptar(self):
-        IdEscrito = self.campoId.get()
+    def seleccionBusc(self, event=None):
+        familia = self.tablaBuscarFam.focus()
+        codigo = self.tablaBuscarFam.item(familia)['values'][2]
+        print(codigo)
+        self.campoId.config(state='normal')
+        self.campoId.delete(0, tk.END)
+        self.campoId.insert(0, codigo)
+        self.campoId.config(state='readonly')
+        self.aceptarBoton.config(state='normal', style='Accent.TButton')
 
+    def aceptar(self):
+        if self.popupFam:
+            self.popupFam.destroy()
+        if self.popupBuscFam:
+            self.popupBuscFam.destroy()
+        IdEscrito = self.campoId.get()
         with pyodbc.connect(
                 f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
@@ -705,12 +747,17 @@ class NuevaFamiliaPage(ttk.Frame):
         telefono = self.telefono.get()
         direccion = self.direccion.get()
 
-        try:
-            nrocuenta = int(nrocuenta)
-            telefono = int(telefono)
-        except Exception:
-            showwarning(title='Error',
-                        message='Uno de los datos esta en mal formato')
+        if apellido.isnumeric() or not apellido.isalpha():
+            showwarning('Error de campo','Formato de apellido no válido')
+            return
+        if len(str(nrocuenta)) != 10 or not str(nrocuenta).isnumeric():
+            showwarning('Error de campo','Formato de Número de cuenta no válido')
+            return
+        if len(str(telefono)) < 8 or not str(telefono).isnumeric():
+            showwarning('Error de campo','Formato de teléfono no válido')
+            return
+        if direccion.isnumeric():
+            showwarning('Error de campo','Formato de dirección no válida')
             return
 
         atributos = [apellido, nrocuenta, direccion, telefono, 0]
@@ -731,7 +778,7 @@ class NuevaFamiliaPage(ttk.Frame):
             IdParaPerfil = resultados[0][1]
             if verificacion:
                 cursor.execute('commit')
-                showinfo('Exito','Cliente registrado exitosamente')
+                showinfo('Exito','Cliente registrado exitosamente \nDatos enviados a al perfil')
                 self.padre.padre.aux.set(apellido)
                 self.padre.padre.IdCliente.delete(0, 30)
                 self.padre.padre.IdCliente.insert(0, IdParaPerfil)
