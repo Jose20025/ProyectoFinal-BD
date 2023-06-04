@@ -60,10 +60,46 @@ GO
 alter procedure HistorialPeso
 @CodMascota char (5)
 AS
-
 select CONCAT(convert(varchar(2),FORMAT(FechaPeso,'dd','es-BO')),' ',
               convert(varchar(10),FORMAT(FechaPeso,'MMMM','es-BO')),' ',
               convert(varchar(4),FORMAT(FechaPeso,'yyyy','es-BO'))
             ) as 'Fecha',
         CONCAT(convert(char(5),Peso),'kg') as 'Peso' 
         from HistorialesPeso where CodMascota = @CodMascota order by FechaPeso ASC
+go
+
+create procedure HistorialVacunacion
+@CodMascota char (5)
+AS
+select CONCAT(convert(varchar(2),FORMAT(FechaVacuna,'dd','es-BO')),' ',
+              convert(varchar(10),FORMAT(FechaVacuna,'MMMM','es-BO')),' ',
+              convert(varchar(4),FORMAT(FechaVacuna,'yyyy','es-BO'))
+            ) as 'Fecha',
+        TipoVacuna as 'Vacuna',
+        Fabricante 
+        from CalendariosVacunas where CodMascota = @CodMascota order by FechaVacuna ASC
+go
+
+
+alter procedure PesoReciente
+@CodMascota char (5)
+as
+BEGIN
+    select top 1 concat(convert(varchar(4),Peso),' kg'),FechaPeso from HistorialesPeso where CodMascota=@CodMascota order by FechaPeso desc
+END
+go
+
+create procedure VacunaReciente
+@CodMascota char (5)
+as
+BEGIN
+    select top 1 TipoVacuna,FechaVacuna from CalendariosVacunas where CodMascota=@CodMascota order by FechaVacuna desc
+END
+go
+
+create procedure SituacionReciente
+@CodMascota char (5)
+as
+BEGIN
+    select top 1 Situacion,FechaConsulta from HistorialesMedicos where CodMascota=@CodMascota order by FechaConsulta desc
+END

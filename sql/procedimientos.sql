@@ -103,14 +103,14 @@ GO;
 
 --Procedimiento para registrar una mascota 
 alter procedure RegistrarMascota
-    @IdCliente varchar(20),
-    @Alias varchar(20),
-    @Especie varchar(40),
-    @Raza varchar(14),
-    @Color_pelo varchar (15),
-    @FechaNac date,
-    @Tamaño char(2),
-    @Check bit out,
+@IdCliente varchar(20),
+@Alias varchar(20),
+@Especie varchar(40),
+@Raza varchar(14),
+@Color_pelo varchar (15),
+@FechaNac date,
+@Tamaño char(2),
+@Check bit out
 AS 
 BEGIN
     begin TRANSACTION

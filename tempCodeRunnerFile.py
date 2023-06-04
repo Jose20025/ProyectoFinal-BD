@@ -1,5 +1,8 @@
 
-                        self.tablaPesos.heading('#0', text=titulo, anchor=tk.CENTER)
-                    else:
-                        self.tablaPesos.column(titulo, width=100, anchor=tk.CENTER)
-                        self.tablaPesos.heading(titulo, text=titulo, anchor=tk.CENTER)
+        super().__init__(master=master.padre, width=700, height=520)
+
+        self.padre = master
+        ttk.Button(self, text='Volver',
+                   command=self.aPrincipal).place(x=10, y=10)
+
+        self.tablaFrame = None
