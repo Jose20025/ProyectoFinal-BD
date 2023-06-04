@@ -197,10 +197,11 @@ class VeterinariaPage(ttk.Frame):
 
         #### SECCIÓN DE PESOS #####
 
+
         self.tablaMascotasPesos = None
         ttk.Label(self.pesoFrame, text='Ingrese su búsqueda').place(x=26, y=25)
-        self.espacioBuscar = ttk.Entry(self.pesoFrame, width=16)
-        self.espacioBuscar.place(x=28, y=60)
+        self.espacioBuscarPeso = ttk.Entry(self.pesoFrame, width=16)
+        self.espacioBuscarPeso.place(x=28, y=60)
         self.botonBuscar = ttk.Button(
             self.pesoFrame, width=8, text='Buscar', command=self.Buscar)
         self.botonBuscar.place(x=90, y=105)
@@ -241,11 +242,76 @@ class VeterinariaPage(ttk.Frame):
         self.botonRegPeso = ttk.Button(self.pesoFrame,width=9,text='Registrar',command=self.RegistrarPeso)
         self.botonRegPeso.place(x=850,y=285)
 
-        self.botonHistPeso = ttk.Button(self.pesoFrame,width=14,text='Historial de pesos',command=self.ObtenerHistorialPesos)
-        self.botonHistPeso.place(x=760,y=490)
+        self.botonHistPeso = ttk.Button(self.pesoFrame,width=14,text='Obtener historial de pesos',command=self.ObtenerHistorialPesos)
+        self.botonHistPeso.place(x=710,y=490)
 
         self.popupPesos = None
 
+
+        #### SECCION DE VACUNAS ####
+
+
+        self.tablaMascotasVacunas = None
+
+        ttk.Label(self.vacunaFrame, text='Ingrese su búsqueda').place(x=26, y=25)
+        self.espacioBuscarVac = ttk.Entry(self.vacunaFrame, width=16)
+        self.espacioBuscarVac.place(x=28, y=60)
+        self.botonBuscarVac = ttk.Button(
+            self.vacunaFrame, width=8, text='Buscar', command=self.BuscarVac)
+        self.botonBuscarVac.place(x=90, y=105)
+
+        self.eleccionCampoVac = tk.StringVar()
+        self.botonRadAliasVac = ttk.Radiobutton(
+            self.vacunaFrame, text='Alias', variable=self.eleccionCampoVac, value='Alias', command=self.EleccionCampo)
+        self.botonRadAliasVac.place(x=205, y=60)
+        self.botonRadFamVac = ttk.Radiobutton(
+            self.vacunaFrame, text='Familia', variable=self.eleccionCampoVac, value='Apellido', command=self.EleccionCampo)
+        self.botonRadFamVac.place(x=300, y=60)
+        self.botonRadEspecieVac = ttk.Radiobutton(
+            self.vacunaFrame, text='Especie', variable=self.eleccionCampoVac, value='Especie', command=self.EleccionCampo)
+        self.botonRadEspecieVac.place(x=405, y=60)
+
+        self.eleccionEspecieVac = tk.StringVar()
+        self.CBoxEspecieVac = ttk.Combobox(
+            self.vacunaFrame, values=['Canino', 'Felino'], state='disabled', width=12,textvariable=self.eleccionEspecieVac)
+        self.CBoxEspecieVac.place(x=520, y=58)
+
+        self.CodVac = tk.StringVar()
+        ttk.Label(self.vacunaFrame, text='Código de Mascota').place(x=480, y=410)
+        self.textoCodVac = ttk.Entry(self.vacunaFrame, width=12, textvariable=self.CodVac)
+        self.textoCodVac.place(x=480, y=445)
+
+        barra = ttk.Separator(self.vacunaFrame,orient=tk.VERTICAL)
+        barra.place(x=665,y=0,height=590,width=2)
+
+        ttk.Label(self.vacunaFrame,text='Fecha de hoy').place(x=775,y=30)
+        self.vac = tk.StringVar()
+        self.FechaHoy = ttk.Entry(self.vacunaFrame,width=11,textvariable=self.fecha)
+        self.FechaHoy.place(x=775,y=65)
+
+        self.vacDisponibles = {
+            'Felino':['Antirrabica','Triple Felina','Hepatitis'],
+            'Canino':['Antirrabica','Parvovirus']
+            }
+
+        self.vacunaElegida = tk.StringVar()
+        ttk.Label(self.vacunaFrame,text='Vacuna').place(x=700,y=180)
+        self.vacunaCBox = ttk.Combobox(self.vacunaFrame,state='disabled',textvariable=self.vacunaElegida)
+        self.vacunaCBox.place(x=700,y=210)
+
+        self.proveedorElegido = tk.StringVar()
+        ttk.Label(self.vacunaFrame,text='Proveedor').place(x=700,y=270)
+        self.proveedorCBox = ttk.Combobox(self.vacunaFrame,state='disabled',values=['Tecnofarma','Biogenetics'],textvariable=self.proveedorElegido)
+        self.proveedorCBox.place(x=700,y=300)
+
+        self.botonRegVac = ttk.Button(self.vacunaFrame,width=12,text='Registrar',command=self.RegistrarVacunacion)
+        self.botonRegVac.place(x=760,y=360)
+
+        self.historialVacBoton = ttk.Button(self.vacunaFrame,text='Obtener historial de vacunas',command=self.ObtenerHistorialVac)
+        self.historialVacBoton.place(x=710,y=490)
+        self.popupVac = None
+
+        
     def RegistrarPeso(self):
         codigo = self.textoCod.get()
         peso = self.espacioPeso.get()
@@ -273,6 +339,31 @@ class VeterinariaPage(ttk.Frame):
                 cursor.close()
 
         self.Cod.set('')
+
+    def RegistrarVacunacion(self):
+        codigo = self.textoCodVac.get()
+        vacuna = self.vacunaCBox.get()
+        proveedor = self.proveedorCBox.get() 
+        if codigo == '':
+            showerror('Error de campo','No ha indicado la mascota')
+        else:
+            with pyodbc.connect(f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+                cursor = conexion.cursor()      
+                cursor.execute('RegistrarVacunacion ?,?,?,?,?',(date.today(),codigo,vacuna,proveedor,0))
+                bit = cursor.fetchone()
+                bit = bit[0]
+                if bit:
+                    cursor.execute('commit')
+                    showinfo('Éxito','Vacunación registrada')
+                    self.espacioBuscarVac.delete(0,30)
+                    self.textoCodVac.delete(0,30)
+                else:
+                    cursor.execute('rollback')
+                    showwarning('Error','Ya ha registrado esa vacuna')
+                conexion.commit()
+                cursor.close()
+
+        self.CodVac.set('')
 
     def es_decimal(self,string):
         try:
@@ -327,6 +418,52 @@ class VeterinariaPage(ttk.Frame):
                 self.tablaPesos.pack()
                 self.historialFrame.pack()
     
+    def ObtenerHistorialVac(self):
+        if self.popupVac:
+            self.popupVac.destroy()
+        codigo = self.textoCodVac.get()
+        if codigo == '':
+            showerror('Error de campo','No ha indicado la mascota')
+        else:
+            
+            self.popupVac = tk.Toplevel(self.vacunaFrame, width=500, height=500)
+            self.popupVac.title('Historia Vacunas')
+
+            self.historialVacFrame = ttk.Frame(self.popupVac, width=500, height=500)
+
+            with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+                cursor = conexion.cursor()
+                cursor.execute('exec HistorialVacunas ?',(codigo))
+                titulos = []
+                for titulo in cursor.description:
+                    titulos.append(titulo[0])
+
+                datos = cursor.fetchall()
+                cursor.close()
+
+                self.tablaVacunas = ttk.Treeview(self.vacunaFrame,
+                                    height=20, columns=titulos[1:])
+                self.tablaVacunas.bind('<Double-1>', self.seleccion)
+
+                for i, titulo in enumerate(titulos):
+                    if i == 0:
+                        self.tablaVacunas.column('#0', width=150, anchor=tk.CENTER)
+                        self.tablaVacunas.heading('#0', text=titulo, anchor=tk.CENTER)
+                    else:
+                        self.tablaVacunas.column(titulo, width=150, anchor=tk.CENTER)
+                        self.tablaVacunas.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+                for cliente in datos:
+                    atributos = []
+                    for atributo in cliente:
+                        atributos.append(atributo)
+
+                    self.tablaVacunas.insert(
+                        '', tk.END, text=atributos[0], values=atributos[1:])
+
+                self.tablaVacunas.pack()
+                self.historialVacFrame.pack()
+
     # def CambiandoSize(self, event):
     #     eleccionTab = event.widget.index("current")
     #     nombreTab = event.widget.tab(eleccionTab, option="text")
@@ -335,30 +472,38 @@ class VeterinariaPage(ttk.Frame):
     #     else:
     #         self.master.geometry("1000x600")
     
-
     def EleccionCampo(self):
         self.campoElegido = str(self.eleccionCampo.get())
+        self.campoElegidoVac = str(self.eleccionCampoVac.get())
+
         if self.campoElegido == 'Especie':
-            self.espacioBuscar.delete(0, 30)
-            self.espacioBuscar.configure(state='disabled')
+            self.espacioBuscarPeso.delete(0, 30)
+            self.espacioBuscarPeso.configure(state='disabled')
             self.CBoxEspecie.configure(state='readonly')
         else:
             self.CBoxEspecie.set('')
-            self.espacioBuscar.configure(state='normal')
+            self.espacioBuscarPeso.configure(state='normal')
             self.CBoxEspecie.configure(state='disabled')
 
+        if self.campoElegidoVac == 'Especie':
+            self.espacioBuscarVac.delete(0,30)
+            self.espacioBuscarVac.configure(state='disabled')
+            self.CBoxEspecieVac.configure(state='readonly')
+        else:
+            self.CBoxEspecieVac.set('')
+            self.espacioBuscarVac.configure(state='normal')
+            self.CBoxEspecieVac.configure(state='disabled')
+            
     def Buscar(self):
 
         if self.tablaMascotasPesos:
-            self.tablaMascotasPesos.pack_forget()
             self.tablaMascotasPesos.destroy()
-        self.textoBuscar = self.espacioBuscar.get()
       
-        if self.espacioBuscar.get() == '':
+        if self.espacioBuscarPeso.get() == '':
             if self.campoElegido == 'Especie':
-                self.textoBuscar = self.CBoxEspecie.get()
+                self.textoBuscarPeso = self.CBoxEspecie.get()
             else:
-                if self.textoBuscar == '':
+                if self.textoBuscarPeso == '':
                     print('es numero')
                     showwarning(title='Error de campo',
                             message='Campo de búsqueda vacío')
@@ -367,7 +512,7 @@ class VeterinariaPage(ttk.Frame):
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
             cursor.execute('exec BuscarMascota ?,? ',
-                        (self.campoElegido, self.textoBuscar))
+                        (self.campoElegido, self.textoBuscarPeso))
             resultados = cursor.fetchall()
 
             titulos = []
@@ -399,6 +544,58 @@ class VeterinariaPage(ttk.Frame):
 
             self.tablaEncontrados.pack()
             self.tablaMascotasPesos.place(x=60, y=180)
+
+    def BuscarVac(self):
+        if self.tablaMascotasVacunas:
+            self.tablaMascotasVacunas.destroy()
+
+        self.textoBuscarVac = self.espacioBuscarVac.get()
+
+        if self.espacioBuscarVac.get() == '':
+            if self.campoElegidoVac == 'Especie':
+                self.textoBuscarVac = self.CBoxEspecieVac.get()
+            else:
+                if self.textoBuscarVac == '':
+                    print('es numero')
+                    showwarning(title='Error de campo',
+                            message='Campo de búsqueda vacío')
+                    return 
+        self.tablaMascotasVacunas = ttk.Frame(self.vacunaFrame, width=200, height=100)
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            cursor.execute('exec BuscarMascota ?,? ',
+                        (self.campoElegidoVac, self.textoBuscarVac))
+            resultados = cursor.fetchall()
+
+            titulos = []
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            cursor.close()
+            self.tablaEncontradosVac = ttk.Treeview(
+                self.tablaMascotasVacunas, height=6, columns=titulos[1:])
+            self.tablaEncontradosVac.bind('<Double-1>', self.seleccionVac)
+            for i, titulo in enumerate(titulos):
+                if i == 0:
+                    self.tablaEncontradosVac.column('#0', width=100, anchor=tk.CENTER)
+                    self.tablaEncontradosVac.heading(
+                        '#0', text=titulo, anchor=tk.CENTER)
+                else:
+                    self.tablaEncontradosVac.column(
+                        titulo, width=100, anchor=tk.CENTER)
+                    self.tablaEncontradosVac.heading(
+                        titulo, text=titulo, anchor=tk.CENTER)
+
+            for dato in resultados:
+                atributos = []
+                for atributo in dato:
+                    atributos.append(atributo)
+
+                self.tablaEncontradosVac.insert(
+                    '', tk.END, text=atributos[0], values=atributos[1:])
+
+            self.tablaEncontradosVac.pack()
+            self.tablaMascotasVacunas.place(x=60, y=180)
     
     def seleccion(self, event=None):
         familia = self.tablaEncontrados.focus()
@@ -408,6 +605,21 @@ class VeterinariaPage(ttk.Frame):
         self.textoCod.delete(0, tk.END)
         self.textoCod.insert(0, codigo)
         self.textoCod.config(state='readonly')
+
+    def seleccionVac(self,event=None):
+        familiaVac = self.tablaEncontradosVac.focus()
+        codigoVac = self.tablaEncontradosVac.item(familiaVac)['text']
+        especie = self.tablaEncontradosVac.item(familiaVac)['values'][2]
+
+        self.textoCodVac.config(state='normal')
+        self.textoCodVac.delete(0, tk.END)
+        self.textoCodVac.insert(0, codigoVac)
+        self.textoCodVac.config(state='readonly')
+
+        self.proveedorCBox.set('')
+        self.vacunaCBox.set('')
+        self.vacunaCBox.configure(values=self.vacDisponibles[especie],state='readonly')         
+        self.proveedorCBox.configure(state='readonly')
 
     def aInsertarM(self):
         self.eleccionCliente = EleccionCliente(self)
@@ -439,8 +651,8 @@ class InfoPage(ttk.Frame):
         self.tablaFrame = None
 
         ttk.Label(self, text='Ingrese su búsqueda').place(x=26, y=60)
-        self.espacioBuscar = ttk.Entry(self, width=16)
-        self.espacioBuscar.place(x=28, y=90)
+        self.espacioBuscarPeso = ttk.Entry(self, width=16)
+        self.espacioBuscarPeso.place(x=28, y=90)
         self.botonBuscar = ttk.Button(
             self, width=8, text='Buscar', command=self.Buscar)
         self.botonBuscar.place(x=90, y=135)
@@ -496,12 +708,12 @@ class InfoPage(ttk.Frame):
     def EleccionCampo(self):
         self.campoElegido = str(self.eleccionCampo.get())
         if self.campoElegido == 'Especie':
-            self.espacioBuscar.delete(0, 30)
-            self.espacioBuscar.configure(state='disabled')
+            self.espacioBuscarPeso.delete(0, 30)
+            self.espacioBuscarPeso.configure(state='disabled')
             self.CBoxEspecie.configure(state='readonly')
         else:
             self.CBoxEspecie.set('')
-            self.espacioBuscar.configure(state='normal')
+            self.espacioBuscarPeso.configure(state='normal')
             self.CBoxEspecie.configure(state='disabled')
 
     def Buscar(self):
@@ -509,13 +721,13 @@ class InfoPage(ttk.Frame):
         if self.tablaFrame:
             self.tablaFrame.pack_forget()
             self.tablaFrame.destroy()
-        self.textoBuscar = self.espacioBuscar.get()
+        self.textoBuscarPeso = self.espacioBuscarPeso.get()
       
         if self.espacioBuscar.get() == '':
             if self.campoElegido == 'Especie':
-                self.textoBuscar = self.CBoxEspecie.get()
+                self.textoBuscarPeso = self.CBoxEspecie.get()
             else:
-                if self.textoBuscar == '':
+                if self.textoBuscarPeso == '':
                     print('es numero')
                     showwarning(title='Error de campo',
                             message='Formato de búsqueda no válido')
@@ -524,7 +736,7 @@ class InfoPage(ttk.Frame):
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
             cursor.execute('exec BuscarMascota ?,? ',
-                        (self.campoElegido, self.textoBuscar))
+                        (self.campoElegido, self.textoBuscarPeso))
             resultados = cursor.fetchall()
             titulos = []
             for titulo in cursor.description:
@@ -696,7 +908,6 @@ class InfoPage(ttk.Frame):
                 self.tablaVacunas.pack()
                 self.historialFrame.pack()
 
-
 class ModificarPageV(ttk.Frame):
     def __init__(self, master: VeterinariaPage):
         super().__init__(master=master.padre, width=700, height=520)
@@ -755,7 +966,7 @@ class ModificarPageV(ttk.Frame):
         if self.tablaFrame:
             self.tablaFrame.pack_forget()
             self.tablaFrame.destroy()
-        self.textoBuscar = self.espacioBuscar.get()
+        self.textoBuscarPeso = self.espacioBuscar.get()
       
         if self.espacioBuscar.get() == '':
             if self.campoElegido == 'Especie':

@@ -80,7 +80,6 @@ select CONCAT(convert(varchar(2),FORMAT(FechaVacuna,'dd','es-BO')),' ',
         from CalendariosVacunas where CodMascota = @CodMascota order by FechaVacuna ASC
 go
 
-
 alter procedure PesoReciente
 @CodMascota char (5)
 as
@@ -103,3 +102,5 @@ as
 BEGIN
     select top 1 Situacion,FechaConsulta from HistorialesMedicos where CodMascota=@CodMascota order by FechaConsulta desc
 END
+
+select * from Vacunas

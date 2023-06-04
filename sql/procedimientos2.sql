@@ -153,7 +153,7 @@ END
 GO; 
 
 --Procedimiento para registrar una vacunacion
-create PROCEDURE RegistrarVacunacion
+alter PROCEDURE RegistrarVacunacion
 @FechaVacuna date,
 @CodMascota char (5),
 @TipoVacuna varchar(15),
@@ -163,15 +163,16 @@ as
 BEGIN
     begin TRANSACTION 
     if exists (select 1 from CalendariosVacunas 
-                where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna and Fabricante=@Fabricante)
+                where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna)
         BEGIN
         set @Check = 0
         SELECT @Check
         end
     ELSE
         BEGIN
-        insert into CalendariosVacunas values (@FechaVacuna,@CodMascota,@TipoVacuna,@Fabricante)    
         set @Check = 1
+        select @Check
+        insert into CalendariosVacunas values (@FechaVacuna,@CodMascota,@TipoVacuna,@Fabricante)    
         END
 END
 GO;
