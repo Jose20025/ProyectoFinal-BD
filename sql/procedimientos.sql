@@ -54,21 +54,17 @@ AS
 BEGIN
     begin TRANSACTION
     declare @SQL NVARCHAR(MAX)
-    set @SQL = N'UPDATE Clientes set '+ QUOTENAME(@Campo)+' = @NuevoValor WHERE IdCliente = @IdCliente'
-    where IdCliente=@IdCliente and
-    (NroCuenta=@NuevoValor or Telefono=@NuevoValor))
+    set @SQL = N'UPDATE Clientes set '+ QUOTENAME(@Campo)+' = @NuevoValor WHERE IdCliente = @IdCliente  where IdCliente=@IdCliente and (NroCuenta=@NuevoValor or Telefono=@NuevoValor))'
     BEGIN
         set @Check = 1
         SELECT @Check
     END
-    =======
     if exists (select 1
     from Clientes
     where IdCliente=@IdCliente and (NroCuenta=@NuevoValor or Telefono=@NuevoValor))
         BEGIN
         set @Check = 1
     END
-    >>>>>>> ModificarVet
     ELSE
     BEGIN
         set @Check = 0
@@ -177,11 +173,7 @@ BEGIN
 END
 GO;
 
-exec ModificarMascota 'M0047','Color_pelo','Manchado',1
-commit
 
-select *
-from Mascotas
 
 --Eliminacion de mascota
 create procedure EliminarMascota

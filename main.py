@@ -3,14 +3,12 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import ttk
 from tkinter.messagebox import askquestion, showerror, showinfo, showwarning
-
 import pyodbc
 from PIL import Image, ImageTk
-
 from models.cliente import Cliente
+from datetime import date
 
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
-
 
 class App(tk.Tk):
     def __init__(self):
@@ -130,20 +128,26 @@ class VeterinariaPage(ttk.Frame):
         super().__init__(master=master, width=1000, height=600)
 
         self.padre = master
-        self.tabview = ttk.Notebook(self, padding=5)
+
+        self.tabview = ttk.Notebook(self, padding=4)
+        #self.tabview.bind('<<NotebookTabChanged>>',self.CambiandoSize)
 
         self.mascotaFrame = ttk.Frame(self.tabview, width=1000, height=600)
         self.clienteFrame = ttk.Frame(self.tabview, width=1000, height=600)
-        self.pesoFrame = ttk.Frame(self.tabview, width=1000, height=600)
+        self.pesoFrame = ttk.Frame(self.tabview, width=1800, height=600)
         self.vacunaFrame = ttk.Frame(self.tabview, width=1000, height=600)
 
         self.tabview.add(self.mascotaFrame, text='Mascotas')
         self.tabview.add(self.clienteFrame, text='Clientes')
         self.tabview.add(self.pesoFrame, text='Pesos')
         self.tabview.add(self.vacunaFrame, text='Vacunas')
-        self.tabview.pack()
 
-        # ===============================> MascotaFrame
+        self.tabview.pack() 
+
+
+        #### SECCIÓN DE MASCOTAS #####
+
+
         self.botonesFrameM = ttk.Frame(
             self.mascotaFrame, style='Card.TFrame', width=430, height=360)
 
@@ -167,7 +171,11 @@ class VeterinariaPage(ttk.Frame):
 
         ttk.Label(self.mascotaFrame, image=self.imagenM).place(x=-25, y=390)
 
-        self.botonesFrameM.place(x=10, y=10)
+        self.botonesFrameM.place(x=0, y=0)
+
+
+        #### SECCIÓN DE CLIENTES #####
+
         
         ttk.Button(self.clienteFrame, text='Consultas',
                    width=40).place(x=20, y=30)
@@ -188,6 +196,221 @@ class VeterinariaPage(ttk.Frame):
             './image/logo-transparente.png').resize((200, 170)))
 
         ttk.Label(self.clienteFrame, image=self.imagenC).place(x=-25, y=390)
+
+
+        #### SECCIÓN DE PESOS #####
+
+        self.tablaMascotasPesos = None
+        ttk.Label(self.pesoFrame, text='Ingrese su búsqueda').place(x=26, y=25)
+        self.espacioBuscar = ttk.Entry(self.pesoFrame, width=16)
+        self.espacioBuscar.place(x=28, y=60)
+        self.botonBuscar = ttk.Button(
+            self.pesoFrame, width=8, text='Buscar', command=self.Buscar)
+        self.botonBuscar.place(x=90, y=105)
+
+        self.eleccionCampo = tk.StringVar()
+        self.botonRadAlias = ttk.Radiobutton(
+            self.pesoFrame, text='Alias', variable=self.eleccionCampo, value='Alias', command=self.EleccionCampo)
+        self.botonRadAlias.place(x=205, y=60)
+        self.botonRadFam = ttk.Radiobutton(
+            self.pesoFrame, text='Familia', variable=self.eleccionCampo, value='Apellido', command=self.EleccionCampo)
+        self.botonRadFam.place(x=300, y=60)
+        self.botonRadEspecie = ttk.Radiobutton(
+            self.pesoFrame, text='Especie', variable=self.eleccionCampo, value='Especie', command=self.EleccionCampo)
+        self.botonRadEspecie.place(x=405, y=60)
+
+        self.eleccionEspecie = tk.StringVar()
+        self.CBoxEspecie = ttk.Combobox(
+            self.pesoFrame, values=['Canino', 'Felino'], state='disabled', width=12)
+        self.CBoxEspecie.place(x=520, y=58)
+
+        self.Cod = tk.StringVar()
+        ttk.Label(self.pesoFrame, text='Código de Mascota').place(x=480, y=410)
+        self.textoCod = ttk.Entry(self.pesoFrame, width=12, textvariable=self.Cod)
+        self.textoCod.place(x=480, y=445)
+
+        barra = ttk.Separator(self.pesoFrame,orient=tk.VERTICAL)
+        barra.place(x=665,y=0,height=590,width=2)
+
+        ttk.Label(self.pesoFrame,text='Fecha de hoy').place(x=775,y=30)
+        self.fecha = tk.StringVar()
+        self.fecha.set(date.today())
+        self.peso = tk.StringVar()
+        self.FechaHoy = ttk.Entry(self.pesoFrame,width=11,textvariable=self.fecha)
+        self.FechaHoy.place(x=775,y=65)
+        ttk.Label(self.pesoFrame,text='Peso registrado').place(x=700,y=250)
+        self.espacioPeso = ttk.Entry(self.pesoFrame,width=12,textvariable=self.peso)
+        self.espacioPeso.place(x=700,y=285)
+        self.botonRegPeso = ttk.Button(self.pesoFrame,width=9,text='Registrar',command=self.RegistrarPeso)
+        self.botonRegPeso.place(x=850,y=285)
+
+        self.botonHistPeso = ttk.Button(self.pesoFrame,width=14,text='Historial de pesos',command=self.ObtenerHistorialPesos)
+        self.botonHistPeso.place(x=760,y=490)
+
+        self.popupPesos = None
+
+    def RegistrarPeso(self):
+        codigo = self.textoCod.get()
+        peso = self.espacioPeso.get()
+        if ',' in peso:
+            peso = peso.replace(',','.')
+        if codigo == '':
+            showerror('Error de campo','No ha indicado la mascota')
+        elif not self.es_decimal(peso):
+            showerror('Error de campo','El peso debe ser un dato numérico')
+        else:
+            with pyodbc.connect(f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+                cursor = conexion.cursor()      
+                cursor.execute('RegistrarPeso ?,?,?,?',(date.today(),codigo,peso,0))
+                bit = cursor.fetchone()
+                bit = bit[0]
+                if bit:
+                    cursor.execute('commit')
+                    showinfo('Éxito','Registro de peso realizado')
+                    self.espacioPeso.delete(0,30)
+                    self.textoCod.delete(0,30)
+                else:
+                    cursor.execute('rollback')
+                    showwarning('Error','Ya ha registrado el peso hoy')
+                conexion.commit()
+                cursor.close()
+
+        self.Cod.set('')
+
+    def es_decimal(self,string):
+        try:
+            float(string)
+            return True
+        except ValueError:
+            return False
+
+    def ObtenerHistorialPesos(self):
+        if self.popupPesos:
+                self.popupPesos.destroy()
+        codigo = self.textoCod.get()
+        if codigo == '':
+            showerror('Error de campo','No ha indicado la mascota')
+        else:
+            
+            self.popupPesos = tk.Toplevel(self.pesoFrame, width=500, height=500)
+            self.popupPesos.title('Pesos históricos')
+
+            self.historialFrame = ttk.Frame(self.popupPesos, width=500, height=500)
+
+            with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+                cursor = conexion.cursor()
+                cursor.execute('exec HistorialPeso ?',(codigo))
+                titulos = []
+                for titulo in cursor.description:
+                    titulos.append(titulo[0])
+
+                datos = cursor.fetchall()
+                cursor.close()
+
+                self.tablaPesos = ttk.Treeview(self.historialFrame,
+                                    height=20, columns=titulos[1:])
+                self.tablaPesos.bind('<Double-1>', self.seleccion)
+
+                for i, titulo in enumerate(titulos):
+                    if i == 0:
+                        self.tablaPesos.column('#0', width=150, anchor=tk.CENTER)
+                        self.tablaPesos.heading('#0', text=titulo, anchor=tk.CENTER)
+                    else:
+                        self.tablaPesos.column(titulo, width=150, anchor=tk.CENTER)
+                        self.tablaPesos.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+                for cliente in datos:
+                    atributos = []
+                    for atributo in cliente:
+                        atributos.append(atributo)
+
+                    self.tablaPesos.insert(
+                        '', tk.END, text=atributos[0], values=atributos[1:])
+
+                self.tablaPesos.pack()
+                self.historialFrame.pack()
+    
+    # def CambiandoSize(self, event):
+    #     eleccionTab = event.widget.index("current")
+    #     nombreTab = event.widget.tab(eleccionTab, option="text")
+    #     if nombreTab == 'Pesos':  
+    #         self.master.geometry('1200x600')
+    #     else:
+    #         self.master.geometry("1000x600")
+    
+
+    def EleccionCampo(self):
+        self.campoElegido = str(self.eleccionCampo.get())
+        if self.campoElegido == 'Especie':
+            self.espacioBuscar.delete(0, 30)
+            self.espacioBuscar.configure(state='disabled')
+            self.CBoxEspecie.configure(state='readonly')
+        else:
+            self.CBoxEspecie.set('')
+            self.espacioBuscar.configure(state='normal')
+            self.CBoxEspecie.configure(state='disabled')
+
+    def Buscar(self):
+
+        if self.tablaMascotasPesos:
+            self.tablaMascotasPesos.pack_forget()
+            self.tablaMascotasPesos.destroy()
+        self.textoBuscar = self.espacioBuscar.get()
+      
+        if self.espacioBuscar.get() == '':
+            if self.campoElegido == 'Especie':
+                self.textoBuscar = self.CBoxEspecie.get()
+            else:
+                if self.textoBuscar == '':
+                    print('es numero')
+                    showwarning(title='Error de campo',
+                            message='Campo de búsqueda vacío')
+                    return 
+        self.tablaMascotasPesos = ttk.Frame(self.pesoFrame, width=200, height=100)
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            cursor.execute('exec BuscarMascota ?,? ',
+                        (self.campoElegido, self.textoBuscar))
+            resultados = cursor.fetchall()
+
+            titulos = []
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            cursor.close()
+            self.tablaEncontrados = ttk.Treeview(
+                self.tablaMascotasPesos, height=6, columns=titulos[1:])
+            self.tablaEncontrados.bind('<Double-1>', self.seleccion)
+            for i, titulo in enumerate(titulos):
+                if i == 0:
+                    self.tablaEncontrados.column('#0', width=100, anchor=tk.CENTER)
+                    self.tablaEncontrados.heading(
+                        '#0', text=titulo, anchor=tk.CENTER)
+                else:
+                    self.tablaEncontrados.column(
+                        titulo, width=100, anchor=tk.CENTER)
+                    self.tablaEncontrados.heading(
+                        titulo, text=titulo, anchor=tk.CENTER)
+
+            for dato in resultados:
+                atributos = []
+                for atributo in dato:
+                    atributos.append(atributo)
+
+                self.tablaEncontrados.insert(
+                    '', tk.END, text=atributos[0], values=atributos[1:])
+
+            self.tablaEncontrados.pack()
+            self.tablaMascotasPesos.place(x=60, y=180)
+    
+    def seleccion(self, event=None):
+        familia = self.tablaEncontrados.focus()
+        codigo = self.tablaEncontrados.item(familia)['text']
+
+        self.textoCod.config(state='normal')
+        self.textoCod.delete(0, tk.END)
+        self.textoCod.insert(0, codigo)
+        self.textoCod.config(state='readonly')
 
     def aInsertarM(self):
         self.eleccionCliente = EleccionCliente(self)
@@ -214,7 +437,7 @@ class ModificarPageV(ttk.Frame):
 
         self.tablaFrame = None
 
-        ttk.Label(self, text='Buscar').place(x=26, y=60)
+        ttk.Label(self, text='Ingrese su búsqueda').place(x=26, y=60)
         self.espacioBuscar = ttk.Entry(self, width=16)
         self.espacioBuscar.place(x=28, y=90)
         self.botonBuscar = ttk.Button(

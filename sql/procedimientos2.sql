@@ -1,14 +1,13 @@
 --Procedimiento de registro de peso
-create procedure RegistrarPeso
+alter procedure RegistrarPeso
 @FechaPeso date,
 @CodMascota char(5),
-@Peso float,
+@Peso varchar(5),
 @Check bit out
 as 
 BEGIN
     begin TRANSACTION
-    if exists (select 1 from HistorialesPeso 
-                where FechaPeso=@FechaPeso and CodMascota=@CodMascota)
+    if exists (select 1 from HistorialesPeso where FechaPeso=@FechaPeso and CodMascota=@CodMascota)
         BEGIN
         set @Check = 0
         SELECT @Check
@@ -16,11 +15,11 @@ BEGIN
     else
         BEGIN
         set @Check = 1
-        insert into HistorialesPeso values (@FechaPeso,@CodMascota,@Peso)
-        insert into HistorialesPeso values (@FechaPeso,@CodMascota,@Peso)
+        select @Check
+        insert into HistorialesPeso values (@FechaPeso,@CodMascota,CAST(@Peso AS float))
         END
 END
-GO;
+GO
 
 --Modificar un registro de peso
 create procedure ModificarPeso

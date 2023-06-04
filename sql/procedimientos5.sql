@@ -26,7 +26,7 @@ from Mascotas
 
 --hay que modficarlo de acuerdo a lo que se deberia mostrar cuando se busca una
 go
-create procedure InfoMascota
+alter procedure InfoMascota
     @CodMascota char(5)
 AS
 begin
@@ -37,7 +37,7 @@ begin
 end
 go
 
-create procedure VerificarExistenciaCliente
+ALTER procedure VerificarExistenciaCliente
     @IdCliente char(5),
     @Check bit out
 AS
@@ -55,3 +55,15 @@ begin
         select @Check
     END
 END
+GO
+
+alter procedure HistorialPeso
+@CodMascota char (5)
+AS
+
+select CONCAT(convert(varchar(2),FORMAT(FechaPeso,'dd','es-BO')),' ',
+              convert(varchar(10),FORMAT(FechaPeso,'MMMM','es-BO')),' ',
+              convert(varchar(4),FORMAT(FechaPeso,'yyyy','es-BO'))
+            ) as 'Fecha',
+        CONCAT(convert(char(5),Peso),'kg') as 'Peso' 
+        from HistorialesPeso where CodMascota = @CodMascota order by FechaPeso ASC
