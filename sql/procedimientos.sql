@@ -45,29 +45,28 @@ END
 GO;
 
 --Modificación de datos de un cliente
-alter procedure ModificarCliente
-    @IdCliente char (5),
-    @Campo varchar(15),
-    @NuevoValor varchar (20),
-    @Check bit out
+alter procedure ModificarCliente 
+@IdCliente char (5),
+@Campo varchar(15),
+@NuevoValor varchar (20),
+@Check bit out
 AS
 BEGIN
     begin TRANSACTION
     declare @SQL NVARCHAR(MAX)
-    set @SQL = N'UPDATE Clientes set '+ QUOTENAME(@Campo)+' = @NuevoValor WHERE IdCliente = @IdCliente  where IdCliente=@IdCliente and (NroCuenta=@NuevoValor or Telefono=@NuevoValor))'
-    BEGIN
-        set @Check = 1
-        SELECT @Check
-    END
-    if exists (select 1
-    from Clientes
-    where IdCliente=@IdCliente and (NroCuenta=@NuevoValor or Telefono=@NuevoValor))
+    set @SQL = N'UPDATE Clientes set '+ QUOTENAME(@Campo)+' = @NuevoValor WHERE IdCliente = @IdCliente'
+    exec sp_executesql @SQL, N'@IdCliente char(5), @NuevoValor varchar(20)',@IdCliente,@NuevoValor
+    if exists (select 1 from Clientes where IdCliente=@IdCliente and (NroCuenta=@NuevoValor or Telefono=@NuevoValor))
         BEGIN
         set @Check = 1
-    END
+        SELECT @Check
+        END
     ELSE
-    BEGIN
+        BEGIN
         set @Check = 0
+        SELECT @Check
+        END
+END
 GO;
 
 --Eliminacion de cliente
