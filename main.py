@@ -152,6 +152,7 @@ class VeterinariaPage(ttk.Frame):
         self.botonesFrameM = ttk.Frame(
             self.mascotaFrame, style='Card.TFrame', width=335, height=360)
 
+        # TODO boton de consultas para mascotas
         ttk.Button(self.botonesFrameM, text='Consultas',
                    width=30).place(x=20, y=20)
 
@@ -180,6 +181,7 @@ class VeterinariaPage(ttk.Frame):
         self.botonesFrameC = ttk.Frame(
             self.clienteFrame, style='Card.TFrame', width=335, height=360)
 
+        # TODO boton de consultas para clientes
         ttk.Button(self.botonesFrameC, text='Consultas',
                    width=30).place(x=20, y=20)
 
