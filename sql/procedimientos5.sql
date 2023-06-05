@@ -5,24 +5,29 @@ AS
 BEGIN
     declare @SQL nvarchar(max)
 
-    set @SQL = N'select CodMascota,Alias,Apellido,Especie,Color_pelo from Mascotas
+    set @SQL = N'select distinct Mascotas.CodMascota,Alias,Apellido,Especie,Color_pelo from Mascotas
                 inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente
+                inner join HistorialesPeso on HistorialesPeso.CodMascota = Mascotas.CodMascota
                 where' +QUOTENAME(@Campo)+'=@Valor'
 
     exec sp_executesql @SQL, N'@Valor varchar(15)',@Valor
 end
-exec BuscarMascota 'Alias','Tupac'
+go
 
-select Alias
-from Mascotas
+alter procedure BuscarHuespedes
+@Campo varchar (10),
+@Valor varchar (15)
+AS  
+BEGIN
+    declare @SQL nvarchar(max)
 
-declare @p bit; 
-set @p = 1
-begin TRANSACTION
-exec ModificarMascota 'M0001','Color_pelo','Verde',1
+    set @SQL = N'select distinct Mascotas.CodMascota,Alias,Apellido,Especie,Color_pelo from Mascotas
+                inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente
+                inner join Estadias on Estadias.CodMascota = Mascotas.CodMascota
+                where' +QUOTENAME(@Campo)+'=@Valor'
 
-select *
-from Mascotas	
+    exec sp_executesql @SQL, N'@Valor varchar(15)',@Valor
+end
 
 --hay que modficarlo de acuerdo a lo que se deberia mostrar cuando se busca una
 go
@@ -104,3 +109,7 @@ BEGIN
 END
 
 select * from Vacunas
+
+select * from HistorialesPeso
+
+select * from Estadias

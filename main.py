@@ -141,7 +141,7 @@ class HotelPage(ttk.Frame):
 
         ttk.Button(self.huespedFrame,text='Registrar Huésped',command=self.aEleccionFamilia,width=30).place(x=20,y=20)
         ttk.Button(self.huespedFrame,text='Modificación de huésped',width=30,command=self.aModificarHuesped).place(x=20,y=90)
-        ttk.Button(self.huespedFrame,text='Registrar Estadía',width=30).place(x=20,y=160)
+        ttk.Button(self.huespedFrame,text='Registrar Estadía',width=30,command=self.aRegistrarEstadia).place(x=20,y=160)
         ttk.Button(self.huespedFrame,text='Modificar estadía',width=30).place(x=20,y=230)
 
 
@@ -151,7 +151,11 @@ class HotelPage(ttk.Frame):
 
     def aModificarHuesped(self):
         self.ModificarHuesped = ModificarPageH(self)
-        self.padre.cambioVentana(self,self.ModificarHuesped,[410, 600], "Perfil Huésped")
+        self.padre.cambioVentana(self,self.ModificarHuesped,[700, 520], "Buscar huéspedes")
+
+    def aRegistrarEstadia(self):
+        self.RegistrarEstadia = RegistrarPageH(self)
+        self.padre.cambioVentana(self,self.RegistrarEstadia,[700,520],'Buscar huéspedes')
 
 class EleccionFamiliaH(ttk.Frame):
     def __init__(self, master: HotelPage):
@@ -689,15 +693,16 @@ class ModificarPageH(ttk.Frame):
                 self.textoBuscar = self.CBoxEspecie.get()
             else:
                 if self.textoBuscar == '':
-                    print('es numero')
-                    showwarning(title='Error de campo',
-                            message='Formato de búsqueda no válido')
+                    showwarning(title='Error de campo',message='Campo de búsqueda vacío')
                     return 
+        else:
+            self.textoBuscar = self.espacioBuscar.get()    
+
         self.tablaFrame = ttk.Frame(self, width=200, height=100)
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
-            cursor = conexion.cursor()
-            cursor.execute('exec BuscarMascota ?,? ',
-                        (self.campoElegido, self.textoBuscar))
+            cursor = conexion.cursor() 
+            cursor.execute('exec BuscarHuespedes ?,? ',(self.campoElegido, self.textoBuscar))
+            
             resultados = cursor.fetchall()
 
             titulos = []
@@ -755,14 +760,14 @@ class ModificarPageH(ttk.Frame):
                 self.atributos.append(k)
             print(self.atributos)
 
-            self.PerfilMascotaV = PerfilMascotaV(self, self.atributos)
+            self.PerfilMascotaV = PerfilMascotaH(self, self.atributos)
             self.atributos = []
             self.padre.padre.cambioVentana(
-                self, self.PerfilMascotaV, [410, 600], "Perfil")
+                self, self.PerfilMascotaV, [400, 450], "Perfil Huésped")
 
 class PerfilMascotaH(ttk.Frame):
     def __init__(self, master: ModificarPageH, atributos):
-        super().__init__(master=master.padre.padre, width=410, height=600)
+        super().__init__(master=master.padre.padre, width=400, height=450)
         self.padre = master
         self.atributos = atributos
         print(self.atributos)
@@ -784,28 +789,21 @@ class PerfilMascotaH(ttk.Frame):
         self.aliasNuevo.place(x=18, y=215)
         self.aliasNuevo.insert(0, self.atributos[0])
 
-        self.size = tk.StringVar()
-        ttk.Label(self, text='Tamaño').place(x=20, y=370)
-        self.sizeNuevo = ttk.Combobox(self, width=15, height=20, values=[
-                                      'S', 'M', 'G'], textvariable=self.size, state='readonly')
-        self.sizeNuevo.place(x=18, y=395)
-        self.sizeNuevo.set(self.atributos[3])
-
         self.aux = tk.StringVar()
         self.aux.set(self.atributos[4])
-        ttk.Label(self, text='Familia').place(x=230, y=280)
+        ttk.Label(self, text='Familia').place(x=20, y=280)
         self.famNuevo = ttk.Entry(self, width=15, state='readonly', textvariable=self.aux)
-        self.famNuevo.place(x=230, y=305)
+        self.famNuevo.place(x=18, y=305)
 
-        self.aux2 = tk.StringVar()
-        self.aux2.set(self.atributos[5])
-        ttk.Label(self, text='Codigo Familia').place(x=230, y=370)
-        self.IdCliente = ttk.Entry(self, width=15,textvariable=self.aux2,state='readonly')
-        self.IdCliente.place(x=230, y=395)
-
+        self.size = tk.StringVar()
+        self.size.set(self.atributos[3])
+        ttk.Label(self, text='Tamaño').place(x=230, y=190)
+        self.sizeNuevo = ttk.Combobox(self, width=15, height=20, values=['S', 'M', 'G'], textvariable=self.size, state='readonly')
+        self.sizeNuevo.place(x=230,y=215)
+        
         self.guardarBoton = ttk.Button(
             self, text='Guardar cambios', command=self.ModificarMascota)
-        self.guardarBoton.place(x=230, y=530)
+        self.guardarBoton.place(x=230, y=380)
 
     def aAnterior(self):
         self.atributos = []
@@ -824,7 +822,7 @@ class PerfilMascotaH(ttk.Frame):
             respuesta = askquestion(
                 'Confirmación', '¿Desea guardar los cambios?')
             if respuesta == 'yes':
-                print('se guardaron los cambios')
+                showinfo('Exito','Cambios guardados')
 
                 if self.aliasNuevo.get() != self.atributos[0]:
                     if self.aliasNuevo.get().isnumeric():
@@ -837,30 +835,315 @@ class PerfilMascotaH(ttk.Frame):
                                     (self.atributos[7], 'Alias', self.aliasNuevo.get(), 0))
                         cursor.commit()
 
-                if self.peloNuevo.get() != self.atributos[1]:
-                    print('distinto color de pelo')
-                    print(self.peloNuevo.get())
-                    cursor.execute('exec ModificarMascota ?,?,?,?',
-                                   (self.atributos[7], 'Color_pelo', self.peloNuevo.get(), 0))
-                    cursor.commit()
-
                 if self.sizeNuevo.get() != self.atributos[3]:
                     print('distinto tamaño')
                     cursor.execute('exec ModificarMascota ?,?,?,?',
                                    (self.atributos[7], 'Tamaño', self.sizeNuevo.get(), 0))
                     cursor.commit()
 
-                if self.razaNuevo.get() != self.atributos[2]:
-                    print('distinta raza')
-                    cursor.execute('exec ModificarMascota ?,?,?,?',
-                                   (self.atributos[7], 'Raza', self.razaNuevo.get(), 0))
-                    cursor.commit()
-
             cursor.execute('commit')
             if self.padre.tablaFrame:
                 self.padre.tablaFrame.pack_forget()
                 self.padre.tablaFrame.destroy()
-            self.ancestro.cambioVentana(self,self.padre,[700, 520], 'Modificar Mascota')
+            self.ancestro.cambioVentana(self,self.padre,[700, 520], 'Buscar huéspedes')
+
+class RegistrarPageH(ttk.Frame):
+    def __init__(self,master: HotelPage):
+        super().__init__(master = master.padre,height=520,width=700)
+        self.padre = master
+        self.ancestro = self.padre.padre
+        
+        ttk.Button(self, text='Volver',
+                   command=self.aPrincipal).place(x=10, y=10)
+
+        self.tablaFrame = None
+
+        ttk.Label(self, text='Ingrese su búsqueda').place(x=26, y=60)
+        self.espacioBuscar = ttk.Entry(self, width=16)
+        self.espacioBuscar.place(x=28, y=90)
+        self.botonBuscar = ttk.Button(
+            self, width=8, text='Buscar', command=self.Buscar)
+        self.botonBuscar.place(x=90, y=135)
+
+        self.deVeterinaria = tk.BooleanVar()
+        self.vetchk = ttk.Checkbutton(self,text='¿Es paciente?',variable=self.deVeterinaria)
+        self.vetchk.place(x=300,y=20)
+
+        self.eleccionCampo = tk.StringVar()
+        self.botonRadAlias = ttk.Radiobutton(
+            self, text='Alias', variable=self.eleccionCampo, value='Alias', command=self.EleccionCampo)
+        self.botonRadAlias.place(x=205, y=90)
+        self.botonRadFam = ttk.Radiobutton(
+            self, text='Cliente', variable=self.eleccionCampo, value='Apellido', command=self.EleccionCampo)
+        self.botonRadFam.place(x=300, y=90)
+        self.botonRadEspecie = ttk.Radiobutton(
+            self, text='Especie', variable=self.eleccionCampo, value='Especie', command=self.EleccionCampo)
+        self.botonRadEspecie.place(x=405, y=90)
+
+        self.eleccionEspecie = tk.StringVar()
+        self.CBoxEspecie = ttk.Combobox(
+            self, values=['Canino', 'Felino'], state='disabled', width=12)
+        self.CBoxEspecie.place(x=520, y=88)
+
+        self.Cod = tk.StringVar()
+        ttk.Label(self, text='Código de Mascota').place(x=32, y=420)
+        self.textoCod = ttk.Entry(self, width=12, textvariable=self.Cod)
+        self.textoCod.place(x=30, y=445)
+        self.botonIr = ttk.Button(
+            self, text='Ir al registro', width=11, command=self.aRegistro)
+        self.botonIr.place(x=570, y=445)
+        self.atributos = []
+        self.habitaciones = []
+
+    def aRegistro(self):
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            cursor.execute('InfoMascota ?',(self.Cod.get()))
+            datos = cursor.fetchone()
+            for d in datos:
+                self.atributos.append(d)
+            cursor.execute('select NroHab from Habitaciones where Disponible=?',('D'))
+            habs= cursor.fetchall()
+            for h in habs:
+                self.habitaciones.append(h[0])
+            
+            print(self.habitaciones)
+            
+        self.RegistroEstadia = RegistroEstadia(self,self.atributos,self.habitaciones)
+        self.ancestro.cambioVentana(self,self.RegistroEstadia,[510,620],'Registro de estadía')
+
+    def EleccionCampo(self):
+        self.campoElegido = str(self.eleccionCampo.get())
+        if self.campoElegido == 'Especie':
+            self.espacioBuscar.delete(0, 30)
+            self.espacioBuscar.configure(state='disabled')
+            self.CBoxEspecie.configure(state='readonly')
+        else:
+            self.CBoxEspecie.set('')
+            self.espacioBuscar.configure(state='normal')
+            self.CBoxEspecie.configure(state='disabled')
+
+    def Buscar(self):
+
+        if self.tablaFrame:
+            self.tablaFrame.pack_forget()
+            self.tablaFrame.destroy()
+        self.textoBuscar = self.espacioBuscar.get()
+        self.campoElegido = str(self.eleccionCampo.get())
+        if self.espacioBuscar.get() == '':
+            if self.campoElegido == 'Especie':
+                self.textoBuscar = self.CBoxEspecie.get()
+            else:
+                if self.textoBuscar == '':
+                    showwarning(title='Error de campo',message='Formato de búsqueda no válido')
+                    return 
+        else:
+            self.textoBuscar = self.espacioBuscar.get()
+        self.tablaFrame = ttk.Frame(self, width=200, height=100)
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            
+            if self.deVeterinaria.get():
+                cursor.execute('exec BuscarMascota ?,? ',(self.campoElegido, self.textoBuscar))
+            else:
+                cursor.execute('exec BuscarHuespedes ?,? ',(self.campoElegido, self.textoBuscar))
+            resultados = cursor.fetchall()
+
+            titulos = []
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            cursor.close()
+
+            self.tablaEncontrados = ttk.Treeview(
+                self.tablaFrame, height=6, columns=titulos[1:])
+            self.tablaEncontrados.bind('<Double-1>', self.seleccion)
+            for i, titulo in enumerate(titulos):
+                if i == 0:
+                    self.tablaEncontrados.column('#0', width=100, anchor=tk.CENTER)
+                    self.tablaEncontrados.heading(
+                        '#0', text=titulo, anchor=tk.CENTER)
+                else:
+                    self.tablaEncontrados.column(
+                        titulo, width=100, anchor=tk.CENTER)
+                    self.tablaEncontrados.heading(
+                        titulo, text=titulo, anchor=tk.CENTER)
+
+            for dato in resultados:
+                atributos = []
+                for atributo in dato:
+                    atributos.append(atributo)
+
+                self.tablaEncontrados.insert(
+                    '', tk.END, text=atributos[0], values=atributos[1:])
+
+            self.tablaEncontrados.pack()
+            self.tablaFrame.place(x=60, y=195)
+    
+    def seleccion(self, event=None):
+        familia = self.tablaEncontrados.focus()
+        codigo = self.tablaEncontrados.item(familia)['text']
+
+        self.textoCod.config(state='normal')
+        self.textoCod.delete(0, tk.END)
+        self.textoCod.insert(0, codigo)
+        self.textoCod.config(state='readonly')
+
+    def aPrincipal(self):
+        self.padre.padre.cambioVentana(
+            self, self.padre, [1000, 600], 'Cute Pets - Hotel')
+
+class RegistroEstadia(ttk.Frame):
+    def __init__(self, master: RegistrarPageH,atributos,habitaciones):
+        super().__init__(master = master.padre.padre,width=510,height=620)
+
+        self.habitaciones = habitaciones
+        self.atributos = atributos
+        self.padre = master
+        self.ancestro = self.padre.padre.padre
+        ttk.Button(self,text='Cancelar',command=self.cancelar).place(x=10,y=10)
+
+        self.fecha = tk.StringVar()
+        self.fecha.set(date.today())
+        ttk.Label(self,text='Fecha de hoy').place(x=170,y=32)
+        ttk.Entry(self,state='readonly',textvariable=self.fecha,width=14).place(x=300,y=30)
+        
+        self.CodMascota = tk.StringVar()
+        self.CodMascota.set(self.atributos[7])
+        ttk.Label(self,text='Código Mascota').place(x=20,y=120)
+        ttk.Entry(self,textvariable=self.CodMascota,state='readonly',width=8).place(x=20,y=155)
+
+        ttk.Label(self,text='Habitación').place(x=200,y=120)
+        self.HabCBox = ttk.Combobox(self,state='readonly',width=7,values=self.habitaciones)
+        self.HabCBox.place(x=200,y=155)
+
+        ttk.Label(text='Dias').place(x=340,y=120)
+        self.cantDias = ttk.Entry(self,width=5)
+        self.cantDias.place(x=340,y=155)
+
+        ttk.Label(self,text='Especiales',background='#58bf85').place(x=50,y=240)
+        ttk.Label(self,text='Adicionales',background='#58bf85').place(x=190,y=240)
+        ttk.Label(self,text='Cantitdad',background='#58bf85').place(x=330,y=240)
+        
+        self.food = tk.BooleanVar() 
+        self.med= tk.BooleanVar()
+        self.paseo = tk.BooleanVar()
+        self.juego = tk.BooleanVar()
+        self.ducha = tk.BooleanVar()
+        self.corte = tk.BooleanVar()
+
+        self.foodchk = ttk.Checkbutton(self,text='Alimentacion',variable=self.food)
+        self.foodchk.place(x=20,y=300)
+        self.medchk = ttk.Checkbutton(self,text='Cuidado médico',variable=self.med)
+        self.medchk.place(x=20,y=350)
+        self.paseochk = ttk.Checkbutton(self,text='Paseos',variable=self.paseo)
+        self.paseochk.place(x=200,y=300)
+        self.juegochk = ttk.Checkbutton(self,text='Juego',variable=self.juego)
+        self.juegochk.place(x=200,y=350)
+        self.duchachk = ttk.Checkbutton(self,text='Baños',variable=self.ducha)
+        self.duchachk.place(x=200,y=400)
+        self.cortechk = ttk.Checkbutton(self,text='Corte uñas',variable=self.corte)
+        self.cortechk.place(x=200,y=450)
+
+        self.paseochk.bind('<<CheckButtonSelected>>',lambda event: self.habilitar)
+        self.juegochk.bind('<<CheckButtonSelected>>',lambda event: self.habilitar)
+        self.duchachk.bind('<<CheckButtonSelected>>',lambda event: self.habilitar)
+
+        self.espacioPaseo = ttk.Entry(self,width=5,state='normal')
+        self.espacioPaseo.place(x=340,y=300)
+        self.espacioJuego = ttk.Entry(self,width=5,state='normal')
+        self.espacioJuego.place(x=340,y=350)
+        self.espacioDucha = ttk.Entry(self,width=5,state='normal')
+        self.espacioDucha.place(x=340,y=400)
+
+
+        ttk.Button(self,text='Registrar',command=self.registrar).place(x=380,y=560)
+    
+    def registrar(self):
+
+        habitacion = self.HabCBox.get()
+        dias = int(self.cantDias.get())
+        cod = self.atributos[7]
+
+        if not self.espacioDucha.get().isnumeric() and self.espacioDucha.get() != '':
+            showwarning('Error de campo','Indique una cantidad correcta')
+            return
+        if not self.espacioJuego.get().isnumeric() and self.espacioJuego.get() != '':
+            showwarning('Error de campo','Indique una cantidad correcta')
+            return
+        if not self.espacioPaseo.get().isnumeric() and self.espacioPaseo.get() != '':
+            showwarning('Error de campo','Indique una cantidad correcta')
+            return
+        
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            cursor.execute('exec RegistrarEstadia ?,?,?,?,?',(
+                str(date.today()),cod,habitacion,dias,0))
+            bit1 = cursor.fetchone()
+            cursor.commit()
+
+            if bit1:
+                if self.food.get():
+                    cursor.execute('exec RegistrarRequerimiento ?,?,?,?,?,?,?',(
+                        cod,'S04',str(date.today()),None,habitacion,dias,0))
+                    cursor.commit()
+
+                if self.med.get():
+                    cursor.execute('exec RegistrarRequerimiento ?,?,?,?,?,?,?',(
+                        cod,'S05',str(date.today()),None,habitacion,dias,0))
+                    cursor.commit()
+
+                if self.paseo.get():
+                    cursor.execute('exec RegistrarRequerimiento ?,?,?,?,?,?,?',(
+                        cod,'S03',str(date.today()),int(self.espacioPaseo.get()),habitacion,dias,0))
+                    cursor.commit()
+                
+                if self.juego.get():
+                    cursor.execute('exec RegistrarRequerimiento ?,?,?,?,?,?,?',(
+                        cod,'S06',str(date.today()),int(self.espacioPaseo.get()),habitacion,dias,0))
+                    cursor.commit()
+                
+                if self.ducha.get():
+                    cursor.execute('exec RegistrarRequerimiento ?,?,?,?,?,?,?',(
+                        cod,'S01',str(date.today()),int(self.espacioDucha.get()),habitacion,dias,0))
+                    cursor.commit()
+
+                if self.corte.get():
+                    cursor.execute('exec RegistrarRequerimiento ?,?,?,?,?,?,?',(
+                        cod,'S02',str(date.today()),1,habitacion,dias,0))
+                    cursor.commit()
+            else:
+                showerror('Error de registro','Ocurrio un error al registrar la estadía')
+                return
+            
+            showinfo('Exito','Estadía registrada \nVolviendo al inicio')
+            conexion.commit()
+            cursor.execute('commit')
+
+        self.ancestro.cambioVentana(self,self.padre.padre,[1000, 600], 'Cute Pets - Hotel')
+
+    def habilitar(self):
+        if self.paseo.get():
+            print('activo1')
+            self.espacioPaseo.configure(state='normal')
+        if self.juego.get():
+            print('activo2')
+            self.espacioJuego.configure(state='normal')
+        if self.ducha.get():
+            print('activo3')
+            self.espacioDucha.configure(state='normal')
+
+    def cancelar(self):
+        self.destroy()
+        self.ancestro.cambioVentana(self,self.padre,[700,520], 'Buscar huéspedes')
+
+    def Test(self):
+        print(self.food.get())
+        print(self.med.get())
+        print(self.paseo.get())
+        print(self.juego.get())
+        print(self.ducha.get())
+        print(self.corte.get())
 
 
 ## VETERINARIA ##
@@ -1738,14 +2021,8 @@ class ModificarPageV(ttk.Frame):
                 titulos.append(titulo[0])
 
             cursor.close()
-            style = ttk.Style()
-            style.configure("Custom.Treeview.Heading",
-                            background="#a2b1bd",  # Darker background color
-                            foreground="#FFFFFF",  # Brighter text color
-                            font=("Helvetica", 10))  # Custom font with increased brightness
-
             self.tablaEncontrados = ttk.Treeview(
-                self.tablaFrame, height=6, columns=titulos[1:], style='Custom.Treeview')
+                self.tablaFrame, height=6, columns=titulos[1:])
             self.tablaEncontrados.bind('<Double-1>', self.seleccion)
             for i, titulo in enumerate(titulos):
                 if i == 0:
@@ -1887,7 +2164,7 @@ class PerfilMascotaV(ttk.Frame):
             respuesta = askquestion(
                 'Confirmación', '¿Desea guardar los cambios?')
             if respuesta == 'yes':
-                print('se guardaron los cambios')
+                showinfo('Exito','Cambios guardados')
 
                 if self.aliasNuevo.get() != self.atributos[0]:
                     if self.aliasNuevo.get().isnumeric():
