@@ -186,7 +186,7 @@ class VeterinariaPage(ttk.Frame):
                    command=self.aInsertarC).place(x=20, y=90)
 
         ttk.Button(self.botonesFrameC, text='Modificar un cliente',
-                   width=30).place(x=20, y=160)
+                   width=30, command=self.aModificarC).place(x=20, y=160)
 
         ttk.Button(self.botonesFrameC, text='Eliminar un cliente',
                    width=30).place(x=20, y=230)
@@ -201,6 +201,11 @@ class VeterinariaPage(ttk.Frame):
         self.inicializarTablaC()
         self.botonesFrameC.place(x=10, y=10)
         # ==============================> ClienteFrame
+
+    def aModificarC(self):
+        self.eleccionCliente = EleccionClienteModificar(self)
+        self.padre.cambioVentana(self, self.eleccionCliente, [
+                                 700, 500], 'Eleccion de Cliente')
 
     def nuevaPersonaFamilia(self):
         self.personaAFamilia = EleccionPersona(self)
@@ -371,6 +376,104 @@ class VeterinariaPage(ttk.Frame):
         self.ModificarPageV = ModificarPageV(self)
         self.padre.cambioVentana(self, self.ModificarPageV, [
                                  700, 520], "Modificar Mascota")
+
+
+class EleccionClienteModificar(ttk.Frame):
+    def __init__(self, master: VeterinariaPage):
+        super().__init__(master.padre, width=700, height=500)
+
+        self.padre = master
+        self.campo = tk.IntVar()
+
+        ttk.Radiobutton(self, text='ID del Cliente',
+                        variable=self.campo, value=1, command=self.habilitar).place(x=30, y=30)
+        ttk.Radiobutton(self, text='Apellido',
+                        variable=self.campo, value=2, command=self.habilitar).place(x=30, y=70)
+        ttk.Radiobutton(self, text='Numero de Cuenta',
+                        variable=self.campo, value=3, command=self.habilitar).place(x=30, y=110)
+        ttk.Radiobutton(self, text='Telefono',
+                        variable=self.campo, value=4, command=self.habilitar).place(x=30, y=150)
+
+        self.campoBuscar = ttk.Entry(self, width=20, state='disabled')
+        self.campoBuscar.place(x=30, y=230)
+
+        ttk.Label(self, text='Campo').place(x=30, y=200)
+
+        self.botonBuscar = ttk.Button(self, text='Buscar', command=self.buscar)
+        self.botonBuscar.place(x=30, y=280)
+
+        self.tablaFrame = ttk.Frame(
+            self, style='Card.TFrame', width=390, height=480)
+        self.tablaFrame.place(x=300, y=10)
+
+        self.tabla = None
+
+    def habilitar(self):
+        self.campoBuscar.config(state='normal')
+        self.botonBuscar.config(style='Accent.TButton')
+        self.campoBuscar.focus()
+
+    def seleccion(self, event=None):
+        item = self.tabla.focus()
+
+        idCliente = self.tabla.item(item)
+
+        # FIXME
+
+    def buscar(self):
+        campoBuscar = self.campoBuscar.get()
+
+        campos = {1: 'IdCliente', 2: 'Apellido', 3: 'NroCuenta', 4: 'Telefono'}
+
+        if campoBuscar == '':
+            showwarning(title='Error',
+                        message='El campo buscar no puede estar vacio')
+            return
+
+        campo = self.campo.get()
+
+        consulta = f'select IdCliente, Apellido, Telefono from Clientes where {campos[campo]} = ?'
+
+        if self.tabla:
+            self.tabla.destroy()
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute(consulta, campoBuscar)
+
+            titulos = []
+
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            clientes = cursor.fetchall()
+
+            if not clientes:
+                showwarning(
+                    title='Ups!', message='No se ha encontrado a ningun cliente!')
+
+        self.tabla = ttk.Treeview(
+            self.tablaFrame, height=19, columns=titulos[1:])
+        self.tabla.bind('<Double-1>', self.seleccion)
+
+        for i, titulo in enumerate(titulos):
+            if i == 0:
+                self.tabla.column('#0', width=100, anchor='w')
+                self.tabla.heading('#0', text=titulo, anchor='center')
+            else:
+                self.tabla.column(titulo, width=100, anchor='center')
+                self.tabla.heading(titulo, text=titulo, anchor='center')
+
+        for cliente in clientes:
+            atributos = []
+            for atributo in cliente:
+                atributos.append(atributo)
+            self.tabla.insert(
+                '', tk.END, text=atributos[0], values=atributos[1:])
+
+        self.tabla.place(x=20, y=10)
 
 
 class EleccionPersona(ttk.Frame):
