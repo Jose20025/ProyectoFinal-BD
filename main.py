@@ -67,22 +67,22 @@ class LoginPage(ttk.Frame):
 
         ttk.Label(self.userFrame, text='Username').place(x=40, y=20)
 
-        self.username = ttk.Entry(self.userFrame, width=36)
+        self.username = ttk.Entry(self.userFrame, width=40)
         self.username.place(x=30, y=45)
 
         ttk.Label(self.userFrame, text='Password').place(x=40, y=100)
 
-        self.password = ttk.Entry(self.userFrame, width=36, show='*')
+        self.password = ttk.Entry(self.userFrame, width=40, show='*')
         self.password.place(x=30, y=125)
         self.password.bind('<Return>', self.login)
 
         self.loginBoton = ttk.Button(
-            self.userFrame, text='Login', style='Accent.TButton', command=self.login)
+            self.userFrame, text='Login', style='Accent.TButton', command=self.login, width=10)
         self.loginBoton.place(x=260, y=180)
 
         self.lugarCBox = ttk.Combobox(self.userFrame, values=[
                                       'Veterinaria', 'Hotel'], state='readonly')
-        self.lugarCBox.set('Hotel')
+        self.lugarCBox.set('Veterinaria')
         self.lugarCBox.place(x=30, y=180)
 
         self.userFrame.place(x=50, y=430)
@@ -205,9 +205,10 @@ class HotelPage(ttk.Frame):
         self.padre.cambioVentana(self, self.BuscarEstadia, [
                                  700, 520], 'Búsqueda de estadías')
 
-    def CambiandoSize(self, event):
-        eleccionTab = self.tabview(self.tabview.select(), "text")
-        if eleccionTab == 'CheckOut':
+    def CambiandoSize(self, event=None):
+        eleccionTab = self.tabview.tab(self.tabview.select(), 'text')
+        print(eleccionTab)
+        if eleccionTab == 'Check Out':
             self.padre.geometry('700x600')
         else:
             self.padre.geometry("1000x600")
