@@ -56,23 +56,23 @@ BEGIN
     begin TRANSACTION
     declare @SQL NVARCHAR(MAX)
     set @SQL = N'UPDATE Clientes set '+ QUOTENAME(@Campo)+' = @NuevoValor WHERE IdCliente = @IdCliente'
-    where IdCliente=@IdCliente and
-    (NroCuenta=@NuevoValor or Telefono=@NuevoValor))
-    BEGIN
-        set @Check = 1
-        SELECT @Check
-    END
-    =======
+    exec sp_executesql @SQL, N'@IdCliente char(5), @NuevoValor varchar(20)',@IdCliente,@NuevoValor
+
     if exists (select 1
     from Clientes
-    where IdCliente=@IdCliente and (NroCuenta=@NuevoValor or Telefono=@NuevoValor))
+    where IdCliente=@IdCliente and (NroCuenta=@NuevoValor or Telefono=@NuevoValor or Direccion=@NuevoValor or Apellido=@NuevoValor))
         BEGIN
         set @Check = 1
+        select @Check
+        commit
+
     END
-    >>>>>>> ModificarVet
     ELSE
     BEGIN
         set @Check = 0
+        select @Check
+    end
+end
 GO;
 
 --Eliminacion de cliente

@@ -393,14 +393,18 @@ class EleccionClienteModificar(ttk.Frame):
                         variable=self.campo, value=3, command=self.habilitar).place(x=30, y=110)
         ttk.Radiobutton(self, text='Telefono',
                         variable=self.campo, value=4, command=self.habilitar).place(x=30, y=150)
+        ttk.Radiobutton(self, text='Todos los Clientes',
+                        variable=self.campo, value=5, command=self.habilitar).place(x=30, y=190)
 
         self.campoBuscar = ttk.Entry(self, width=20, state='disabled')
-        self.campoBuscar.place(x=30, y=230)
+        self.campoBuscar.place(x=30, y=270)
 
-        ttk.Label(self, text='Campo').place(x=30, y=200)
+        ttk.Label(self, text='Campo').place(x=30, y=240)
 
         self.botonBuscar = ttk.Button(self, text='Buscar', command=self.buscar)
-        self.botonBuscar.place(x=30, y=280)
+        self.botonBuscar.place(x=30, y=320)
+
+        ttk.Button(self, text='Volver', command=self.volver).place(x=10, y=450)
 
         self.tablaFrame = ttk.Frame(
             self, style='Card.TFrame', width=390, height=480)
@@ -408,31 +412,57 @@ class EleccionClienteModificar(ttk.Frame):
 
         self.tabla = None
 
+    def volver(self):
+        respuesta = askquestion(title='Confirmacion', message='¿Estas seguro?')
+
+        if respuesta == 'yes':
+            self.padre.padre.cambioVentana(
+                self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+            self.destroy()
+
     def habilitar(self):
-        self.campoBuscar.config(state='normal')
         self.botonBuscar.config(style='Accent.TButton')
-        self.campoBuscar.focus()
+
+        if self.campo.get() != 5:
+            self.campoBuscar.config(state='normal')
+            self.campoBuscar.focus()
+        else:
+            self.campoBuscar.config(state='disabled')
 
     def seleccion(self, event=None):
         item = self.tabla.focus()
 
-        idCliente = self.tabla.item(item)
+        clienteItem = self.tabla.item(item)
+        idCliente = clienteItem['text']
 
-        # FIXME
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute(
+                'select * from Clientes where IdCliente = ?', idCliente)
+
+            atributos = cursor.fetchone()
+
+        cliente = Cliente(atributos)
+
+        self.perfil = PerfilClienteModificable(self.padre, cliente)
+        self.padre.padre.cambioVentana(
+            self, self.perfil, [500, 400], 'Modificar cliente')
 
     def buscar(self):
         campoBuscar = self.campoBuscar.get()
 
         campos = {1: 'IdCliente', 2: 'Apellido', 3: 'NroCuenta', 4: 'Telefono'}
+        campo = self.campo.get()
 
-        if campoBuscar == '':
+        if campoBuscar == '' and campo != 5:
             showwarning(title='Error',
                         message='El campo buscar no puede estar vacio')
             return
 
-        campo = self.campo.get()
-
-        consulta = f'select IdCliente, Apellido, Telefono from Clientes where {campos[campo]} = ?'
+        if campo != 5:
+            consulta = f'select IdCliente, Apellido, Telefono from Clientes where {campos[campo]} = ?'
 
         if self.tabla:
             self.tabla.destroy()
@@ -441,7 +471,11 @@ class EleccionClienteModificar(ttk.Frame):
                 f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
 
-            cursor.execute(consulta, campoBuscar)
+            if campo != 5:
+                cursor.execute(consulta, campoBuscar)
+            else:
+                cursor.execute(
+                    'select IdCliente, Apellido, Telefono from Clientes')
 
             titulos = []
 
@@ -474,6 +508,91 @@ class EleccionClienteModificar(ttk.Frame):
                 '', tk.END, text=atributos[0], values=atributos[1:])
 
         self.tabla.place(x=20, y=10)
+
+
+class PerfilClienteModificable(ttk.Frame):
+    def __init__(self, master: VeterinariaPage, cliente: Cliente):
+        super().__init__(master.padre, width=500, height=400)
+        self.cliente = cliente
+        self.padre = master
+
+        ttk.Label(self, text='Perfil del Cliente').place(x=180, y=20)
+
+        ttk.Separator(self).place(x=170, y=50, width=140)
+
+        ttk.Label(self, text='ID').place(x=225, y=55)
+        self.idCliente = ttk.Entry(self, width=6, justify='center')
+        self.idCliente.place(x=200, y=80)
+        self.idCliente.insert(0, self.cliente.idcliente)
+        self.idCliente.config(state='readonly')
+
+        ttk.Label(self, text='Apellido').place(x=10, y=130)
+        self.apellidoCliente = ttk.Entry(self, width=15)
+        self.apellidoCliente.insert(0, self.cliente.apellido)
+        self.apellidoCliente.place(x=10, y=160)
+
+        ttk.Label(self, text='Numero de Cuenta').place(x=300, y=130)
+        self.nroCuenta = ttk.Entry(self, width=10)
+        self.nroCuenta.insert(0, self.cliente.nrocuenta)
+        self.nroCuenta.place(x=320, y=160)
+
+        ttk.Label(self, text='Telefono').place(x=10, y=220)
+        self.telefono = ttk.Entry(self, width=10)
+        self.telefono.insert(0, self.cliente.telefono)
+        self.telefono.place(x=10, y=250)
+
+        ttk.Label(self, text='Direccion').place(x=160, y=220)
+        self.direccion = ttk.Entry(self, width=35)
+        self.direccion.insert(0, self.cliente.direccion)
+        self.direccion.place(x=160, y=250)
+
+        ttk.Button(self, text='Guardar cambios',
+                   command=self.guardarCambios).place(x=340, y=350)
+
+    def guardarCambios(self):
+        apellido = self.apellidoCliente.get()
+        telefono = self.telefono.get()
+        nrocuenta = self.nroCuenta.get()
+        direccion = self.direccion.get()
+
+        respuesta = askquestion(title='Guardar cambios',
+                                message='¿Desea guardar los cambios?')
+
+        if respuesta == 'no':
+            self.padre.padre.cambioVentana(
+                self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+            self.destroy()
+            return
+
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            if apellido != self.cliente.apellido:
+                cursor.execute('exec ModificarCliente ?,?,?,?', [
+                               self.cliente.idcliente, 'Apellido', apellido, 0])
+                cursor.commit()
+
+            if telefono != self.cliente.telefono:
+                cursor.execute('exec ModificarCliente ?,?,?,?', [
+                               self.cliente.idcliente, 'Telefono', telefono, 0])
+                cursor.commit()
+
+            if nrocuenta != self.cliente.nrocuenta:
+                cursor.execute('exec ModificarCliente ?,?,?,?', [
+                               self.cliente.idcliente, 'NroCuenta', nrocuenta, 0])
+                cursor.commit()
+
+            if direccion != self.cliente.direccion:
+                cursor.execute('exec ModificarCliente ?,?,?,?', [
+                               self.cliente.idcliente, 'Direccion', direccion, 0])
+                cursor.commit()
+
+            conexion.commit()
+            showinfo(title='Exito', message='Se han guardado los cambios')
+
+        self.padre.padre.cambioVentana(
+            self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+        self.destroy()
 
 
 class EleccionPersona(ttk.Frame):
