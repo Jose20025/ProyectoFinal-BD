@@ -9,6 +9,7 @@ from PIL import Image, ImageTk
 
 from models.cliente import Cliente
 from models.mascota import Mascota
+from models.persona import Persona
 
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
@@ -190,7 +191,7 @@ class VeterinariaPage(ttk.Frame):
         ttk.Button(self.botonesFrameC, text='Eliminar un cliente',
                    width=30).place(x=20, y=230)
 
-        ttk.Button(self.botonesFrameC, text='Agregar una persona a una familia',
+        ttk.Button(self.botonesFrameC, text='Agregar una persona a una familia', command=self.nuevaPersonaFamilia,
                    width=30).place(x=20, y=300)
 
         self.imagenC = ImageTk.PhotoImage(Image.open(
@@ -200,6 +201,11 @@ class VeterinariaPage(ttk.Frame):
         self.inicializarTablaC()
         self.botonesFrameC.place(x=10, y=10)
         # ==============================> ClienteFrame
+
+    def nuevaPersonaFamilia(self):
+        self.personaAFamilia = EleccionPersona(self)
+        self.padre.cambioVentana(self, self.personaAFamilia, [
+                                 400, 200], 'Eleccion de Persona')
 
     def inicializarTablaC(self):
         self.tablaFrameC = ttk.Frame(
@@ -365,6 +371,255 @@ class VeterinariaPage(ttk.Frame):
         self.ModificarPageV = ModificarPageV(self)
         self.padre.cambioVentana(self, self.ModificarPageV, [
                                  700, 520], "Modificar Mascota")
+
+
+class EleccionPersona(ttk.Frame):
+    def __init__(self, master: VeterinariaPage):
+        super().__init__(master=master.padre, width=400, height=200)
+
+        self.padre = master
+
+        ttk.Label(self, text='¿A que persona quieres enlazar?').place(
+            x=90, y=50)
+
+        ttk.Button(self, text='Existente', width=15,
+                   command=self.existente, style='Accent.TButton').place(x=20, y=140)
+
+        ttk.Button(self, text='Nueva Persona', width=15,
+                   style='Accent.TButton', command=self.nuevo).place(x=225, y=140)
+
+    # TODO
+    def existente(self):
+        self.personaExistentePage = PersonaExistentePage(
+            self.padre)
+        self.padre.padre.cambioVentana(
+            self, self.personaExistentePage, [300, 300], 'Persona Existente')
+        self.destroy()
+
+    def nuevo(self):
+        self.personaNuevaPage = NuevaPersonaPage(self.padre)
+        self.padre.padre.cambioVentana(
+            self, self.personaNuevaPage, [400, 300], 'Nueva Persona')
+        self.destroy()
+
+
+class NuevaPersonaPage(ttk.Frame):
+    def __init__(self, master: VeterinariaPage):
+        super().__init__(master=master.padre, width=400, height=300)
+
+        self.padre = master
+
+        ttk.Label(self, text='Nueva Persona').place(x=140, y=10)
+
+        ttk.Separator(self).place(x=10, y=40, width=380)
+
+        ttk.Label(self, text='Carnet de Identidad').place(x=120, y=60)
+        self.ci = ttk.Entry(self, justify='center')
+        self.ci.place(x=100, y=90)
+
+        ttk.Label(self, text='Nombre').place(x=10, y=150)
+        self.nombre = ttk.Entry(self, width=40)
+        self.nombre.place(x=10, y=180)
+
+        ttk.Button(self, text='Registrar', width=30,
+                   command=self.registrar).place(x=60, y=250)
+
+    def registrar(self):
+        ci = self.ci.get()
+        nombre = self.nombre.get()
+
+        if any(elemento == '' for elemento in [ci, nombre]):
+            showwarning(title='Error',
+                        message='Todos los campos deben de estar llenos')
+            return
+
+        persona = Persona([ci, nombre])
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute(
+                'select * from Personas where CI = ?', persona.getCI())
+
+            if cursor.fetchone():
+                showerror(
+                    'Error', 'Ya se encuentra una persona con ese mismo carnet de identidad, ingrese otro')
+                return
+
+        self.eleccionCliente = EleccionClientePersona(self.padre, persona)
+        self.padre.padre.cambioVentana(self, self.eleccionCliente, [
+                                       400, 200], 'Eleccion de Cliente')
+        self.destroy()
+
+
+class EleccionClientePersona(ttk.Frame):
+    def __init__(self, master: VeterinariaPage, persona: Persona):
+        super().__init__(master=master.padre, width=400, height=200)
+
+        self.padre = master
+        self.persona = persona
+
+        ttk.Label(self, text='¿A que cliente quieres enlazar?').place(
+            x=90, y=50)
+
+        ttk.Button(self, text='Existente', width=15,
+                   command=self.existente, style='Accent.TButton').place(x=20, y=140)
+
+        ttk.Button(self, text='Nuevo Cliente', width=15,
+                   style='Accent.TButton', command=self.nuevo).place(x=225, y=140)
+
+    def existente(self):
+        self.clienteExistentePage = ClienteExistentePersonaPage(
+            self.padre, self.persona)
+        self.padre.padre.cambioVentana(
+            self, self.clienteExistentePage, [300, 300], 'Cliente Existente')
+        self.destroy()
+
+    def nuevo(self):
+        self.clienteNuevoPage = NuevoClientePersonaPage(self.padre)
+        self.padre.padre.cambioVentana(
+            self, self.clienteNuevoPage, [400, 450], 'Nuevo Cliente')
+        self.destroy()
+
+
+class ClienteExistentePersonaPage(ttk.Frame):
+    def __init__(self, master: VeterinariaPage, persona: Persona):
+        super().__init__(master=master.padre, width=300, height=300)
+
+        self.padre = master
+        self.persona = persona
+
+        ttk.Button(self, width=10, text='Cancelar',
+                   command=self.cancelar).place(x=10, y=10)
+
+        ttk.Label(self, text='Familia a buscar').place(x=20, y=70)
+
+        self.label = ttk.Label(self, text='').place(x=80, y=120)
+
+        self.familia = ttk.Entry(self, width=25, state='readonly')
+        self.familia.place(x=20, y=100)
+
+        ttk.Button(self, text='Ver Familias', width=10,
+                   command=self.verFamilias).place(x=20, y=145)
+
+        self.aceptarBoton = ttk.Button(
+            self, text='Aceptar', state='disabled', command=self.aceptar)
+        self.aceptarBoton.place(x=175, y=250)
+
+    def cancelar(self):
+        self.padre.padre.cambioVentana(
+            self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+        self.destroy()
+
+    def verFamilias(self):
+
+        self.popup = tk.Toplevel(self)
+        self.popup.title('Familias')
+        self.popup.geometry(
+            f'+{self.winfo_screenwidth()//2}+{self.winfo_screenmmheight()//2}')
+
+        self.familiasFrame = ttk.Frame(self.popup, width=500, height=500)
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute('select Apellido, IdCliente from Clientes')
+
+            titulos = []
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            clientes = cursor.fetchall()
+
+            cursor.close()
+
+        scroll = ttk.Scrollbar(self.popup, orient='vertical')
+
+        self.tabla = ttk.Treeview(self.familiasFrame, height=20,
+                                  columns=titulos[1:], yscrollcommand=scroll.set)
+        self.tabla.bind('<Double-1>', self.seleccion)
+
+        scroll.config(command=self.tabla.yview)
+
+        for i, titulo in enumerate(titulos):
+            if i == 0:
+                self.tabla.column('#0', width=100, anchor=tk.CENTER)
+                self.tabla.heading('#0', text=titulo, anchor=tk.CENTER)
+            else:
+                self.tabla.column(titulo, width=100, anchor=tk.CENTER)
+                self.tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+        for cliente in clientes:
+            atributos = []
+            for atributo in cliente:
+                atributos.append(atributo)
+
+            self.tabla.insert(
+                '', tk.END, text=atributos[0], values=atributos[1:])
+
+        self.tabla.pack()
+        scroll.pack(side='right', fill='y')
+
+        self.familiasFrame.pack()
+
+    def seleccion(self, event=None):
+        familia = self.tabla.focus()
+        # print(self.tabla.item(familia)['text'])
+        codigo = self.tabla.item(familia)['values'][0]
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute(
+                'select * from Clientes where IdCliente = ?', [codigo])
+
+            atributos = cursor.fetchone()
+
+            self.cliente = Cliente(atributos)
+
+        self.familia.config(state='normal')
+        self.familia.delete(0, tk.END)
+        self.familia.insert(0, codigo)
+        self.familia.config(state='readonly')
+
+        self.aceptarBoton.config(state='normal', style='Accent.TButton')
+
+        self.popup.destroy()
+
+    def aceptar(self):
+        cliente = self.cliente
+        persona = self.persona
+
+        idcliente = cliente.getId()
+
+        lista = persona.getAtributos() + [idcliente] + [0]
+        print(lista)
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute('exec RegistrarPersona ?,?,?,?', lista)
+
+            bit = cursor.fetchone()[0]
+
+            if bit:
+                cursor.commit()
+                showinfo(
+                    title='Exito', message='La persona fue agregada correctamente y ha sido enlazada a este cliente')
+                self.padre.padre.cambioVentana(
+                    self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+                self.destroy()
+
+            else:
+                showerror(
+                    'Error', 'El numero de carnet ya se encuentra usado, ingrese otro')
+                cursor.rollback()
+
+            conexion.commit()
 
 
 class ModificarPageV(ttk.Frame):

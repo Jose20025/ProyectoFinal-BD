@@ -210,7 +210,7 @@ END
 GO;
 
 --Procedimiento de registro de una persona y su asignación al cliente
-create procedure RegistrarPersona
+alter procedure RegistrarPersona
     @CI varchar(10),
     @Nombre varchar (30),
     @IdCliente char(5),
@@ -236,6 +236,7 @@ BEGIN
         values
             (@IdCliente, @CI)
     END
+    commit
 END 
 GO;
 
