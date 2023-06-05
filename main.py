@@ -388,7 +388,6 @@ class EleccionPersona(ttk.Frame):
         ttk.Button(self, text='Nueva Persona', width=15,
                    style='Accent.TButton', command=self.nuevo).place(x=225, y=140)
 
-    # TODO
     def existente(self):
         self.personaExistentePage = PersonaExistentePage(
             self.padre)
@@ -401,6 +400,117 @@ class EleccionPersona(ttk.Frame):
         self.padre.padre.cambioVentana(
             self, self.personaNuevaPage, [400, 300], 'Nueva Persona')
         self.destroy()
+
+
+class PersonaExistentePage(ttk.Frame):
+    def __init__(self, master: VeterinariaPage):
+        super().__init__(master=master.padre, width=300, height=300)
+
+        self.padre = master
+
+        ttk.Button(self, width=10, text='Cancelar',
+                   command=self.cancelar).place(x=10, y=10)
+
+        ttk.Label(self, text='CI de la Persona').place(x=20, y=70)
+
+        self.label = ttk.Label(self, text='').place(x=80, y=120)
+
+        self.familia = ttk.Entry(self, width=25, state='readonly')
+        self.familia.place(x=20, y=100)
+
+        ttk.Button(self, text='Ver Personas', width=10,
+                   command=self.verPersonas).place(x=20, y=145)
+
+        self.aceptarBoton = ttk.Button(
+            self, text='Aceptar', state='disabled', command=self.aceptar)
+        self.aceptarBoton.place(x=175, y=250)
+
+    def cancelar(self):
+        self.padre.padre.cambioVentana(
+            self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+        self.destroy()
+
+    def verPersonas(self):
+
+        self.popup = tk.Toplevel(self)
+        self.popup.title('Personas')
+        self.popup.geometry(
+            f'+{self.winfo_screenwidth()//2}+{self.winfo_screenmmheight()//2}')
+
+        self.personasFrame = ttk.Frame(self.popup, width=500, height=500)
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute('select * from Personas')
+
+            titulos = []
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            personas = cursor.fetchall()
+
+            cursor.close()
+
+        scroll = ttk.Scrollbar(self.popup, orient='vertical')
+
+        self.tabla = ttk.Treeview(self.personasFrame, height=20,
+                                  columns=titulos[1:], yscrollcommand=scroll.set)
+        self.tabla.bind('<Double-1>', self.seleccion)
+
+        scroll.config(command=self.tabla.yview)
+
+        for i, titulo in enumerate(titulos):
+            if i == 0:
+                self.tabla.column('#0', width=100, anchor=tk.CENTER)
+                self.tabla.heading('#0', text=titulo, anchor=tk.CENTER)
+            else:
+                self.tabla.column(titulo, width=200, anchor=tk.CENTER)
+                self.tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+        for persona in personas:
+            atributos = []
+            for atributo in persona:
+                atributos.append(atributo)
+
+            self.tabla.insert(
+                '', tk.END, text=atributos[0], values=atributos[1:])
+
+        self.tabla.pack()
+        scroll.pack(side='right', fill='y')
+
+        self.personasFrame.pack()
+
+    def seleccion(self, event=None):
+        persona = self.tabla.focus()
+        # print(self.tabla.item(persona)['text'])
+        ci = self.tabla.item(persona)['text']
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute(
+                'select * from Personas where CI = ?', ci)
+
+            atributos = cursor.fetchone()
+
+            self.persona = Persona(atributos)
+
+        self.familia.config(state='normal')
+        self.familia.delete(0, tk.END)
+        self.familia.insert(0, ci)
+        self.familia.config(state='readonly')
+
+        self.aceptarBoton.config(state='normal', style='Accent.TButton')
+
+        self.popup.destroy()
+
+    def aceptar(self):
+        self.eleccionCliente = EleccionClientePersona(self.padre, self.persona)
+        self.padre.padre.cambioVentana(self, self.eleccionCliente, [
+                                       400, 200], 'Eleccion de Cliente')
 
 
 class NuevaPersonaPage(ttk.Frame):
@@ -431,6 +541,13 @@ class NuevaPersonaPage(ttk.Frame):
         if any(elemento == '' for elemento in [ci, nombre]):
             showwarning(title='Error',
                         message='Todos los campos deben de estar llenos')
+            return
+
+        try:
+            ci = int(ci)
+        except Exception:
+            showerror(title='Error',
+                      message='El carnet de identidad debe de ser numerico')
             return
 
         persona = Persona([ci, nombre])
@@ -477,10 +594,109 @@ class EleccionClientePersona(ttk.Frame):
         self.destroy()
 
     def nuevo(self):
-        self.clienteNuevoPage = NuevoClientePersonaPage(self.padre)
+        self.clienteNuevoPage = NuevoClientePersonaPage(
+            self.padre, self.persona)
         self.padre.padre.cambioVentana(
             self, self.clienteNuevoPage, [400, 450], 'Nuevo Cliente')
         self.destroy()
+
+
+class NuevoClientePersonaPage(ttk.Frame):
+    def __init__(self, master: VeterinariaPage = None, persona: Persona = None):
+        super().__init__(master.padre, height=450, width=400)
+
+        self.padre = master
+        self.persona = persona
+
+        ttk.Button(self, text='Cancelar', command=self.cancelar,
+                   width=8).place(x=10, y=10)
+
+        ttk.Label(self, text='Apellido').place(x=20, y=90)
+        self.apellido = ttk.Entry(self, width=38)
+        self.apellido.place(x=20, y=120)
+
+        ttk.Label(self, text='Numero de Cuenta').place(x=20, y=180)
+        self.nrocuenta = ttk.Entry(self, width=18)
+        self.nrocuenta.place(x=20, y=210)
+
+        ttk.Label(self, text='Telefono').place(x=215, y=180)
+        self.telefono = ttk.Entry(self, width=16)
+        self.telefono.place(x=215, y=210)
+
+        ttk.Label(self, text='Direccion').place(x=20, y=270)
+        self.direccion = ttk.Entry(self, width=38)
+        self.direccion.place(x=20, y=300)
+
+        ttk.Button(self, text='Aceptar',
+                   command=self.aceptar).place(x=275, y=400)
+
+    def cancelar(self):
+        respuesta = askquestion(title='Confirmacion',
+                                message='¿Estas seguro de salir?')
+
+        if respuesta == 'yes':
+            self.padre.padre.cambioVentana(
+                self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+            self.destroy()
+
+    def aceptar(self):
+        apellido = self.apellido.get()
+        nrocuenta = self.nrocuenta.get()
+        telefono = self.telefono.get()
+        direccion = self.direccion.get()
+
+        try:
+            nrocuenta = int(nrocuenta)
+            telefono = int(telefono)
+        except Exception:
+            showwarning(title='Error',
+                        message='Uno de los datos esta en mal formato')
+            return
+
+        atributos = [apellido, nrocuenta, direccion, telefono, 0]
+
+        if any(elemento == '' for elemento in atributos):
+            showwarning(title='Error',
+                        message='Todos los campos deben estar llenos')
+            return
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute('exec RegistrarCliente ?,?,?,?,?', atributos)
+
+            info = cursor.fetchall()
+
+            bit, idcliente = info[0]
+
+            cursor.close()
+            conexion.commit()
+
+        if bit:
+            atributos.insert(0, idcliente)
+
+            lista = self.persona.getAtributos() + [idcliente, 0]
+
+            with pyodbc.connect(
+                    f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+                cursor = conexion.cursor()
+
+                cursor.execute('exec RegistrarPersona ?,?,?,?', lista)
+
+                bit2 = cursor.fetchone()[0]
+
+            if bit2:
+                showinfo(title='Exito',
+                         message='El cliente se ha creado con exito y se ha enlazado con la persona!')
+                self.padre.padre.cambioVentana(
+                    self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+            else:
+                showerror(
+                    title='Error', message='Ha ocurrido un error al enlazar a la persona')
+        else:
+            showerror(
+                title='Error', message='Ha ocurrido un error al crear el cliente')
 
 
 class ClienteExistentePersonaPage(ttk.Frame):
@@ -596,28 +812,41 @@ class ClienteExistentePersonaPage(ttk.Frame):
         idcliente = cliente.getId()
 
         lista = persona.getAtributos() + [idcliente] + [0]
-        print(lista)
 
         with pyodbc.connect(
                 f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
 
-            cursor.execute('exec RegistrarPersona ?,?,?,?', lista)
+            cursor.execute(
+                'select * from Personas where CI = ?', persona.getCI())
 
-            bit = cursor.fetchone()[0]
-
-            if bit:
+            if cursor.fetchone():
+                cursor.execute('insert into Encargados values (?,?)', [
+                               cliente.getId(), persona.getCI()])
                 cursor.commit()
+
                 showinfo(
                     title='Exito', message='La persona fue agregada correctamente y ha sido enlazada a este cliente')
                 self.padre.padre.cambioVentana(
                     self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
                 self.destroy()
-
             else:
-                showerror(
-                    'Error', 'El numero de carnet ya se encuentra usado, ingrese otro')
-                cursor.rollback()
+                cursor.execute('exec RegistrarPersona ?,?,?,?', lista)
+
+                bit = cursor.fetchone()[0]
+
+                if bit:
+                    cursor.commit()
+                    showinfo(
+                        title='Exito', message='La persona fue agregada correctamente y ha sido enlazada a este cliente')
+                    self.padre.padre.cambioVentana(
+                        self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+                    self.destroy()
+
+                else:
+                    showerror(
+                        'Error', 'El numero de carnet ya se encuentra usado, ingrese otro')
+                    cursor.rollback()
 
             conexion.commit()
 
