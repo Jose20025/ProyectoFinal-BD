@@ -101,6 +101,9 @@ CREATE SEQUENCE SecCodMascota
     NO MAXVALUE;
 GO;
 
+select * from Mascotas
+select * from Clientes
+
 --Procedimiento para registrar una mascota 
 alter procedure RegistrarMascota
 @IdCliente varchar(20),
