@@ -403,8 +403,6 @@ BEGIN
 END  
 GO;
 
-select * from Requerimientos order by CheckIn
-
 --Modificacion de requerimiento
 alter procedure ModificarRequerimiento
 @IdServicio char (3),

@@ -107,9 +107,10 @@ as
 BEGIN
     select top 1 Situacion,FechaConsulta from HistorialesMedicos where CodMascota=@CodMascota order by FechaConsulta desc
 END
+GO
 
-select * from Vacunas
+create procedure ObtenerEstadiasActuales
+as
+select Mascotas.CodMascota,Alias,Especie,CheckIn,NroHab,Dias from Estadias
+inner join Mascotas on Mascotas.CodMascota = Estadias.CodMascota where CheckOut is NULL
 
-select * from HistorialesPeso
-
-select * from Estadias
