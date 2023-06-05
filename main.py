@@ -503,11 +503,14 @@ class VeterinariaPage(ttk.Frame):
             if self.campoElegido == 'Especie':
                 self.textoBuscarPeso = self.CBoxEspecie.get()
             else:
-                if self.textoBuscarPeso == '':
-                    print('es numero')
-                    showwarning(title='Error de campo',
-                            message='Campo de búsqueda vacío')
-                    return 
+                print('es numero')
+                showwarning(title='Error de campo',
+                        message='Campo de búsqueda vacío')
+                return
+            
+        else:
+            self.textoBuscarPeso = self.espacioBuscarPeso.get()
+            
         self.tablaMascotasPesos = ttk.Frame(self.pesoFrame, width=200, height=100)
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
