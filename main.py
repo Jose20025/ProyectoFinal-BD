@@ -1127,6 +1127,7 @@ class RegistroEstadia(ttk.Frame):
 
 # mi zona
 
+
 class BuscarEstadia(ttk.Frame):
     def __init__(self,master: HotelPage):
         super().__init__(master=master.padre,width=700,height=520)
@@ -1155,6 +1156,9 @@ class BuscarEstadia(ttk.Frame):
         self.espacioHab.place(x=550,y=395)
 
         ttk.Button(self,text='Ir a modificar',width=12,command=self.aEdicion).place(x=550,y=460)
+
+        self.dias = 0
+        self.hab = None
 
     def obtenerEstadias(self):
         
@@ -1213,12 +1217,14 @@ class BuscarEstadia(ttk.Frame):
         self.espacioCod.insert(0,self.tablaEncontrados.item(registro)['text'])
         self.espacioFecha.insert(0,self.tablaEncontrados.item(registro)['values'][2])
         self.espacioHab.insert(0,self.tablaEncontrados.item(registro)['values'][3])
-
+        self.dias = self.tablaEncontrados.item(registro)['values'][4]
+        self.hab = self.tablaEncontrados.item(registro)['values'][3]
         self.espacioCod.configure(state='readonly')
         self.espacioFecha.configure(state='readonly')
         self.espacioHab.configure(state='readonly')
 
         self.habitaciones = []
+        self.servicios = []
 
     def volver(self):
         self.destroy()
@@ -1231,40 +1237,42 @@ class BuscarEstadia(ttk.Frame):
             habs= cursor.fetchall()
             for h in habs:
                 self.habitaciones.append(h[0])
+            cursor.execute('exec ServiciosSolicitados ?,?,?',(self.espacioCod.get(),self.espacioFecha.get(),self.espacioHab.get()))
+            servicios = cursor.fetchall()
+            for s in servicios:
+                self.servicios.append(s)
 
-        self.EdicionEstadia = EdicionEstadia(self,self.habitaciones)
+            print(servicios)
+        self.EdicionEstadia = EdicionEstadia(self,self.habitaciones,self.servicios,self.dias,self.hab)
         self.ancestro.cambioVentana(self,self.EdicionEstadia,[510,620],'Edición de estadía')
 
 class EdicionEstadia(ttk.Frame):
-    def __init__(self, master:BuscarEstadia,habitaciones):
-        super().__init__(master=master.padre,width=510,height=620)
+    def __init__(self, master:BuscarEstadia,habitaciones,servicios,dias,hab):
+        super().__init__(master=master.padre.padre,width=510,height=620)
+        self.servicios = servicios
         self.habitaciones = habitaciones
         self.padre = master
+        self.dias = dias
+        self.hab = hab
         self.ancestro = self.padre.padre.padre
         ttk.Button(self,text='Cancelar',command=self.cancelar).place(x=10,y=10)
 
         self.CodMascota = tk.StringVar()
         self.CodMascota.set(self.padre.espacioCod.get())
-        ttk.Label(self,text='Código Mascota').place(x=20,y=120)
+        ttk.Label(self,text='Código Mascota',width=14).place(x=20,y=120)
         ttk.Entry(self,textvariable=self.CodMascota,state='readonly',width=8).place(x=20,y=155)
+
+        ttk.Label(self,text='Habitación').place(x=200,y=120)
+        self.HabCBox = ttk.Combobox(self,state='readonly',width=7,values=self.habitaciones)
+        self.HabCBox.place(x=200,y=155)
 
         self.fecha = tk.StringVar()
         self.fecha.set(self.padre.espacioFecha.get())
         ttk.Label(self,text='Fecha CheckIn').place(x=340,y=120)
         ttk.Entry(self,textvariable=self.fecha,state='readonly',width=12).place(x=340,y=155)
 
-        ttk.Label(self,text='Habitación').place(x=200,y=120)
-        self.HabCBox = ttk.Combobox(self,state='readonly',width=7,values=self.habitaciones)
-        self.HabCBox.place(x=200,y=155)
+        ttk.Label(self,text='Servicios Solicitados',background='#58bf85').place(x=80,y=240)
 
-        ttk.Label(self,text='Dias').place(x=340,y=120)
-        self.cantDias = ttk.Entry(self,width=5)
-        self.cantDias.place(x=340,y=155)
-
-        ttk.Label(self,text='Especiales',background='#58bf85').place(x=50,y=240)
-        ttk.Label(self,text='Adicionales',background='#58bf85').place(x=190,y=240)
-        ttk.Label(self,text='Cantitdad',background='#58bf85').place(x=330,y=240)
-        
         self.food = tk.BooleanVar() 
         self.med= tk.BooleanVar()
         self.paseo = tk.BooleanVar()
@@ -1292,10 +1300,147 @@ class EdicionEstadia(ttk.Frame):
         self.espacioDucha = ttk.Entry(self,width=5,state='normal')
         self.espacioDucha.place(x=340,y=400)
 
+        for k in self.servicios:
+            if k[0]=='Baño':
+                self.ducha.set(True)
+                self.espacioDucha.insert(0,k[1])
+            if k[0]=='Corte uñas':
+                self.corte.set(True)
+            if k[0]=='Paseo':
+                self.paseo.set(True)
+                self.espacioPaseo.insert(0,k[1])
+            if k[0]=='Alimentacion':
+                self.food.set(True)
+            if k[0]=='Cuidado medico':
+                self.med.set(True)
+            if k[0]=='Juegos':
+                self.juego.set(True)
+                self.espacioJuego.insert(0,k[1])
+
+        self.guardado = {}
+
+        for k in self.servicios:
+            self.guardado[k[0]] = k[1]
+
+        print(self.guardado)
+
+        ttk.Button(self,text='Guardar Cambios',command=self.modificar).place(x=340,y=550)
+
     def cancelar(self):
         self.destroy()
         self.ancestro.cambioVentana(self,self.padre,[700,520],'Búsqueda de estadías')
 
+    def modificar(self):
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor() 
+            resp = askquestion('Confirmación','¿Desea guardar los cambios?')
+            if resp=='yes':
+                showinfo('Éxito','Cambios guardados')
+            
+    #viendo cantidad de duchas
+            if 'Baño' in self.guardado:
+                print('ducha seleccionado antes')
+                if self.ducha.get() == True:
+                    if int(self.espacioDucha.get()) != self.guardado['Baño']:
+                        cursor.execute('ModificarRequerimiento ?,?,?,?,?,?,? ',
+                            ('S01',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),'Cantidad',int(self.espacioDucha.get()),0))    
+                        cursor.commit()
+                else:
+                    cursor.execute('EliminarRequerimiento ?,?,?,?,?',
+                            ('S01',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                    cursor.commit()
+            else:
+                if self.ducha.get():
+                    cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
+                            (self.CodMascota.get(),'S01',self.fecha.get(),int(self.espacioDucha.get()),self.padre.espacioHab.get(),self.padre.dias,0))
+                    cursor.commit()
+
+    #viendo corte de uñas
+
+            if 'Corte uñas' in self.guardado:
+                print('corte seleccionado antes')
+
+                if self.corte.get() != True:
+                    cursor.execute('EliminarRequerimiento ?,?,?,?,?',
+                            ('S02',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                    cursor.commit() 
+            else:
+                if self.ducha.get():
+                    cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
+                            (self.CodMascota.get(),'S01',self.fecha.get(),int(self.espacioDucha.get()),self.padre.espacioHab.get(),self.padre.dias,0))
+                    cursor.commit()
+    #viendo paseos
+
+            if 'Paseo' in self.guardado:
+                print('paseo seleccionado antes')
+
+                if self.ducha.get() == True:
+                    if int(self.espacioPaseo.get()) != self.guardado['Paseo']:
+                        cursor.execute('ModificarRequerimiento ?,?,?,?,?,?,? ',
+                            ('S03',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),'Cantidad',int(self.espacioPaseo.get()),0))    
+                        cursor.commit()
+                else:
+                    cursor.execute('EliminarRequerimiento ?,?,?,?,?',
+                            ('S03',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                    cursor.commit()
+            else:
+                if self.paseo.get():
+                    cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
+                            (self.CodMascota.get(),'S03',self.fecha.get(),int(self.espacioPaseo.get()),self.padre.espacioHab.get(),self.padre.dias,0))
+                    cursor.commit()
+
+    # viendo alimentación especial
+
+            if 'Alimentacion' in self.guardado:
+                print('comida seleccionado antes')
+
+                if self.food.get() != True:
+                    cursor.execute('EliminarRequerimiento ?,?,?,?,?',
+                            ('S04',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                    cursor.commit()
+            else:
+                if self.food.get():
+                    cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
+                            (self.CodMascota.get(),'S04',self.fecha.get(),None,self.padre.espacioHab.get(),self.padre.dias,0))
+                    cursor.commit()
+
+    # viendo atencion médica
+
+            if 'Cuidado medico' in self.guardado:
+                print('mecico seleccionado antes')
+
+                if self.med.get() != True:
+                    cursor.execute('EliminarRequerimiento ?,?,?,?,?',
+                            ('S05',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                    cursor.commit()    
+            else:
+                if self.med.get():
+                    cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
+                            (self.CodMascota.get(),'S05',self.fecha.get(),None,self.padre.espacioHab.get(),self.padre.dias,0))
+                    cursor.commit()
+    #viendo juegos
+
+            if 'Juegos' in self.guardado:
+                print('juego seleccionado antes')
+
+                if self.juego.get() == True:
+                    if int(self.espacioJuego.get()) != self.guardado['Juegos']:
+                        cursor.execute('ModificarRequerimiento ?,?,?,?,?,?,? ',
+                            ('S06',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),'Cantidad',int(self.espacioPaseo.get()),0))    
+                        cursor.commit()
+                else:
+                    cursor.execute('EliminarRequerimiento ?,?,?,?,?',
+                            ('S06',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                    cursor.commit()
+            else:
+                if self.juego.get():
+                    cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
+                            (self.CodMascota.get(),'S06',self.fecha.get(),int(self.espacioJuego.get()),self.padre.espacioHab.get(),self.padre.dias,0))                            
+                    cursor.commit()
+    	    
+            cursor.execute('commit')
+            
+        self.ancestro.cambioVentana(self,self.padre.padre,[1000,600],'Cute Pets - Hotel')
 
 
 ## VETERINARIA ##

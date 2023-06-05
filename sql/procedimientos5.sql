@@ -113,4 +113,20 @@ create procedure ObtenerEstadiasActuales
 as
 select Mascotas.CodMascota,Alias,Especie,CheckIn,NroHab,Dias from Estadias
 inner join Mascotas on Mascotas.CodMascota = Estadias.CodMascota where CheckOut is NULL
+go
 
+alter procedure ServiciosSolicitados
+@CodMascota char (5),
+@CheckIn date,
+@NroHab char(2)
+as
+select TipoServ,Cantidad from Requerimientos
+inner join Servicios on Servicios.IdServicio = Requerimientos.IdServicio
+ where CodMascota=@CodMascota and CheckIn=@CheckIn and NroHab=@NroHab
+
+select * from Servicios
+
+exec EliminarRequerimiento 'S05','2023-06-05','M0012','15',0
+
+select * from Requerimientos 
+ROLLBACK

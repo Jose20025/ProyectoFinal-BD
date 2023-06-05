@@ -452,15 +452,15 @@ END
 GO;
 
 --Eliminación de requerimiento en la estadía
-create procedure EliminarRequerimiento
+alter procedure EliminarRequerimiento
 @IdServicio char (3),
 @CheckIn date,
 @CodMascota char (5),
 @NroHab char (2),
-@Cuenta int,
 @Check bit out 
 AS
 BEGIN
+    declare @Cuenta int
     begin TRANSACTION
     delete from Requerimientos
     where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
