@@ -9,6 +9,8 @@ from models.cliente import Cliente
 from models.mascota import Mascota
 from models.persona import Persona
 
+import sv_ttk
+
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 
@@ -17,8 +19,9 @@ class App(tk.Tk):
         super().__init__()
 
         # Aplicando el tema
-        self.tk.call('source', 'azure.tcl')
-        self.tk.call('set_theme', 'dark')
+        # self.tk.call('source', 'azure.tcl')
+        # self.tk.call('set_theme', 'dark')
+        sv_ttk.set_theme('dark')
 
         self.iconbitmap('./image/icono.ico')
         self.geometry('500x700')
@@ -4281,7 +4284,7 @@ class InsertarMascotaV(ttk.Frame):
         dia, mes, año = map(int, fecha_descompuesta)
 
         fechaTemp = date(año, mes, dia)
-        fechaEscrita = f'{fechaTemp.date()}'
+        fechaEscrita = f'{fechaTemp}'
 
         return fechaEscrita
 
