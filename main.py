@@ -135,6 +135,8 @@ class HotelPage(ttk.Frame):
         self.tabview.add(self.checkOutFrame,text='Check Out')
         self.tabview.add(self.reporteFrame,text='Reportes')
 
+        self.tabview.bind("<<NotebookTabChanged>>",self.CambiandoSize)
+
         self.tabview.pack()
 
         ##### ZONA DE HUESPEDES #####
@@ -144,6 +146,28 @@ class HotelPage(ttk.Frame):
         ttk.Button(self.huespedFrame,text='Registrar Estadía',width=30,command=self.aRegistrarEstadia).place(x=20,y=160)
         ttk.Button(self.huespedFrame,text='Modificar estadía',width=30,command=self.aModificarEstadia).place(x=20,y=230)
 
+
+        ### PROCESO DE CHECKOUT ###
+
+        ttk.Button(self.checkOutFrame,text='Obtener Estadías Actuales',command=self.obtenerEstadias).place(x=240,y=30)
+
+        self.codigo = tk.StringVar()
+        ttk.Label(self.checkOutFrame, text='Código de mascota').place(x=30,y=360)
+        self.espacioCod = ttk.Entry(self.checkOutFrame,width=12,state='normal',textvariable=self.codigo)
+        self.espacioCod.place(x=30,y=395)
+
+        self.checkin = tk.StringVar()
+        ttk.Label(self.checkOutFrame,text='CheckIn').place(x=290,y=360)
+        self.espacioFecha = ttk.Entry(self.checkOutFrame,width=14,state='normal',textvariable=self.checkin)
+        self.espacioFecha.place(x=290,y=395)
+
+        self.habitacion = tk.StringVar()
+        ttk.Label(self.checkOutFrame,text='Habitación').place(x=550,y=360)
+        self.espacioHab = ttk.Entry(self.checkOutFrame,width=8,state='normal',textvariable=self.habitacion)
+        self.espacioHab.place(x=550,y=395)
+
+        ttk.Button(self.checkOutFrame,text='Realizar Check Out',width=18,command=self.obtenerCheckOut).place(x=250,y=480)
+        self.tablaFrame = None
 
     def aEleccionFamilia(self):
         self.EleccionFamilia = EleccionFamiliaH(self)
@@ -160,6 +184,78 @@ class HotelPage(ttk.Frame):
     def aModificarEstadia(self):
         self.BuscarEstadia = BuscarEstadia(self)
         self.padre.cambioVentana(self,self.BuscarEstadia,[700,520],'Búsqueda de estadías')
+
+    def CambiandoSize(self, event):
+         eleccionTab = self.tabview(self.tabview.select(),"text")
+         if eleccionTab == 'CheckOut':  
+             self.padre.geometry('700x600')
+         else:
+             self.padre.geometry("1000x600")
+
+    def obtenerCheckOut(self):
+        pass
+
+    def obtenerEstadias(self):
+        
+        if self.tablaFrame:
+            self.tablaFrame.pack_forget()
+            self.tablaFrame.destroy()  
+
+        self.tablaFrame = ttk.Frame(self, width=200, height=100)
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor() 
+            cursor.execute('exec ObtenerEstadiasActuales')
+            resultados = cursor.fetchall()
+
+            titulos = []
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            cursor.close()
+
+            self.tablaEncontrados = ttk.Treeview(
+                self.tablaFrame, height=6, columns=titulos[1:])
+            self.tablaEncontrados.bind('<Double-1>', self.seleccion)
+            for i, titulo in enumerate(titulos):
+                if i == 0:
+                    self.tablaEncontrados.column('#0', width=100, anchor=tk.CENTER)
+                    self.tablaEncontrados.heading(
+                        '#0', text=titulo, anchor=tk.CENTER)
+                else:
+                    self.tablaEncontrados.column(
+                        titulo, width=100, anchor=tk.CENTER)
+                    self.tablaEncontrados.heading(
+                        titulo, text=titulo, anchor=tk.CENTER)
+
+            for dato in resultados:
+                atributos = []
+                for atributo in dato:
+                    atributos.append(atributo)
+
+                self.tablaEncontrados.insert(
+                    '', tk.END, text=atributos[0], values=atributos[1:])
+
+            self.tablaEncontrados.pack()
+            self.tablaFrame.place(x=30, y=140)
+
+    def seleccion(self,event = None):
+        registro = self.tablaEncontrados.focus()
+
+        self.espacioCod.configure(state='normal')
+        self.espacioFecha.configure(state='normal')
+        self.espacioHab.configure(state='normal')
+
+        self.espacioCod.delete(0,tk.END)
+        self.espacioFecha.delete(0,tk.END)
+        self.espacioHab.delete(0,tk.END)
+
+        self.espacioCod.insert(0,self.tablaEncontrados.item(registro)['text'])
+        self.espacioFecha.insert(0,self.tablaEncontrados.item(registro)['values'][2])
+        self.espacioHab.insert(0,self.tablaEncontrados.item(registro)['values'][3])
+
+        self.espacioCod.configure(state='readonly')
+        self.espacioFecha.configure(state='readonly')
+        self.espacioHab.configure(state='readonly')
 
 class EleccionFamiliaH(ttk.Frame):
     def __init__(self, master: HotelPage):
@@ -1125,9 +1221,6 @@ class RegistroEstadia(ttk.Frame):
         self.destroy()
         self.ancestro.cambioVentana(self,self.padre,[700,520], 'Buscar huéspedes')
 
-# mi zona
-
-
 class BuscarEstadia(ttk.Frame):
     def __init__(self,master: HotelPage):
         super().__init__(master=master.padre,width=700,height=520)
@@ -1136,7 +1229,7 @@ class BuscarEstadia(ttk.Frame):
         self.ancestro = self.padre.padre
         self.tablaFrame = None
 
-        ttk.Button(self,text='Voler',command=self.volver).place(x=10,y=10)
+        ttk.Button(self,text='Volver',command=self.volver).place(x=10,y=10)
 
         ttk.Button(self,text='Obtener Estadías Actuales',command=self.obtenerEstadias).place(x=240,y=70)
 
@@ -2824,8 +2917,6 @@ class NuevaFamiliaPage(ttk.Frame):
             else:
                 cursor.execute('rollback')
                 showwarning('Error en la inserción. Posible cliente duplicado o datos erroneos')
-            
-## JOSECA
 
 class InsertarPageV(ttk.Frame):
     def __init__(self, master: VeterinariaPage = None, cliente: Cliente = None):
