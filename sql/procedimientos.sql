@@ -7,13 +7,13 @@ GO;
 
 
 --Procedimiento para registrar un cliente
-alter procedure RegistrarCliente
+create procedure RegistrarCliente
     @Apellido varchar(20),
     @NroCuenta varchar(10),
     @Direccion varchar(40),
     @Telefono varchar(14),
     @Check bit out
-AS 
+AS
 BEGIN
     begin TRANSACTION
     if exists(select 1
@@ -22,7 +22,6 @@ BEGIN
         begin
         set @Check = 0
         select @Check
-        rollback
     end
     ELSE
         set @Check = 1
@@ -41,12 +40,12 @@ BEGIN
     insert into Clientes
     values
         (@pIdCliente, @Apellido, @NroCuenta, @Direccion, @Telefono)
-    commit
+
 END
 GO;
 
 --Modificación de datos de un cliente
-alter procedure ModificarCliente
+create procedure ModificarCliente
     @IdCliente char (5),
     @Campo varchar(15),
     @NuevoValor varchar (20),
@@ -68,7 +67,7 @@ BEGIN
 
     END
     ELSE
-    BEGIN
+        BEGIN
         set @Check = 0
         select @Check
     end
@@ -108,7 +107,7 @@ CREATE SEQUENCE SecCodMascota
 GO;
 
 --Procedimiento para registrar una mascota 
-alter procedure RegistrarMascota
+create procedure RegistrarMascota
     @IdCliente varchar(20),
     @Alias varchar(20),
     @Especie varchar(40),
@@ -117,7 +116,7 @@ alter procedure RegistrarMascota
     @FechaNac date,
     @Tamaño char(2),
     @Check bit out
-AS 
+AS
 BEGIN
     begin TRANSACTION
     if exists (select 1
@@ -152,12 +151,12 @@ GO;
 
 
 --Modificación de datos de una mascota
-alter procedure ModificarMascota
+create procedure ModificarMascota
     @CodMascota char (5),
     @Campo varchar(15),
     @NuevoValor varchar (20),
     @Check bit out
-as 
+as
 BEGIN
     begin TRANSACTION
     declare @SQL NVARCHAR(MAX)
@@ -178,11 +177,7 @@ BEGIN
 END
 GO;
 
-exec ModificarMascota 'M0047','Color_pelo','Manchado',1
-commit
 
-select *
-from Mascotas
 
 --Eliminacion de mascota
 create procedure EliminarMascota

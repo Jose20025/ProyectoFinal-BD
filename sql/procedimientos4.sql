@@ -14,7 +14,7 @@ inner join Habitaciones on Habitaciones.NroHab = Estadias.NroHab
 where CheckOut is not NULL
 GO
 
-alter procedure ReporteAtendidos
+create procedure ReporteAtendidos
 @FechaInicial date,
 @FechaFinal date
 AS
@@ -91,7 +91,7 @@ BEGIN
 END
 GO
 
-alter procedure ReporteAtendidos2
+create procedure ReporteAtendidos2
 @FechaInicial date,
 @FechaFinal date
 AS

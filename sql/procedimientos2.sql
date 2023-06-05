@@ -2,7 +2,7 @@
 alter procedure RegistrarPeso
     @FechaPeso date,
     @CodMascota char(5),
-    @Peso float,
+    @Peso varchar(5),
     @Check bit out
 as 
 BEGIN
@@ -20,11 +20,10 @@ BEGIN
         select @Check
         insert into HistorialesPeso
         values
-            (@FechaPeso, @CodMascota, @Peso)
+            (@FechaPeso, @CodMascota, CAST(@Peso AS float))
     END
-    commit
 END
-GO;
+GO
 
 --Modificar un registro de peso
 create procedure ModificarPeso
@@ -109,7 +108,7 @@ END
 GO;
 
 --Modificar una visita medica
-alter PROCEDURE ModificarVisitaMed
+create PROCEDURE ModificarVisitaMed
     @FechaConsulta DATE,
     @CodMascota CHAR(5),
     @Campo VARCHAR(20),
@@ -179,17 +178,18 @@ BEGIN
     begin TRANSACTION
     if exists (select 1
     from CalendariosVacunas
-    where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna and Fabricante=@Fabricante)
-        BEGIN
+    where FechaVacuna=@FechaVacuna and CodMascota=@CodMascota and TipoVacuna=@TipoVacuna)
+    BEGIN
         set @Check = 0
         SELECT @Check
     end
     ELSE
-        BEGIN
+    BEGIN
+        set @Check = 1
+        select @Check
         insert into CalendariosVacunas
         values
             (@FechaVacuna, @CodMascota, @TipoVacuna, @Fabricante)
-        set @Check = 1
     END
 END
 GO;
@@ -238,25 +238,25 @@ BEGIN
     begin TRANSACTION
     if exists(select 1
     from Estadias
-    where CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab)
-        begin
+    where CheckIn=@CheckIn and CodMascota=@CodMascota)
+    begin
         set @Check = 0
         SELECT @Check
     end
-    else    
-        BEGIN
+    else
+    BEGIN
+        set @Check = 1
+        SELECT @Check
         insert into Estadias
         values
             (@CheckIn, @CodMascota, @NroHab, NULL, @Dias)
         update Habitaciones set Disponible = 'O' where NroHab = @NroHab
-        set @Check = 1
-        SELECT @Check
     END
 END
 GO;
 
 --Modificación de una estadía
-alter PROCEDURE ModificarEstadia
+create PROCEDURE ModificarEstadia
     @CheckIn DATE,
     @CodMascota CHAR(5),
     @NroHab CHAR(2),
@@ -459,8 +459,14 @@ BEGIN
 END  
 GO;
 
+exec RegistrarRequerimiento 'M0030','S01','2023-05-25',3,'01',3,0
+
+select *
+from Requerimientos
+GO
+
 --Modificacion de requerimiento
-alter procedure ModificarRequerimiento
+create procedure ModificarRequerimiento
     @IdServicio char (3),
     @CheckIn date,
     @CodMascota char (5),
@@ -514,14 +520,14 @@ GO;
 
 --Eliminación de requerimiento en la estadía
 create procedure EliminarRequerimiento
-    @IdServicio char (3),
+    @IdServicio char(3),
     @CheckIn date,
-    @CodMascota char (5),
-    @NroHab char (2),
-    @Cuenta int,
+    @CodMascota char(5),
+    @NroHab char(2),
     @Check bit out
 AS
 BEGIN
+    declare @Cuenta int
     begin TRANSACTION
     delete from Requerimientos
     where IdServicio=@IdServicio and CheckIn=@CheckIn and CodMascota=@CodMascota and NroHab=@NroHab
