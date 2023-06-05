@@ -1028,7 +1028,7 @@ class InsertarMascotaV(ttk.Frame):
                                 self.registrarPesoPage = RegistrarPrimerPeso(
                                     self.padre, mascota)
                                 self.padre.padre.cambioVentana(
-                                    self, self.registrarPesoPage, [300, 400], 'Registrar Peso')
+                                    self, self.registrarPesoPage, [300, 200], 'Registrar Peso')
                                 self.destroy()
 
                         else:
@@ -1093,11 +1093,66 @@ class InsertarMascotaV(ttk.Frame):
 
 
 class RegistrarPrimerPeso(ttk.Frame):
-    def __init__(self, master: InsertarMascotaV = None, mascota: Mascota = None):
-        super().__init__(master=master.padre, width=300, height=400)
+    def __init__(self, master: VeterinariaPage = None, mascota: Mascota = None):
+        super().__init__(master=master.padre, width=300, height=200)
 
         self.mascota = mascota
-        print(mascota.getCod())
+        self.padre = master
+
+        ttk.Label(self, text='Introduce el peso de la mascota').place(
+            x=25, y=10)
+
+        ttk.Separator(self).place(x=5, y=40, width=290)
+
+        self.peso = ttk.Entry(self, width=10)
+        self.peso.place(x=100, y=50)
+
+        ttk.Label(self, text='Kg').place(x=220, y=55)
+
+        ttk.Button(self, text='Registrar', width=20,
+                   style='Accent.TButton', command=self.registrar).place(x=50, y=150)
+
+    def registrar(self):
+        peso = self.peso.get()
+        codmascota = self.mascota.getCod()
+        fechaHoy = datetime.now()
+        fechaPeso = f'{fechaHoy.year}-{fechaHoy.month}-{fechaHoy.day}'
+
+        if peso == '':
+            showerror(title='Error',
+                      message='El campo debe de estar lleno')
+            return
+
+        if ',' in peso:
+            peso.replace(',', '.')
+
+        try:
+            peso = float(peso)
+        except Exception:
+            showerror(title='Error', message='Error en el formato del peso')
+            return
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            cursor.execute('exec RegistrarPeso ?,?,?,?', [
+                           fechaPeso, codmascota, peso, 0])
+
+            resultado = cursor.fetchone()
+
+            bit = resultado[0]
+
+            if bit:
+                respuesta = showinfo(
+                    title='Exito', message='Se ha registrado el peso correctamente')
+                cursor.commit()
+                self.padre.padre.cambioVentana(
+                    self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+                self.destroy()
+            else:
+                cursor.rollback()
+
+            conexion.commit()
 
 
 class EleccionCliente(ttk.Frame):
