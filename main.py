@@ -8,6 +8,7 @@ import pyodbc
 from PIL import Image, ImageTk
 
 from models.cliente import Cliente
+from models.mascota import Mascota
 
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
@@ -903,7 +904,7 @@ class NuevaFamiliaPage(ttk.Frame):
             print(info)
 
 
-class InsertarPageV(ttk.Frame):
+class InsertarMascotaV(ttk.Frame):
     def __init__(self, master: VeterinariaPage = None, cliente: Cliente = None):
         super().__init__(master.padre, width=400, height=400)
 
@@ -1010,17 +1011,25 @@ class InsertarPageV(ttk.Frame):
                         cursor.execute(
                             'exec RegistrarMascota ?,?,?,?,?,?,?,?', lista)
 
-                        bit = cursor.fetchone()
-                        bit = bit[0]
+                        resultado = cursor.fetchone()
+                        bit = resultado[0]
 
                         if bit:
+                            codMascota = resultado[1]
+                            lista.insert(0, codMascota)
+
+                            mascota = Mascota(lista[:-1])
+
                             cursor.commit()
                             respuesta = showinfo(title='Exito',
                                                  message='Se ha agregado a la mascota correctamente!')
 
                             if respuesta:
+                                self.registrarPesoPage = RegistrarPrimerPeso(
+                                    self.padre, mascota)
                                 self.padre.padre.cambioVentana(
-                                    self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+                                    self, self.registrarPesoPage, [300, 400], 'Registrar Peso')
+                                self.destroy()
 
                         else:
                             cursor.rollback()
@@ -1081,6 +1090,14 @@ class InsertarPageV(ttk.Frame):
 
         self.razaCBox.config(values=self.razas[especie], state='readonly')
         self.razaCBox.set(self.razas[especie][0])
+
+
+class RegistrarPrimerPeso(ttk.Frame):
+    def __init__(self, master: InsertarMascotaV = None, mascota: Mascota = None):
+        super().__init__(master=master.padre, width=300, height=400)
+
+        self.mascota = mascota
+        print(mascota.getCod())
 
 
 class EleccionCliente(ttk.Frame):
@@ -1198,6 +1215,17 @@ class ClienteExistentePage(ttk.Frame):
         # print(self.tabla.item(familia)['text'])
         codigo = self.tabla.item(familia)['values'][0]
 
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute(
+                'select * from Clientes where IdCliente = ?', [codigo])
+
+            atributos = cursor.fetchone()
+
+            self.cliente = Cliente(atributos)
+
         self.familia.config(state='normal')
         self.familia.delete(0, tk.END)
         self.familia.insert(0, codigo)
@@ -1208,7 +1236,7 @@ class ClienteExistentePage(ttk.Frame):
         self.popup.destroy()
 
     def aceptar(self):
-        self.insertarPage = InsertarPageV(self.padre, self.cliente)
+        self.insertarPage = InsertarMascotaV(self.padre, self.cliente)
         self.padre.padre.cambioVentana(self, self.insertarPage, [
                                        400, 400], 'Insertar Mascota')
         self.destroy()
@@ -1375,7 +1403,7 @@ class NuevoClientePage(ttk.Frame):
                 self.cliente = Cliente(atributos[:-1])
                 showinfo(title='Exito',
                          message='El cliente se ha creado con exito!')
-                self.insertarPage = InsertarPageV(self.padre, self.cliente)
+                self.insertarPage = InsertarMascotaV(self.padre, self.cliente)
                 self.padre.padre.cambioVentana(self, self.insertarPage, [
                                                400, 400], 'Insertar Mascota')
                 self.destroy()

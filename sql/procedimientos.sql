@@ -131,7 +131,6 @@ BEGIN
     else
         BEGIN
         set @Check = 1
-        select @Check
         DECLARE
         @DatoCod int = next value for SecCodMascota,
         @pCodMascota char(5)
@@ -142,6 +141,7 @@ BEGIN
         ELSE
             set @pCodMascota = CONCAT('M', CONVERT(char(4),@DatoCod))
 
+        select @Check, @pCodMascota
         insert into Mascotas
         values
             (@pCodMascota, @IdCliente, @Alias, @Especie, @Raza, @Color_pelo, @FechaNac, @Tamaño)
