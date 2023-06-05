@@ -1,4 +1,4 @@
-alter procedure BuscarMascota
+create procedure BuscarMascota
     @Campo varchar (10),
     @Valor varchar (15)
 AS  
@@ -14,7 +14,7 @@ BEGIN
 end
 go
 
-alter procedure BuscarHuespedes
+create procedure BuscarHuespedes
 @Campo varchar (10),
 @Valor varchar (15)
 AS  
@@ -31,7 +31,7 @@ end
 
 --hay que modficarlo de acuerdo a lo que se deberia mostrar cuando se busca una
 go
-alter procedure InfoMascota
+create procedure InfoMascota
     @CodMascota char(5)
 AS
 begin
@@ -42,7 +42,7 @@ begin
 end
 go
 
-ALTER procedure VerificarExistenciaCliente
+create procedure VerificarExistenciaCliente
     @IdCliente char(5),
     @Check bit out
 AS
@@ -62,7 +62,7 @@ begin
 END
 GO
 
-alter procedure HistorialPeso
+create procedure HistorialPeso
 @CodMascota char (5)
 AS
 select CONCAT(convert(varchar(2),FORMAT(FechaPeso,'dd','es-BO')),' ',
@@ -85,7 +85,7 @@ select CONCAT(convert(varchar(2),FORMAT(FechaVacuna,'dd','es-BO')),' ',
         from CalendariosVacunas where CodMascota = @CodMascota order by FechaVacuna ASC
 go
 
-alter procedure PesoReciente
+create procedure PesoReciente
 @CodMascota char (5)
 as
 BEGIN
@@ -115,7 +115,7 @@ select Mascotas.CodMascota,Alias,Especie,CheckIn,NroHab,Dias from Estadias
 inner join Mascotas on Mascotas.CodMascota = Estadias.CodMascota where CheckOut is NULL
 go
 
-alter procedure ServiciosSolicitados
+create procedure ServiciosSolicitados
 @CodMascota char (5),
 @CheckIn date,
 @NroHab char(2)
@@ -123,10 +123,8 @@ as
 select TipoServ,Cantidad from Requerimientos
 inner join Servicios on Servicios.IdServicio = Requerimientos.IdServicio
  where CodMascota=@CodMascota and CheckIn=@CheckIn and NroHab=@NroHab
+go
 
-select * from Servicios
-
-exec EliminarRequerimiento 'S05','2023-06-05','M0012','15',0
-
-select * from Requerimientos 
-ROLLBACK
+create procedure HabDisponibles
+AS
+select NroHab from Habitaciones where Disponible= 'D' order by try_cast(NroHab as int), NroHab desc

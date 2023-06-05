@@ -1,5 +1,5 @@
 --Procedimiento de registro de peso
-alter procedure RegistrarPeso
+create procedure RegistrarPeso
 @FechaPeso date,
 @CodMascota char(5),
 @Peso varchar(5),
@@ -98,7 +98,7 @@ END
 GO;
 
 --Modificar una visita medica
-alter PROCEDURE ModificarVisitaMed
+create PROCEDURE ModificarVisitaMed
     @FechaConsulta DATE,
     @CodMascota CHAR(5),
     @Campo VARCHAR(20),
@@ -153,7 +153,7 @@ END
 GO; 
 
 --Procedimiento para registrar una vacunacion
-alter PROCEDURE RegistrarVacunacion
+create PROCEDURE RegistrarVacunacion
 @FechaVacuna date,
 @CodMascota char (5),
 @TipoVacuna varchar(15),
@@ -209,7 +209,7 @@ END
 GO;
 
 --Registro de una estadía
-alter procedure RegistrarEstadia
+create procedure RegistrarEstadia
 @CheckIn date,
 @CodMascota char (5),
 @NroHab char (2),
@@ -234,7 +234,7 @@ END
 GO;
 
 --Modificación de una estadía
-alter PROCEDURE ModificarEstadia
+create PROCEDURE ModificarEstadia
     @CheckIn DATE,
     @CodMascota CHAR(5),
     @NroHab CHAR(2),
@@ -403,8 +403,13 @@ BEGIN
 END  
 GO;
 
+exec RegistrarRequerimiento 'M0030','S01','2023-05-25',3,'01',3,0
+
+select * from Requerimientos
+GO
+
 --Modificacion de requerimiento
-alter procedure ModificarRequerimiento
+create procedure ModificarRequerimiento
 @IdServicio char (3),
 @CheckIn date,
 @CodMascota char (5),
@@ -452,7 +457,7 @@ END
 GO;
 
 --Eliminación de requerimiento en la estadía
-alter procedure EliminarRequerimiento
+create procedure EliminarRequerimiento
 @IdServicio char (3),
 @CheckIn date,
 @CodMascota char (5),

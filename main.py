@@ -905,7 +905,7 @@ class RegistrarPageH(ttk.Frame):
             datos = cursor.fetchone()
             for d in datos:
                 self.atributos.append(d)
-            cursor.execute('select NroHab from Habitaciones where Disponible=?',('D'))
+            cursor.execute("select NroHab from Habitaciones where Disponible= 'D' order by try_cast(NroHab as int), NroHab desc")
             habs= cursor.fetchall()
             for h in habs:
                 self.habitaciones.append(h[0])
@@ -1218,7 +1218,14 @@ class BuscarEstadia(ttk.Frame):
         self.espacioFecha.insert(0,self.tablaEncontrados.item(registro)['values'][2])
         self.espacioHab.insert(0,self.tablaEncontrados.item(registro)['values'][3])
         self.dias = self.tablaEncontrados.item(registro)['values'][4]
+
         self.hab = self.tablaEncontrados.item(registro)['values'][3]
+
+        if self.hab < 10:
+            self.hab  = '0'+str(self.hab)
+
+        print(self.hab)
+
         self.espacioCod.configure(state='readonly')
         self.espacioFecha.configure(state='readonly')
         self.espacioHab.configure(state='readonly')
@@ -1322,8 +1329,6 @@ class EdicionEstadia(ttk.Frame):
         for k in self.servicios:
             self.guardado[k[0]] = k[1]
 
-        print(self.guardado)
-
         ttk.Button(self,text='Guardar Cambios',command=self.modificar).place(x=340,y=550)
 
     def cancelar(self):
@@ -1331,7 +1336,8 @@ class EdicionEstadia(ttk.Frame):
         self.ancestro.cambioVentana(self,self.padre,[700,520],'Búsqueda de estadías')
 
     def modificar(self):
-        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+        
+        with pyodbc.connect(f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor() 
             resp = askquestion('Confirmación','¿Desea guardar los cambios?')
             if resp=='yes':
@@ -1343,16 +1349,17 @@ class EdicionEstadia(ttk.Frame):
                 if self.ducha.get() == True:
                     if int(self.espacioDucha.get()) != self.guardado['Baño']:
                         cursor.execute('ModificarRequerimiento ?,?,?,?,?,?,? ',
-                            ('S01',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),'Cantidad',int(self.espacioDucha.get()),0))    
+                            ('S01',self.fecha.get(),self.CodMascota.get(),self.hab,'Cantidad',int(self.espacioDucha.get()),0))    
                         cursor.commit()
                 else:
                     cursor.execute('EliminarRequerimiento ?,?,?,?,?',
-                            ('S01',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                            ('S01',self.fecha.get(),self.CodMascota.get(),self.hab,0))
                     cursor.commit()
             else:
                 if self.ducha.get():
+                    print('nuevo baño')
                     cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
-                            (self.CodMascota.get(),'S01',self.fecha.get(),int(self.espacioDucha.get()),self.padre.espacioHab.get(),self.padre.dias,0))
+                            (self.CodMascota.get(),'S01',self.fecha.get(),int(self.espacioDucha.get()),self.hab,self.padre.dias,0))
                     cursor.commit()
 
     #viendo corte de uñas
@@ -1362,12 +1369,13 @@ class EdicionEstadia(ttk.Frame):
 
                 if self.corte.get() != True:
                     cursor.execute('EliminarRequerimiento ?,?,?,?,?',
-                            ('S02',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                            ('S02',self.fecha.get(),self.CodMascota.get(),self.hab,0))
                     cursor.commit() 
             else:
                 if self.ducha.get():
+                    print('nuevo ducha')
                     cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
-                            (self.CodMascota.get(),'S01',self.fecha.get(),int(self.espacioDucha.get()),self.padre.espacioHab.get(),self.padre.dias,0))
+                            (self.CodMascota.get(),'S01',self.fecha.get(),int(self.espacioDucha.get()),self.hab,self.padre.dias,0))
                     cursor.commit()
     #viendo paseos
 
@@ -1377,16 +1385,17 @@ class EdicionEstadia(ttk.Frame):
                 if self.ducha.get() == True:
                     if int(self.espacioPaseo.get()) != self.guardado['Paseo']:
                         cursor.execute('ModificarRequerimiento ?,?,?,?,?,?,? ',
-                            ('S03',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),'Cantidad',int(self.espacioPaseo.get()),0))    
+                            ('S03',self.fecha.get(),self.CodMascota.get(),self.hab,'Cantidad',int(self.espacioPaseo.get()),0))    
                         cursor.commit()
                 else:
                     cursor.execute('EliminarRequerimiento ?,?,?,?,?',
-                            ('S03',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                            ('S03',self.fecha.get(),self.CodMascota.get(),self.hab,0))
                     cursor.commit()
             else:
                 if self.paseo.get():
+                    print('nuevo paseo')
                     cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
-                            (self.CodMascota.get(),'S03',self.fecha.get(),int(self.espacioPaseo.get()),self.padre.espacioHab.get(),self.padre.dias,0))
+                            (self.CodMascota.get(),'S03',self.fecha.get(),int(self.espacioPaseo.get()),self.hab,self.padre.dias,0))
                     cursor.commit()
 
     # viendo alimentación especial
@@ -1396,12 +1405,13 @@ class EdicionEstadia(ttk.Frame):
 
                 if self.food.get() != True:
                     cursor.execute('EliminarRequerimiento ?,?,?,?,?',
-                            ('S04',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                            ('S04',self.fecha.get(),self.CodMascota.get(),self.hab,0))
                     cursor.commit()
             else:
                 if self.food.get():
+                    print('nuevo comida')
                     cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
-                            (self.CodMascota.get(),'S04',self.fecha.get(),None,self.padre.espacioHab.get(),self.padre.dias,0))
+                            (self.CodMascota.get(),'S04',self.fecha.get(),None,self.hab,self.padre.dias,0))
                     cursor.commit()
 
     # viendo atencion médica
@@ -1411,12 +1421,13 @@ class EdicionEstadia(ttk.Frame):
 
                 if self.med.get() != True:
                     cursor.execute('EliminarRequerimiento ?,?,?,?,?',
-                            ('S05',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                            ('S05',self.fecha.get(),self.CodMascota.get(),self.hab,0))
                     cursor.commit()    
             else:
                 if self.med.get():
+                    print('nuevo comida')
                     cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
-                            (self.CodMascota.get(),'S05',self.fecha.get(),None,self.padre.espacioHab.get(),self.padre.dias,0))
+                            (self.CodMascota.get(),'S05',self.fecha.get(),None,self.hab,self.padre.dias,0))
                     cursor.commit()
     #viendo juegos
 
@@ -1426,16 +1437,17 @@ class EdicionEstadia(ttk.Frame):
                 if self.juego.get() == True:
                     if int(self.espacioJuego.get()) != self.guardado['Juegos']:
                         cursor.execute('ModificarRequerimiento ?,?,?,?,?,?,? ',
-                            ('S06',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),'Cantidad',int(self.espacioPaseo.get()),0))    
+                            ('S06',self.fecha.get(),self.CodMascota.get(),self.hab,'Cantidad',int(self.espacioPaseo.get()),0))    
                         cursor.commit()
                 else:
                     cursor.execute('EliminarRequerimiento ?,?,?,?,?',
-                            ('S06',self.fecha.get(),self.CodMascota.get(),self.padre.espacioHab.get(),0))
+                            ('S06',self.fecha.get(),self.CodMascota.get(),self.hab,0))
                     cursor.commit()
             else:
                 if self.juego.get():
+                    print('nuevo juego')
                     cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
-                            (self.CodMascota.get(),'S06',self.fecha.get(),int(self.espacioJuego.get()),self.padre.espacioHab.get(),self.padre.dias,0))                            
+                            (self.CodMascota.get(),'S06',self.fecha.get(),int(self.espacioJuego.get()),self.hab,self.padre.dias,0))                            
                     cursor.commit()
     	    
             cursor.execute('commit')
@@ -3301,7 +3313,7 @@ if __name__ == '__main__':
 
     conexiones = {'josek': ['password', 'JoseK-Laptop\SQLEXPRESS'],
                   'nangui': ['soychurro', 'BrunoPC'],
-                  'mateo_vet': ['Passw0rd', 'MATEO\MSSQLSERVER01']}
+                  'mateov': ['1234', 'MATEO\MSSQLSERVER01']}
 
     app = App()
     user = tk.StringVar()

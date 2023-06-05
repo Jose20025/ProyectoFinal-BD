@@ -7,7 +7,7 @@ GO;
 
 
 --Procedimiento para registrar un cliente
-alter procedure RegistrarCliente
+create procedure RegistrarCliente
     @Apellido varchar(20),
     @NroCuenta varchar(10),
     @Direccion varchar(40),
@@ -45,7 +45,7 @@ END
 GO;
 
 --Modificación de datos de un cliente
-alter procedure ModificarCliente 
+create procedure ModificarCliente 
 @IdCliente char (5),
 @Campo varchar(15),
 @NuevoValor varchar (20),
@@ -102,7 +102,7 @@ CREATE SEQUENCE SecCodMascota
 GO;
 
 --Procedimiento para registrar una mascota 
-alter procedure RegistrarMascota
+create procedure RegistrarMascota
 @IdCliente varchar(20),
 @Alias varchar(20),
 @Especie varchar(40),
@@ -146,7 +146,7 @@ GO;
 
 
 --Modificación de datos de una mascota
-alter procedure ModificarMascota
+create procedure ModificarMascota
     @CodMascota char (5),
     @Campo varchar(15),
     @NuevoValor varchar (20),
