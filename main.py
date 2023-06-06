@@ -11,8 +11,6 @@ from models.persona import Persona
 
 import sv_ttk
 
-ctypes.windll.shcore.SetProcessDpiAwareness(2)
-
 
 class App(tk.Tk):
     def __init__(self):
@@ -611,12 +609,12 @@ class InsertarPageH(ttk.Frame):
         self.ancestro = self.padre.padre.padre.padre
 
         self.razas = {
-            1: ['Siames', 'Siberiano', 'Mestizo', 'Bengali', 'Yoda', 'Birmano', 'Persa', 'Azul ruso'],
+            1: ['Siames', 'Siberiano', 'Mestizo', 'Bengali', 'Yoda', 'Birmano', 'Persa', 'Azul ruso', 'Calico'],
             2: ['Labrador', 'Pastor Aleman', 'Caniche', 'Cocker', 'Chihuahua', 'Bulldog', 'Yorkshire', 'Pastor Ingles', 'Pincher', 'Husky']
         }
 
         self.colores = ['Cafe', 'Blanco', 'Negro',
-                        'Gris', 'Dorado', 'Verde', 'Naranja']
+                        'Gris', 'Dorado', 'Verde', 'Naranja', 'Multicolor', 'Otro']
 
         ttk.Button(self, text='Volver', command=self.volverAtras,
                    width=6).place(x=10, y=10)
@@ -903,11 +901,9 @@ class ModificarPageH(ttk.Frame):
             cursor = conexion.cursor()
             print(self.Cod.get())
             cursor.execute('exec InfoMascota ?', self.Cod.get())
-            print('despuecito')
             info = cursor.fetchone()
             for k in info:
                 self.atributos.append(k)
-            print(self.atributos)
 
             self.PerfilMascotaV = PerfilMascotaH(self, self.atributos)
             self.atributos = []
@@ -3581,7 +3577,6 @@ class ModificarPageV(ttk.Frame):
         if self.tablaFrame:
             self.tablaFrame.pack_forget()
             self.tablaFrame.destroy()
-        self.textoBuscarPeso = self.espacioBuscar.get()
 
         if self.espacioBuscar.get() == '':
             if self.campoElegido == 'Especie':
@@ -3592,6 +3587,9 @@ class ModificarPageV(ttk.Frame):
                     showwarning(title='Error de campo',
                                 message='Formato de búsqueda no válido')
                     return
+        else:
+            self.textoBuscar = self.espacioBuscar.get()
+
         self.tablaFrame = ttk.Frame(self, width=200, height=100)
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
@@ -3652,7 +3650,6 @@ class ModificarPageV(ttk.Frame):
             info = cursor.fetchone()
             for k in info:
                 self.atributos.append(k)
-            print(self.atributos)
 
             self.PerfilMascotaV = PerfilMascotaV(self, self.atributos)
             self.atributos = []
@@ -3665,7 +3662,6 @@ class PerfilMascotaV(ttk.Frame):
         super().__init__(master=master.padre.padre, width=410, height=600)
         self.padre = master
         self.atributos = atributos
-        print(self.atributos)
         self.ancestro = self.padre.padre.padre
 
         ttk.Button(self, text='Cerrar',
@@ -3676,8 +3672,10 @@ class PerfilMascotaV(ttk.Frame):
             self, state='readonly', textvariable=self.padre.Cod, width=10)
         self.CodMuestra.place(x=130, y=78)
 
-        ttk.Label(self, text='Datos Personales', background='#7ce6dd',
-                  foreground='#000000', anchor='center').place(x=130, y=150)
+        ttk.Label(self, text='Datos Personales',
+                  anchor='center').place(x=130, y=150)
+
+        ttk.Separator(self).place(x=110, y=170, width=160)
 
         ttk.Label(self, text='Alias').place(x=20, y=190)
         self.aliasNuevo = ttk.Entry(self, width=15)
@@ -3686,8 +3684,8 @@ class PerfilMascotaV(ttk.Frame):
 
         self.pelo = tk.StringVar()
         self.colores = {
-            'Felino': ['Negro', 'Blanco', 'Gris', 'Naranja', 'Cafe', 'Manchado'],
-            'Canino': ['Negro', 'Blanco', 'Gris', 'Dorado', 'Cafe', 'Manchado']
+            'Felino': ['Negro', 'Blanco', 'Gris', 'Naranja', 'Cafe', 'Manchado', 'Multicolor', 'Otro'],
+            'Canino': ['Negro', 'Blanco', 'Gris', 'Dorado', 'Cafe', 'Manchado', 'Multicolor', 'Otro']
         }
         ttk.Label(self, text='Color de pelo').place(x=20, y=280)
         self.peloNuevo = ttk.Combobox(self, width=15, height=20, textvariable=self.pelo,
@@ -3704,7 +3702,7 @@ class PerfilMascotaV(ttk.Frame):
 
         self.raza = tk.StringVar()
         self.razas = {
-            'Felino': ['Siames', 'Siberiano', 'Mestizo', 'Bengali', 'Yoda', 'Birmano', 'Persa', 'Azul ruso'],
+            'Felino': ['Siames', 'Siberiano', 'Mestizo', 'Bengali', 'Yoda', 'Birmano', 'Persa', 'Azul ruso', 'Calico'],
             'Canino': ['Labrador', 'Pastor Aleman', 'Caniche', 'Cocker', 'Chihuahua', 'Bulldog', 'Yorkshire', 'Pastor Ingles', 'Pincher']
         }
         ttk.Label(self, text='Raza').place(x=230, y=190)
@@ -3730,8 +3728,8 @@ class PerfilMascotaV(ttk.Frame):
         self.famBuscarBoton.place(x=230, y=440)
 
         self.guardarBoton = ttk.Button(
-            self, text='Guardar cambios', command=self.ModificarMascota)
-        self.guardarBoton.place(x=230, y=530)
+            self, text='Guardar Cambios', command=self.ModificarMascota)
+        self.guardarBoton.place(x=260, y=560)
 
     def aAnterior(self):
         self.atributos = []
@@ -3754,37 +3752,31 @@ class PerfilMascotaV(ttk.Frame):
 
                 if self.aliasNuevo.get() != self.atributos[0]:
                     if self.aliasNuevo.get().isnumeric():
-                        print('alias es numerico')
                         showerror('Error de campo',
                                   'El Alias no puede ser numérico')
                         return
                     else:
-                        print('distinto alias')
                         cursor.execute('exec ModificarMascota ?,?,?,?',
                                        (self.atributos[7], 'Alias', self.aliasNuevo.get(), 0))
                         cursor.commit()
 
                 if self.peloNuevo.get() != self.atributos[1]:
-                    print('distinto color de pelo')
                     print(self.peloNuevo.get())
                     cursor.execute('exec ModificarMascota ?,?,?,?',
                                    (self.atributos[7], 'Color_pelo', self.peloNuevo.get(), 0))
                     cursor.commit()
 
                 if self.sizeNuevo.get() != self.atributos[3]:
-                    print('distinto tamaño')
                     cursor.execute('exec ModificarMascota ?,?,?,?',
                                    (self.atributos[7], 'Tamaño', self.sizeNuevo.get(), 0))
                     cursor.commit()
 
                 if self.razaNuevo.get() != self.atributos[2]:
-                    print('distinta raza')
                     cursor.execute('exec ModificarMascota ?,?,?,?',
                                    (self.atributos[7], 'Raza', self.razaNuevo.get(), 0))
                     cursor.commit()
 
                 if self.IdCliente.get() != self.atributos[5]:
-                    print('asociado a nuevo cliente')
                     cursor.execute('exec ModificarMascota ?,?,?,?',
                                    (self.atributos[7], 'IdCliente', self.IdCliente.get(), 0))
                     cursor.commit()
@@ -4129,12 +4121,12 @@ class InsertarMascotaV(ttk.Frame):
         self.cliente: Cliente = cliente
 
         self.razas = {
-            1: ['Siames', 'Siberiano', 'Mestizo', 'Bengali', 'Yoda', 'Birmano', 'Persa', 'Azul ruso'],
+            1: ['Siames', 'Siberiano', 'Mestizo', 'Bengali', 'Yoda', 'Birmano', 'Persa', 'Azul ruso', 'Calico'],
             2: ['Labrador', 'Pastor Aleman', 'Caniche', 'Cocker', 'Chihuahua', 'Bulldog', 'Yorkshire', 'Pastor Ingles', 'Pincher', 'Husky']
         }
 
         self.colores = ['Cafe', 'Blanco', 'Negro',
-                        'Gris', 'Dorado', 'Verde', 'Naranja']
+                        'Gris', 'Dorado', 'Verde', 'Naranja', 'Multicolor', 'Otro']
 
         ttk.Button(self, text='Volver', command=self.volverAtras,
                    width=6).place(x=10, y=10)
