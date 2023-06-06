@@ -1685,20 +1685,20 @@ class VeterinariaPage(ttk.Frame):
         #### SECCIÓN DE MASCOTAS #####
 
         self.botonesFrameM = ttk.Frame(
-            self.mascotaFrame, style='Card.TFrame', width=335, height=360)
+            self.mascotaFrame, style='Card.TFrame', width=310, height=210)
 
         # TODO boton de consultas para mascotas
         ttk.Button(self.botonesFrameM, text='Consultas',
                    width=30).place(x=20, y=20)
 
         ttk.Button(self.botonesFrameM, text='Nueva Mascota', width=30,
-                   command=self.aInsertarM).place(x=20, y=90)
+                   command=self.aInsertarM).place(x=20, y=20)
 
         ttk.Button(self.botonesFrameM, text='Información', command=self.aInfoM,
-                   width=40).place(x=20, y=160)
+                   width=30).place(x=20, y=90)
 
         ttk.Button(self.botonesFrameM, text='Edición', command=self.aModificarM,
-                   width=40).place(x=20, y=230)
+                   width=30).place(x=20, y=160)
 
         self.imagenM = ImageTk.PhotoImage(Image.open(
             './image/logo-transparente.png').resize((200, 170)))
@@ -1711,29 +1711,21 @@ class VeterinariaPage(ttk.Frame):
 
         # ==============================> ClienteFrame
         self.botonesFrameC = ttk.Frame(
-            self.clienteFrame, style='Card.TFrame', width=335, height=360)
-        self.botonesFrameM.place(x=0, y=0)
+            self.clienteFrame, style='Card.TFrame', width=310, height=280)
 
         #### SECCIÓN DE CLIENTES #####
 
-        ttk.Button(self.clienteFrame, text='Consultas',
-                   width=40).place(x=20, y=30)
-
-        # TODO boton de consultas para clientes
-        ttk.Button(self.botonesFrameC, text='Consultas',
-                   width=30).place(x=20, y=20)
-
         ttk.Button(self.botonesFrameC, text='Nuevo Cliente', width=30,
-                   command=self.aInsertarC).place(x=20, y=90)
+                   command=self.aInsertarC).place(x=20, y=20)
 
         ttk.Button(self.botonesFrameC, text='Modificar un cliente',
-                   width=30, command=self.aModificarC).place(x=20, y=160)
+                   width=30, command=self.aModificarC).place(x=20, y=90)
 
         ttk.Button(self.botonesFrameC, text='Eliminar un cliente',
-                   width=30).place(x=20, y=230)
+                   width=30).place(x=20, y=160)
 
         ttk.Button(self.botonesFrameC, text='Agregar una persona a una familia', command=self.nuevaPersonaFamilia,
-                   width=30).place(x=20, y=300)
+                   width=30).place(x=20, y=230)
 
         self.imagenC = ImageTk.PhotoImage(Image.open(
             './image/logo-transparente.png').resize((200, 170)))
@@ -2231,69 +2223,12 @@ class VeterinariaPage(ttk.Frame):
 
             cursor.close()
 
-        self.tablaM = ttk.Treeview(self.tablaFrameM, height=18,
+        self.tablaM = ttk.Treeview(self.tablaFrameM, height=20,
                                    padding=5, columns=titulos[1:], selectmode='none', show='tree headings')
-
-        for i, titulo in enumerate(titulos):
-            if i == 0:
-                self.tablaM.column('#0', width=100, anchor='w')
-                self.tablaM.heading('#0', text=titulo, anchor=tk.CENTER)
-            else:
-                if titulo == 'Apellido':
-                    self.tablaM.column(titulo, width=100, anchor=tk.CENTER)
-                    self.tablaM.heading(titulo, text=titulo, anchor=tk.CENTER)
-                elif titulo == 'NroCuenta':
-                    self.tablaM.column(titulo, width=100, anchor=tk.CENTER)
-                    self.tablaM.heading(titulo, text=titulo, anchor=tk.CENTER)
-                elif titulo == 'Direccion':
-                    self.tablaM.column(titulo, width=150, anchor=tk.CENTER)
-                    self.tablaM.heading(titulo, text=titulo, anchor=tk.CENTER)
-                else:
-                    self.tablaM.column(titulo, width=100, anchor=tk.CENTER)
-                    self.tablaM.heading(titulo, text=titulo, anchor=tk.CENTER)
-
-        for cliente in clientes:
-            atributos = []
-            for atributo in cliente:
-                atributos.append(atributo)
-
-            self.tablaM.insert(
-                '', tk.END, text=atributos[0], values=atributos[1:])
-
-        self.tablaM.place(x=10, y=10)
-
-        separador = ttk.Separator(self.tablaFrameM, orient='horizontal')
-        separador.place(x=10, y=470, width=600)
-
-        # Botones
-        ttk.Button(self.tablaFrameM, text='Mascotas', command=self.mostrarMascotas,
-                   width=30).place(x=10, y=480)
-        ttk.Button(self.tablaFrameM, text='Mascotas y Dueños', width=30, command=self.mascotasDueños).place(
-            x=310, y=480)
-
-        self.tablaFrameM.place(x=360, y=10)
-
-    def mascotasDueños(self):
-        self.tablaM.destroy()
-
-        # Tabla con SQL
-        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
-            cursor = conexion.cursor()
-
-            cursor.execute(
-                'select M.Alias, C.Apellido from Mascotas M inner join Clientes C on C.IdCliente = M.IdCliente')
-
-            titulos = []
-
-            for titulo in cursor.description:
-                titulos.append(titulo[0])
-
-            clientes = cursor.fetchall()
-
-            cursor.close()
-
-        self.tablaM = ttk.Treeview(self.tablaFrameM, height=18,
-                                   padding=5, columns=titulos[1:], selectmode='none', show='tree headings')
+        self.scroll = ttk.Scrollbar(
+            self.tablaFrameM, command=self.tablaM.yview)
+        self.tablaM.config(yscrollcommand=self.scroll.set)
+        self.scroll.place(x=580, y=10, height=450)
 
         for i, titulo in enumerate(titulos):
             if i == 0:
@@ -2311,10 +2246,67 @@ class VeterinariaPage(ttk.Frame):
             self.tablaM.insert(
                 '', tk.END, text=atributos[0], values=atributos[1:])
 
+        self.tablaM.place(x=50, y=10)
+
+        separador = ttk.Separator(self.tablaFrameM, orient='horizontal')
+        separador.place(x=10, y=470, width=600)
+
+        # Botones
+        ttk.Button(self.tablaFrameM, text='Mascotas', command=self.mostrarMascotas,
+                   width=30).place(x=10, y=480)
+        ttk.Button(self.tablaFrameM, text='Mascotas y Dueños', width=30, command=self.mascotasDueños).place(
+            x=310, y=480)
+
+        self.tablaFrameM.place(x=360, y=10)
+
+    def mascotasDueños(self):
+        self.tablaM.destroy()
+        self.scroll.destroy()
+
+        # Tabla con SQL
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute(
+                'select M.Alias, C.Apellido from Mascotas M inner join Clientes C on C.IdCliente = M.IdCliente')
+
+            titulos = []
+
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            clientes = cursor.fetchall()
+
+            cursor.close()
+
+        self.tablaM = ttk.Treeview(self.tablaFrameM, height=20,
+                                   padding=5, columns=titulos[1:], selectmode='none', show='tree headings')
+        self.scroll = ttk.Scrollbar(
+            self.tablaFrameM, command=self.tablaM.yview)
+        self.tablaM.config(yscrollcommand=self.scroll.set)
+        self.scroll.place(x=450, y=10, height=450)
+
+        for i, titulo in enumerate(titulos):
+            if i == 0:
+                self.tablaM.column('#0', width=100, anchor='center')
+                self.tablaM.heading('#0', text=titulo, anchor=tk.CENTER)
+            else:
+                self.tablaM.column(titulo, width=200, anchor=tk.CENTER)
+                self.tablaM.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+        for cliente in clientes:
+            atributos = []
+            for atributo in cliente:
+                atributos.append(atributo)
+
+            self.tablaM.insert(
+                '', tk.END, text=atributos[0], values=atributos[1:])
+
         self.tablaM.place(x=130, y=10)
 
     def mostrarMascotas(self):
         self.tablaM.destroy()
+        self.scroll.destroy()
 
         # Tabla con SQL
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
@@ -2332,8 +2324,12 @@ class VeterinariaPage(ttk.Frame):
 
             cursor.close()
 
-        self.tablaM = ttk.Treeview(self.tablaFrameM, height=18,
+        self.tablaM = ttk.Treeview(self.tablaFrameM, height=20,
                                    padding=5, columns=titulos[1:], selectmode='none', show='tree headings')
+        self.scroll = ttk.Scrollbar(
+            self.tablaFrameM, command=self.tablaM.yview)
+        self.tablaM.config(yscrollcommand=self.scroll.set)
+        self.scroll.place(x=580, y=10, height=450)
 
         for i, titulo in enumerate(titulos):
             if i == 0:
@@ -2341,12 +2337,6 @@ class VeterinariaPage(ttk.Frame):
                 self.tablaM.heading('#0', text=titulo, anchor=tk.CENTER)
             else:
                 if titulo == 'Apellido':
-                    self.tablaM.column(titulo, width=100, anchor=tk.CENTER)
-                    self.tablaM.heading(titulo, text=titulo, anchor=tk.CENTER)
-                elif titulo == 'NroCuenta':
-                    self.tablaM.column(titulo, width=100, anchor=tk.CENTER)
-                    self.tablaM.heading(titulo, text=titulo, anchor=tk.CENTER)
-                elif titulo == 'Direccion':
                     self.tablaM.column(titulo, width=150, anchor=tk.CENTER)
                     self.tablaM.heading(titulo, text=titulo, anchor=tk.CENTER)
                 else:
@@ -2361,7 +2351,7 @@ class VeterinariaPage(ttk.Frame):
             self.tablaM.insert(
                 '', tk.END, text=atributos[0], values=atributos[1:])
 
-        self.tablaM.place(x=10, y=10)
+        self.tablaM.place(x=50, y=10)
 
     def inicializarTablaC(self):
         self.tablaFrameC = ttk.Frame(
