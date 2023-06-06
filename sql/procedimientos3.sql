@@ -76,7 +76,6 @@ BEGIN
 END
 go
 
-select * from Mascotas
 
 alter procedure CheckOutHuesped2
 @CheckIn date,
@@ -112,7 +111,7 @@ BEGIN
         set @PrintText= '';insert into @PrintTable values (@PrintText)
         if Exists (select 1 from Requerimientos where CheckIn = @CheckIn and CodMascota=@CodMascota and NroHab=  @NroHab)
             BEGIN
-            set @PrintText= 'Ademas, Habiendo solicitado los siguientes servicios';insert into @PrintTable values (@PrintText)
+            set @PrintText= 'Ademas, habiendo solicitado los siguientes servicios:';insert into @PrintTable values (@PrintText)
             set @PrintText= '';insert into @PrintTable values (@PrintText)
             set @PrintText= '―――――――――――――――――――――――――――――――――――――――――――――――――';insert into @PrintTable values (@PrintText)
             set @PrintText= '|  SERVICIO     -     CANTIDAD     -     CARGO  |';insert into @PrintTable values (@PrintText)
@@ -144,6 +143,8 @@ BEGIN
             END
         set @PrintText=' ';insert into @PrintTable values (@PrintText)
         set @PrintText='Generándose un total de Bs. '+convert(varchar(10),(@PrecioHotel+@Sumador))+' por la estadía en el hotel';insert into @PrintTable values (@PrintText)
+        set @PrintText =''
+        set @PrintText='Habiento obtenido '+ convert(char(1),floor(convert(int,@Dias)/7)+1) + ' baño(s) de cortesía';insert into @PrintTable values (@PrintText)
         set @PrintText='';insert into @PrintTable values (@PrintText)
         set @PrintText='Atte. Hotel Happy Fox';insert into @PrintTable values (@PrintText)
         END
@@ -153,8 +154,3 @@ BEGIN
         end 
     SELECT PrintText FROM @PrintTable
 END
-
-exec CheckOutHuesped2 '2023-06-05','2023-06-07','M0021','G4'
-
-
-select * from Habitaciones
