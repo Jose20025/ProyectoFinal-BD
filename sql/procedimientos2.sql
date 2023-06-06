@@ -255,6 +255,7 @@ BEGIN
 END
 GO;
 
+
 --Modificación de una estadía
 create PROCEDURE ModificarEstadia
     @CheckIn DATE,

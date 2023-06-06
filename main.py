@@ -160,7 +160,13 @@ class HotelPage(ttk.Frame):
         ### PROCESO DE CHECKOUT ###
 
         ttk.Button(self.checkOutFrame, text='Obtener Estadías Actuales',
-                   command=self.obtenerEstadias).place(x=240, y=30)
+                   command=self.obtenerEstadias).place(x=60, y=30)
+        
+        self.hoy = tk.StringVar()
+        self.hoy.set(date.today())
+        ttk.Label(self.checkOutFrame ,text='Fecha de hoy').place(x=380,y=40)
+        self.espacioHoy = ttk.Entry(self.checkOutFrame,textvariable=self.hoy,state='readonly',width=12)
+        self.espacioHoy.place(x=380,y=75)
 
         self.codigo = tk.StringVar()
         ttk.Label(self.checkOutFrame,
@@ -184,6 +190,71 @@ class HotelPage(ttk.Frame):
         ttk.Button(self.checkOutFrame, text='Realizar Check Out',
                    width=18, command=self.obtenerCheckOut).place(x=250, y=480)
         self.tablaFrame = None
+        self.tablaCheckOut = None
+
+        self.popup = None
+
+
+        # ZONA DE REPORTE ENTRE FECHAS #
+    	
+        ttk.Label(self.reporteFrame,text='Huéspedes atendidos',background='#274d32').place(x=130,y=30)
+
+        ttk.Label(self.reporteFrame,text='Desde').place(x=40,y=70)
+        self.fecha1 = ttk.Entry(self.reporteFrame,width=14)
+        self.fecha1.place(x=40,y=105)
+
+        ttk.Label(self.reporteFrame,text='Hasta').place(x=240,y=70)
+        self.fecha2 = ttk.Entry(self.reporteFrame,width=14)
+        self.fecha2.place(x=240,y=105)
+
+        ttk.Button(self.reporteFrame,text='Obtener Reporte',command=self.obtenerReporte).place(x=40,y=200)
+
+    def obtenerReporte(self):
+        if self.popup:
+            self.popup.destroy()
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            cursor.execute('ReporteAtendidos2 ?,? ',(self.fecha1.get(),self.fecha2.get()))
+            resultados = cursor.fetchall()
+            titulos = cursor.description
+            self.popup = tk.Toplevel(self)
+            self.popup.title('Reporte de Check Out')
+            self.popup.geometry('600x600')
+
+            self.personasFrame = ttk.Frame(self.popup, width=500, height=500)
+
+            cursor.close()
+
+            scroll = ttk.Scrollbar(self.popup, orient='vertical')
+
+            self.tabla = ttk.Treeview(self.personasFrame, height=50,
+                                  yscrollcommand=scroll.set)
+            self.tabla.bind('<Double-1>', self.seleccion)
+
+            scroll.config(command=self.tabla.yview)
+
+            for i, titulo in enumerate(titulos):
+                if i == 0:
+                    self.tabla.column('#0', width=600,anchor='w')
+                    self.tabla.heading('#0', text=titulo, anchor=tk.CENTER)
+                else:
+                    self.tabla.column(titulo, width=600,anchor='w')
+                    self.tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+            for persona in resultados:
+                atributos = []
+                for atributo in persona:
+                    atributos.append(atributo)
+
+                self.tabla.insert(
+                    '', tk.END, text=atributos[0], values=atributos[1:])
+
+            self.tabla.pack()
+            scroll.pack(side='right', fill='y')
+
+            self.personasFrame.pack()
+
+
 
     def aEleccionFamilia(self):
         self.EleccionFamilia = EleccionFamiliaH(self)
@@ -206,15 +277,61 @@ class HotelPage(ttk.Frame):
                                  700, 520], 'Búsqueda de estadías')
 
     def CambiandoSize(self, event):
-        eleccionTab = self.tabview(self.tabview.select(), "text")
-        if eleccionTab == 'CheckOut':
+        eleccionTab = self.tabview.tab(self.tabview.select(), "text")
+        if eleccionTab == 'Check Out':
             self.padre.geometry('700x600')
+        if eleccionTab == 'Reportes':
+            self.padre.geometry("420x300")
         else:
             self.padre.geometry("1000x600")
+        if self.tablaFrame:
+            self.tablaFrame.destroy()
+        if self.popup:
+            self.popup.destroy()
 
     def obtenerCheckOut(self):
-        pass
+        with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+            cursor.execute('CheckOutHuesped2 ?,?,?,?',(self.checkin.get(),self.hoy.get(),self.codigo.get(),self.habitacion.get()))
+            resultados = cursor.fetchall()
+            titulos = cursor.description
+            self.popup = tk.Toplevel(self)
+            self.popup.title('Reporte de Check Out')
+            self.popup.geometry('600x600')
 
+            self.personasFrame = ttk.Frame(self.popup, width=500, height=500)
+
+            cursor.close()
+
+            scroll = ttk.Scrollbar(self.popup, orient='vertical')
+
+            self.tabla = ttk.Treeview(self.personasFrame, height=50,
+                                  yscrollcommand=scroll.set)
+            self.tabla.bind('<Double-1>', self.seleccion)
+
+            scroll.config(command=self.tabla.yview)
+
+            for i, titulo in enumerate(titulos):
+                if i == 0:
+                    self.tabla.column('#0', width=600)
+                    self.tabla.heading('#0', text=titulo, anchor=tk.CENTER)
+                else:
+                    self.tabla.column(titulo, width=600)
+                    self.tabla.heading(titulo, text=titulo, anchor=tk.CENTER)
+
+            for persona in resultados:
+                atributos = []
+                for atributo in persona:
+                    atributos.append(atributo)
+
+                self.tabla.insert(
+                    '', tk.END, text=atributos[0], values=atributos[1:])
+
+            self.tabla.pack()
+            scroll.pack(side='right', fill='y')
+
+            self.personasFrame.pack()
+        
     def obtenerEstadias(self):
 
         if self.tablaFrame:
@@ -257,7 +374,7 @@ class HotelPage(ttk.Frame):
                     '', tk.END, text=atributos[0], values=atributos[1:])
 
             self.tablaEncontrados.pack()
-            self.tablaFrame.place(x=30, y=140)
+            self.tablaFrame.place(x=30, y=180)
 
     def seleccion(self, event=None):
         registro = self.tablaEncontrados.focus()
@@ -754,7 +871,7 @@ class InsertarPageH(ttk.Frame):
         dia, mes, año = map(int, fecha_descompuesta)
 
         fechaTemp = date(año, mes, dia)
-        fechaEscrita = f'{fechaTemp.date()}'
+        fechaEscrita = f'{fechaTemp}'
 
         return fechaEscrita
 
@@ -1053,6 +1170,12 @@ class RegistrarPageH(ttk.Frame):
     def aRegistro(self):
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
             cursor = conexion.cursor()
+            cursor.execute('exec VerificarEstadiaExistente ?,? ',(self.Cod.get(),0))
+            bit = cursor.fetchone()[0]
+            print(bit)
+            if bit:
+                showinfo('Aviso','La mascota está hospedada actualmente')
+                return
             cursor.execute('InfoMascota ?', (self.Cod.get()))
             datos = cursor.fetchone()
             for d in datos:
@@ -1062,8 +1185,6 @@ class RegistrarPageH(ttk.Frame):
             habs = cursor.fetchall()
             for h in habs:
                 self.habitaciones.append(h[0])
-
-            print(self.habitaciones)
 
         self.RegistroEstadia = RegistroEstadia(
             self, self.atributos, self.habitaciones)
@@ -1272,7 +1393,7 @@ class RegistroEstadia(ttk.Frame):
 
                 if self.juego.get():
                     cursor.execute('exec RegistrarRequerimiento ?,?,?,?,?,?,?', (
-                        cod, 'S06', str(date.today()), int(self.espacioPaseo.get()), habitacion, dias, 0))
+                        cod, 'S06', str(date.today()), int(self.espacioJuego.get()), habitacion, dias, 0))
                     cursor.commit()
 
                 if self.ducha.get():
@@ -1290,8 +1411,8 @@ class RegistroEstadia(ttk.Frame):
                 return
 
             showinfo('Exito', 'Estadía registrada \nVolviendo al inicio')
-            conexion.commit()
             cursor.execute('commit')
+            conexion.commit()
 
         self.ancestro.cambioVentana(self, self.padre.padre, [
                                     1000, 600], 'Cute Pets - Hotel')
@@ -1402,11 +1523,6 @@ class BuscarEstadia(ttk.Frame):
         self.dias = self.tablaEncontrados.item(registro)['values'][4]
 
         self.hab = self.tablaEncontrados.item(registro)['values'][3]
-
-        if self.hab < 10:
-            self.hab = '0'+str(self.hab)
-
-        print(self.hab)
 
         self.espacioCod.configure(state='readonly')
         self.espacioFecha.configure(state='readonly')
@@ -1650,6 +1766,11 @@ class EdicionEstadia(ttk.Frame):
                     cursor.execute('RegistrarRequerimiento ?,?,?,?,?,?,?',
                                    (self.CodMascota.get(), 'S06', self.fecha.get(), int(self.espacioJuego.get()), self.hab, self.padre.dias, 0))
                     cursor.commit()
+
+            if self.HabCBox.get() != self.padre.hab:
+                print('cambio de habitación')
+                cursor.execute('ModificarEstadia ?,?,?,?,?,? ',
+                               (self.fecha.get(),self.CodMascota.get(),self.hab,'NroHab',self.HabCBox.get(),0))
 
             cursor.execute('commit')
 
