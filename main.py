@@ -146,14 +146,27 @@ class HotelPage(ttk.Frame):
 
         ##### ZONA DE HUESPEDES #####
 
-        ttk.Button(self.huespedFrame, text='Registrar Huésped',
+        self.botonesFrameH = ttk.Frame(
+            self.huespedFrame, style='Card.TFrame', width=310, height=280)
+
+        ttk.Button(self.botonesFrameH, text='Registrar Huésped',
                    command=self.aEleccionFamilia, width=30).place(x=20, y=20)
-        ttk.Button(self.huespedFrame, text='Modificación de huésped',
+
+        ttk.Button(self.botonesFrameH, text='Modificación de huésped',
                    width=30, command=self.aModificarHuesped).place(x=20, y=90)
-        ttk.Button(self.huespedFrame, text='Registrar Estadía',
+
+        ttk.Button(self.botonesFrameH, text='Registrar Estadía',
                    width=30, command=self.aRegistrarEstadia).place(x=20, y=160)
-        ttk.Button(self.huespedFrame, text='Modificar estadía',
+
+        ttk.Button(self.botonesFrameH, text='Modificar estadía',
                    width=30, command=self.aModificarEstadia).place(x=20, y=230)
+
+        self.imagenH = ImageTk.PhotoImage(Image.open(
+            './image/logo-transparente.png').resize((200, 170)))
+
+        ttk.Label(self.huespedFrame, image=self.imagenH).place(x=-25, y=370)
+
+        self.botonesFrameH.place(x=10, y=10)
 
         ### PROCESO DE CHECKOUT ###
 
@@ -205,7 +218,6 @@ class HotelPage(ttk.Frame):
 
     def CambiandoSize(self, event=None):
         eleccionTab = self.tabview.tab(self.tabview.select(), 'text')
-        print(eleccionTab)
         if eleccionTab == 'Check Out':
             self.padre.geometry('700x600')
         else:
@@ -1726,7 +1738,6 @@ class VeterinariaPage(ttk.Frame):
         self.inicializarTablaC()
         self.botonesFrameC.place(x=10, y=10)
         # ==============================> ClienteFrame
-        ttk.Label(self.clienteFrame, image=self.imagenC).place(x=-25, y=390)
 
         #### SECCIÓN DE PESOS #####
 
