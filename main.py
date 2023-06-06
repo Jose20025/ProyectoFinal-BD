@@ -1,6 +1,6 @@
 import ctypes
 import tkinter as tk
-from datetime import date
+from datetime import date, datetime
 from tkinter import ttk
 from tkinter.messagebox import askquestion, showerror, showinfo, showwarning
 import pyodbc
@@ -1687,10 +1687,6 @@ class VeterinariaPage(ttk.Frame):
         self.botonesFrameM = ttk.Frame(
             self.mascotaFrame, style='Card.TFrame', width=310, height=210)
 
-        # TODO boton de consultas para mascotas
-        ttk.Button(self.botonesFrameM, text='Consultas',
-                   width=30).place(x=20, y=20)
-
         ttk.Button(self.botonesFrameM, text='Nueva Mascota', width=30,
                    command=self.aInsertarM).place(x=20, y=20)
 
@@ -1760,7 +1756,7 @@ class VeterinariaPage(ttk.Frame):
         self.eleccionEspecie = tk.StringVar()
         self.CBoxEspecie = ttk.Combobox(
             self.pesoFrame, values=['Canino', 'Felino'], state='disabled', width=12)
-        self.CBoxEspecie.place(x=520, y=58)
+        self.CBoxEspecie.place(x=510, y=58)
 
         self.Cod = tk.StringVar()
         ttk.Label(self.pesoFrame, text='Código de Mascota').place(x=480, y=410)
@@ -1787,7 +1783,7 @@ class VeterinariaPage(ttk.Frame):
         self.botonRegPeso.place(x=850, y=285)
 
         self.botonHistPeso = ttk.Button(
-            self.pesoFrame, width=14, text='Obtener historial de pesos', command=self.ObtenerHistorialPesos)
+            self.pesoFrame, text='Obtener historial de pesos', command=self.ObtenerHistorialPesos)
         self.botonHistPeso.place(x=710, y=490)
 
         self.popupPesos = None
@@ -2071,7 +2067,6 @@ class VeterinariaPage(ttk.Frame):
                 showwarning(title='Error de campo',
                             message='Campo de búsqueda vacío')
                 return
-
         else:
             self.textoBuscarPeso = self.espacioBuscarPeso.get()
 
@@ -2091,6 +2086,7 @@ class VeterinariaPage(ttk.Frame):
             self.tablaEncontrados = ttk.Treeview(
                 self.tablaMascotasPesos, height=6, columns=titulos[1:])
             self.tablaEncontrados.bind('<Double-1>', self.seleccion)
+
             for i, titulo in enumerate(titulos):
                 if i == 0:
                     self.tablaEncontrados.column(
@@ -2225,10 +2221,10 @@ class VeterinariaPage(ttk.Frame):
 
         self.tablaM = ttk.Treeview(self.tablaFrameM, height=20,
                                    padding=5, columns=titulos[1:], selectmode='none', show='tree headings')
-        self.scroll = ttk.Scrollbar(
+        self.scrollM = ttk.Scrollbar(
             self.tablaFrameM, command=self.tablaM.yview)
-        self.tablaM.config(yscrollcommand=self.scroll.set)
-        self.scroll.place(x=580, y=10, height=450)
+        self.tablaM.config(yscrollcommand=self.scrollM.set)
+        self.scrollM.place(x=580, y=10, height=450)
 
         for i, titulo in enumerate(titulos):
             if i == 0:
@@ -2261,7 +2257,7 @@ class VeterinariaPage(ttk.Frame):
 
     def mascotasDueños(self):
         self.tablaM.destroy()
-        self.scroll.destroy()
+        self.scrollM.destroy()
 
         # Tabla con SQL
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
@@ -2281,10 +2277,10 @@ class VeterinariaPage(ttk.Frame):
 
         self.tablaM = ttk.Treeview(self.tablaFrameM, height=20,
                                    padding=5, columns=titulos[1:], selectmode='none', show='tree headings')
-        self.scroll = ttk.Scrollbar(
+        self.scrollM = ttk.Scrollbar(
             self.tablaFrameM, command=self.tablaM.yview)
-        self.tablaM.config(yscrollcommand=self.scroll.set)
-        self.scroll.place(x=450, y=10, height=450)
+        self.tablaM.config(yscrollcommand=self.scrollM.set)
+        self.scrollM.place(x=450, y=10, height=450)
 
         for i, titulo in enumerate(titulos):
             if i == 0:
@@ -2306,7 +2302,7 @@ class VeterinariaPage(ttk.Frame):
 
     def mostrarMascotas(self):
         self.tablaM.destroy()
-        self.scroll.destroy()
+        self.scrollM.destroy()
 
         # Tabla con SQL
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
@@ -2326,10 +2322,10 @@ class VeterinariaPage(ttk.Frame):
 
         self.tablaM = ttk.Treeview(self.tablaFrameM, height=20,
                                    padding=5, columns=titulos[1:], selectmode='none', show='tree headings')
-        self.scroll = ttk.Scrollbar(
+        self.scrollM = ttk.Scrollbar(
             self.tablaFrameM, command=self.tablaM.yview)
-        self.tablaM.config(yscrollcommand=self.scroll.set)
-        self.scroll.place(x=580, y=10, height=450)
+        self.tablaM.config(yscrollcommand=self.scrollM.set)
+        self.scrollM.place(x=580, y=10, height=450)
 
         for i, titulo in enumerate(titulos):
             if i == 0:
@@ -2372,8 +2368,12 @@ class VeterinariaPage(ttk.Frame):
 
             cursor.close()
 
-        self.tablaC = ttk.Treeview(self.tablaFrameC, height=18,
+        self.tablaC = ttk.Treeview(self.tablaFrameC, height=20,
                                    padding=5, columns=titulos[1:], selectmode='none', show='tree headings')
+        self.scrollC = ttk.Scrollbar(
+            self.tablaFrameC, command=self.tablaC.yview)
+        self.tablaC.config(yscrollcommand=self.scrollC.set)
+        self.scrollC.place(x=580, y=10, height=450)
 
         for i, titulo in enumerate(titulos):
             if i == 0:
@@ -2416,6 +2416,7 @@ class VeterinariaPage(ttk.Frame):
 
     def mascotasPorCliente(self):
         self.tablaC.destroy()
+        self.scrollC.destroy()
 
         # Tabla con SQL
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
@@ -2433,16 +2434,24 @@ class VeterinariaPage(ttk.Frame):
 
             cursor.close()
 
-        self.tablaC = ttk.Treeview(self.tablaFrameC, height=18,
+        self.tablaC = ttk.Treeview(self.tablaFrameC, height=20,
                                    padding=5, columns=titulos[1:], selectmode='none', show='tree headings')
+        self.scrollC = ttk.Scrollbar(
+            self.tablaFrameC, command=self.tablaC.yview)
+        self.tablaC.config(yscrollcommand=self.scrollC.set)
+        self.scrollC.place(x=500, y=10, height=450)
 
         for i, titulo in enumerate(titulos):
             if i == 0:
                 self.tablaC.column('#0', width=100, anchor='w')
                 self.tablaC.heading('#0', text=titulo, anchor=tk.CENTER)
             else:
-                self.tablaC.column(titulo, width=100, anchor=tk.CENTER)
-                self.tablaC.heading(titulo, text=titulo, anchor=tk.CENTER)
+                if titulo == 'Apellido':
+                    self.tablaC.column(titulo, width=150, anchor=tk.CENTER)
+                    self.tablaC.heading(titulo, text=titulo, anchor=tk.CENTER)
+                else:
+                    self.tablaC.column(titulo, width=100, anchor=tk.CENTER)
+                    self.tablaC.heading(titulo, text=titulo, anchor=tk.CENTER)
 
         for cliente in clientes:
             atributos = []
@@ -2456,6 +2465,7 @@ class VeterinariaPage(ttk.Frame):
 
     def mostrarClientes(self):
         self.tablaC.destroy()
+        self.scrollC.destroy()
 
         # Tabla con SQL
         with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
@@ -2472,8 +2482,12 @@ class VeterinariaPage(ttk.Frame):
 
             cursor.close()
 
-        self.tablaC = ttk.Treeview(self.tablaFrameC, height=18,
+        self.tablaC = ttk.Treeview(self.tablaFrameC, height=20,
                                    padding=5, columns=titulos[1:], selectmode='none', show='tree headings')
+        self.scrollC = ttk.Scrollbar(
+            self.tablaFrameC, command=self.tablaC.yview)
+        self.tablaC.config(yscrollcommand=self.scrollC.set)
+        self.scrollC.place(x=580, y=10, height=450)
 
         for i, titulo in enumerate(titulos):
             if i == 0:
@@ -4318,7 +4332,7 @@ class RegistrarPrimerPeso(ttk.Frame):
     def registrar(self):
         peso = self.peso.get()
         codmascota = self.mascota.getCod()
-        fechaHoy = date.now()
+        fechaHoy = datetime.now()
         fechaPeso = f'{fechaHoy.year}-{fechaHoy.month}-{fechaHoy.day}'
 
         if peso == '':
