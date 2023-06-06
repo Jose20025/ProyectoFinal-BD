@@ -26,7 +26,7 @@ END
 GO
 
 --Modificar un registro de peso
-create procedure ModificarPeso
+alter procedure ModificarPeso
     @FechaPeso date,
     @CodMascota char (5),
     @NuevoPeso float,
@@ -53,7 +53,7 @@ END
 GO;
 
 --Eliminar un registro de peso
-create procedure EliminarRegPeso
+alter procedure EliminarRegPeso
     @FechaPeso date,
     @CodMascota char (5),
     @Cuenta int,
@@ -80,7 +80,7 @@ END
 GO;
 
 --procedimiento de registro de visita medica 
-create PROCEDURE RegistrarVisitaMedica
+alter PROCEDURE RegistrarVisitaMedica
     @FechaConsulta date,
     @CodMascota char(5),
     @Situacion varchar(20),
@@ -108,7 +108,7 @@ END
 GO;
 
 --Modificar una visita medica
-create PROCEDURE ModificarVisitaMed
+alter PROCEDURE ModificarVisitaMed
     @FechaConsulta DATE,
     @CodMascota CHAR(5),
     @Campo VARCHAR(20),
@@ -141,7 +141,7 @@ END
 GO;
 
 --Eliminar una visita medica
-create procedure EliminarVisitaMed
+alter procedure EliminarVisitaMed
     @FechaConsulta date,
     @CodMascota char(5),
     @Cuenta int,
@@ -167,7 +167,7 @@ END
 GO;
 
 --Procedimiento para registrar una vacunacion
-create PROCEDURE RegistrarVacunacion
+alter PROCEDURE RegistrarVacunacion
     @FechaVacuna date,
     @CodMascota char (5),
     @TipoVacuna varchar(15),
@@ -198,7 +198,7 @@ GO;
 --de modo que si se registra una vacunacion errada, se procede con la eliminación del registro
 
 --Eliminar una vacunacion
-create procedure EliminarVacunacion
+alter procedure EliminarVacunacion
     @FechaVacuna date,
     @CodMascota char (5),
     @TipoVacuna varchar(15),
@@ -227,7 +227,7 @@ END
 GO;
 
 --Registro de una estadía
-create procedure RegistrarEstadia
+alter procedure RegistrarEstadia
     @CheckIn date,
     @CodMascota char (5),
     @NroHab char (2),
@@ -256,7 +256,7 @@ END
 GO;
 
 --Modificación de una estadía
-create PROCEDURE ModificarEstadia
+alter PROCEDURE ModificarEstadia
     @CheckIn DATE,
     @CodMascota CHAR(5),
     @NroHab CHAR(2),
@@ -312,7 +312,7 @@ END
 GO;
 
 --Eliminar una estadía
-create procedure EliminarEstadia
+alter procedure EliminarEstadia
     @CheckIn date,
     @CodMascota char (5),
     @NroHab char (2),
@@ -365,7 +365,7 @@ from ServiciosEsp
 GO;
 
 --Procedimiento para registrar un requerimiento de un servicio en la estadía
-create procedure RegistrarRequerimiento
+alter procedure RegistrarRequerimiento
     @CodMascota char (5),
     @IdServicio char(3),
     @CheckIn date,
@@ -466,7 +466,7 @@ from Requerimientos
 GO
 
 --Modificacion de requerimiento
-create procedure ModificarRequerimiento
+alter procedure ModificarRequerimiento
     @IdServicio char (3),
     @CheckIn date,
     @CodMascota char (5),
@@ -519,7 +519,7 @@ END
 GO;
 
 --Eliminación de requerimiento en la estadía
-create procedure EliminarRequerimiento
+alter procedure EliminarRequerimiento
     @IdServicio char(3),
     @CheckIn date,
     @CodMascota char(5),
@@ -548,7 +548,7 @@ END
 GO;
 
 --Adicion de vacunas de nuevos proveedores
-create procedure AgregarVacuna
+alter procedure AgregarVacuna
     @TipoVacuna varchar(15),
     @Fabricante varchar(20),
     @Precio money,
@@ -575,7 +575,7 @@ END
 GO;
 
 --Eliminar vacuna
-create procedure EliminarVacuna
+alter procedure EliminarVacuna
     @TipoVacuna varchar(15),
     @Fabricante varchar (20),
     @Cuenta int,
