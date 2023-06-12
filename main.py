@@ -921,7 +921,7 @@ class ModificarPageH(ttk.Frame):
             self, width=8, text='Buscar', command=self.Buscar)
         self.botonBuscar.place(x=90, y=135)
 
-        self.eleccionCampo = tk.StringVar()
+        self.eleccionCampo = tk.StringVar(value=None)
         self.botonRadAlias = ttk.Radiobutton(
             self, text='Alias', variable=self.eleccionCampo, value='Alias', command=self.EleccionCampo)
         self.botonRadAlias.place(x=205, y=90)
@@ -958,6 +958,10 @@ class ModificarPageH(ttk.Frame):
             self.CBoxEspecie.configure(state='disabled')
 
     def Buscar(self):
+
+        if self.eleccionCampo.get() is None:
+            showwarning('Aviso','Todos los campos deben estar llenos')
+            return      
 
         if self.tablaFrame:
             self.tablaFrame.pack_forget()

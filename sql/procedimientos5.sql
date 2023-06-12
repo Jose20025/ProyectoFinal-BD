@@ -14,16 +14,17 @@ BEGIN
 end
 go
 
-create procedure BuscarHuespedes
+alter procedure BuscarHuespedes
     @Campo varchar (10),
     @Valor varchar (15)
 AS  
 BEGIN
     declare @SQL nvarchar(max)
 
-    set @SQL = N'select distinct CodMascota,Alias,Apellido,Especie,Color_pelo from Mascotas
-                 inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente
-                where' +QUOTENAME(@Campo)+'=@Valor and CodMascota not in (select CodMascota from HistorialesPeso)'
+    set @SQL = N'select distinct Mascotas.CodMascota,Alias,Apellido,Especie,Color_pelo from Mascotas
+                 inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente 
+                 inner join Estadias E on E.CodMascota=Mascotas.CodMascota
+                where' +QUOTENAME(@Campo)+'=@Valor'
 
     exec sp_executesql @SQL, N'@Valor varchar(15)',@Valor
 end
