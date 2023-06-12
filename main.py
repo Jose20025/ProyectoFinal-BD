@@ -1693,7 +1693,7 @@ class VeterinariaPage(ttk.Frame):
         #### SECCIÓN DE MASCOTAS #####
 
         self.botonesFrameM = ttk.Frame(
-            self.mascotaFrame, style='Card.TFrame', width=310, height=210)
+            self.mascotaFrame, style='Card.TFrame', width=310, height=280)
 
         ttk.Button(self.botonesFrameM, text='Nueva Mascota', width=30,
                    command=self.aInsertarM).place(x=20, y=20)
@@ -1703,6 +1703,9 @@ class VeterinariaPage(ttk.Frame):
 
         ttk.Button(self.botonesFrameM, text='Edición', command=self.aModificarM,
                    width=30).place(x=20, y=160)
+
+        ttk.Button(self.botonesFrameM, text='Consulta Medica', command=self.aConsulta,
+                   width=30).place(x=20, y=230)
 
         self.imagenM = ImageTk.PhotoImage(Image.open(
             './image/logo-transparente.png').resize((200, 170)))
@@ -1864,6 +1867,11 @@ class VeterinariaPage(ttk.Frame):
             self.vacunaFrame, text='Obtener historial de vacunas', command=self.ObtenerHistorialVac)
         self.historialVacBoton.place(x=710, y=490)
         self.popupVac = None
+
+    def aConsulta(self):
+        self.consultaPage = BuscarMascotaConsulta(self)
+        self.padre.cambioVentana(self, self.consultaPage, [
+                                 700, 500], 'Buscar Mascota')
 
     def RegistrarPeso(self):
         codigo = self.textoCod.get()
@@ -4688,6 +4696,241 @@ class NuevoClientePage(ttk.Frame):
 
             cursor.close()
             conexion.commit()
+
+
+class BuscarMascotaConsulta(ttk.Frame):
+    def __init__(self, master: VeterinariaPage):
+        super().__init__(master.padre, width=700, height=500)
+
+        self.padre = master
+        self.campo = tk.IntVar()
+
+        ttk.Radiobutton(self, text='Codigo de la Mascota',
+                        variable=self.campo, value=1, command=self.habilitar).place(x=30, y=70)
+        ttk.Radiobutton(self, text='Alias',
+                        variable=self.campo, value=2, command=self.habilitar).place(x=30, y=110)
+        ttk.Radiobutton(self, text='Especie',
+                        variable=self.campo, value=3, command=self.habilitar).place(x=30, y=150)
+        ttk.Radiobutton(self, text='Todos las Mascotas',
+                        variable=self.campo, value=5, command=self.habilitar).place(x=30, y=190)
+
+        ttk.Label(self, text='Campo').place(x=30, y=240)
+
+        self.campoBuscar = ttk.Entry(self, width=20, state='disabled')
+        self.campoBuscar.place(x=30, y=260)
+
+        self.comboBoxEspecie = ttk.Combobox(
+            self, values=['Felino', 'Canino'], state='disabled')
+        self.comboBoxEspecie.place(x=30, y=320)
+
+        self.botonBuscar = ttk.Button(self, text='Buscar', command=self.buscar)
+        self.botonBuscar.place(x=100, y=460)
+
+        ttk.Button(self, text='Volver', command=self.volver).place(x=10, y=460)
+
+        self.tablaFrame = ttk.Frame(
+            self, style='Card.TFrame', width=390, height=480)
+        self.tablaFrame.place(x=300, y=10)
+
+        self.tabla = None
+
+    def volver(self):
+        respuesta = askquestion(title='Confirmacion', message='¿Estas seguro?')
+
+        if respuesta == 'yes':
+            self.padre.padre.cambioVentana(
+                self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+            self.destroy()
+
+    def habilitar(self):
+        self.botonBuscar.config(style='Accent.TButton')
+
+        if self.campo.get() == 5:
+            self.campoBuscar.config(state='disabled')
+
+        elif self.campo.get() == 3:
+            self.campoBuscar.config(state='disabled')
+            self.comboBoxEspecie.config(state='readonly')
+            self.comboBoxEspecie.set('Felino')
+
+        else:
+            self.campoBuscar.config(state='normal')
+            self.comboBoxEspecie.config(state='disabled')
+
+    def seleccion(self, event=None):
+        item = self.tabla.focus()
+
+        mascotaItem = self.tabla.item(item)
+        codMascota = mascotaItem['text']
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute(
+                'select * from Mascotas where CodMascota = ?', codMascota)
+
+            mascota = Mascota(cursor.fetchone())
+
+        self.consultaPage = ConsultaMedicaPage(self.padre, mascota)
+        self.padre.padre.cambioVentana(self, self.consultaPage, [
+                                       400, 400], 'Consulta Medica')
+        self.destroy()
+
+    def buscar(self):
+
+        campos = {1: 'CodMascota', 2: 'Alias', 3: 'Especie', 4: 'Color_pelo'}
+        campo = self.campo.get()
+
+        if campo == 3:
+            campoBuscar = self.comboBoxEspecie.get()
+        else:
+            campoBuscar = self.campoBuscar.get()
+
+        if campoBuscar == '' and campo != 5:
+            showwarning(title='Error',
+                        message='El campo buscar no puede estar vacio')
+            return
+
+        if campo != 5:
+            consulta = f'select CodMascota, Alias, Color_pelo as Color from Mascotas where {campos[campo]} = ?'
+
+        if self.tabla:
+            self.tabla.destroy()
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            if campo != 5:
+                cursor.execute(consulta, campoBuscar)
+            else:
+                cursor.execute(
+                    'select CodMascota, Alias, Color_pelo as Color from Mascotas')
+
+            titulos = []
+
+            for titulo in cursor.description:
+                titulos.append(titulo[0])
+
+            clientes = cursor.fetchall()
+
+            if not clientes:
+                showwarning(
+                    title='Ups!', message='No se ha encontrado a ningun cliente!')
+
+        self.tabla = ttk.Treeview(
+            self.tablaFrame, height=19, columns=titulos[1:])
+        self.tabla.bind('<Double-1>', self.seleccion)
+
+        for i, titulo in enumerate(titulos):
+            if i == 0:
+                self.tabla.column('#0', width=100, anchor='w')
+                self.tabla.heading('#0', text=titulo, anchor='center')
+            else:
+                self.tabla.column(titulo, width=100, anchor='center')
+                self.tabla.heading(titulo, text=titulo, anchor='center')
+
+        for cliente in clientes:
+            atributos = []
+            for atributo in cliente:
+                atributos.append(atributo)
+            self.tabla.insert(
+                '', tk.END, text=atributos[0], values=atributos[1:])
+
+        self.tabla.place(x=20, y=10)
+
+
+class ConsultaMedicaPage(ttk.Frame):
+    def __init__(self, master: VeterinariaPage, mascota: Mascota):
+        super().__init__(master=master.padre, width=400, height=400)
+
+        self.padre = master
+        self.mascota = mascota
+
+        ttk.Label(self, text='Nueva Consulta Medica').place(x=130, y=20)
+        ttk.Separator(self).place(x=110, y=40, width=180)
+
+        ttk.Label(self, text='Fecha').place(x=20, y=90)
+        self.fecha = ttk.Entry(self)
+        fechaToday = datetime.now().date()
+        self.fecha.insert(
+            0, f'{fechaToday.day}-{fechaToday.month}-{fechaToday.year}')
+        self.fecha.place(x=20, y=110)
+
+        ttk.Label(self, text='Codigo de Mascota').place(x=270, y=90)
+        self.codigoMascota = ttk.Entry(self, width=10)
+        self.codigoMascota.insert(0, self.mascota.codMascota)
+        self.codigoMascota.config(state='readonly')
+        self.codigoMascota.place(x=270, y=110)
+
+        ttk.Label(self, text='Situacion').place(x=20, y=210)
+        self.situacion = ttk.Combobox(
+            self, values=['Enfermedad', 'Pulgas', 'Accidente', 'Laceracion', 'Otro'], width=12, state='readonly')
+        self.situacion.set('Enfermedad')
+        self.situacion.place(x=20, y=230)
+
+        ttk.Label(self, text='Descripcion').place(x=210, y=190)
+
+        self.descripcion = tk.Text(
+            self, width=18, height=9, font=('Segoe UI Variable Small', 9))
+        self.descripcion.place(x=210, y=210)
+
+        ttk.Button(self, style='Accent.TButton',
+                   text='Aceptar', command=self.aceptar).place(x=20, y=360)
+
+    def aceptar(self):
+        fecha = self.fecha.get()
+        descripcion = self.descripcion.get('1.0', tk.END)
+        situacion = self.situacion.get()
+        codigoMascota = self.codigoMascota.get()
+
+        if any(elemento == '' for elemento in [fecha, descripcion, situacion]):
+            showwarning(title='Error',
+                        message='Todos los campos deben de estar llenos')
+            return
+
+        if not self.verificarFecha(fecha)[0]:
+            showwarning(title='Error',
+                        message='La fecha esta en mal formato o es invalida')
+            return
+
+        fecha = self.verificarFecha(fecha)[1]
+
+        with pyodbc.connect(
+                f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
+            cursor = conexion.cursor()
+
+            cursor.execute('exec RegistrarVisitaMedica ?,?,?,?,?', [
+                           fecha, codigoMascota, situacion, descripcion if descripcion != '' else None, 1])
+
+            resultado = cursor.fetchall()
+            print(resultado)
+            bit = resultado[0][0]
+
+            if bit:
+                cursor.commit()
+                respuesta = showinfo(
+                    title='Exito', message='La visita medica se ha registrado con exito!')
+            else:
+                cursor.rollback()
+                showerror(title='Error', message='Ha ocurrido un error!')
+
+            conexion.commit()
+
+        self.padre.padre.cambioVentana(
+            self, self.padre, [1000, 600], 'Cute Pets - Veterinaria')
+        self.destroy()
+
+    def verificarFecha(self, fecha: str):
+        try:
+            fechaDescompuesta = fecha.split('-')
+            dia, mes, año = map(int, fechaDescompuesta)
+            vfecha = date(año, mes, dia)
+            nuevaFecha = f'{vfecha.year}-{vfecha.month}-{vfecha.day}'
+            return True, nuevaFecha
+        except Exception:
+            return False, fecha
 
 
 if __name__ == '__main__':
