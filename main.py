@@ -1844,7 +1844,7 @@ class VeterinariaPage(ttk.Frame):
 
         # ==============================> ClienteFrame
         self.botonesFrameC = ttk.Frame(
-            self.clienteFrame, style='Card.TFrame', width=310, height=280)
+            self.clienteFrame, style='Card.TFrame', width=310, height=215)
 
         #### SECCIÓN DE CLIENTES #####
 
@@ -1854,11 +1854,8 @@ class VeterinariaPage(ttk.Frame):
         ttk.Button(self.botonesFrameC, text='Modificar un cliente',
                    width=30, command=self.aModificarC).place(x=20, y=90)
 
-        ttk.Button(self.botonesFrameC, text='Eliminar un cliente',
-                   width=30).place(x=20, y=160)
-
         ttk.Button(self.botonesFrameC, text='Agregar una persona a una familia', command=self.nuevaPersonaFamilia,
-                   width=30).place(x=20, y=230)
+                   width=30).place(x=20, y=160)
 
         self.imagenC = ImageTk.PhotoImage(Image.open(
             './image/logo-transparente.png').resize((200, 170)))
