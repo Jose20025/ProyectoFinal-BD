@@ -245,5 +245,3 @@ BEGIN
     SELECT PrintText
     FROM @PrintTable
 END
-
-exec ReporteAtendidos '2022-12-01','2023-01-10'

@@ -275,7 +275,7 @@ set @Check = 1
 END
 GO;
 --Modificación de una estadía
-alter PROCEDURE ModificarEstadia
+create PROCEDURE ModificarEstadia
     @CheckIn DATE,
     @CodMascota CHAR(5),
     @NroHab CHAR(2),

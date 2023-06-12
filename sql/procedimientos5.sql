@@ -14,7 +14,7 @@ BEGIN
 end
 go
 
-alter procedure BuscarHuespedes
+create procedure BuscarHuespedes
     @Campo varchar (10),
     @Valor varchar (15)
 AS  
