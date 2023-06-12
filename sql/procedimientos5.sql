@@ -1,4 +1,4 @@
-alter procedure BuscarMascota
+create procedure BuscarMascota
     @Campo varchar (10),
     @Valor varchar (15)
 AS  
@@ -14,7 +14,7 @@ BEGIN
 end
 go
 
-alter procedure BuscarHuespedes
+create procedure BuscarHuespedes
     @Campo varchar (10),
     @Valor varchar (15)
 AS  
@@ -28,13 +28,9 @@ BEGIN
     exec sp_executesql @SQL, N'@Valor varchar(15)',@Valor
 end
 
-select CodMascota
-from Estadias
-where CheckOut is null
-
 --hay que modficarlo de acuerdo a lo que se deberia mostrar cuando se busca una
 go
-alter procedure InfoMascota
+create procedure InfoMascota
     @CodMascota char(5)
 AS
 begin
@@ -45,7 +41,7 @@ begin
 end
 go
 
-alter procedure VerificarExistenciaCliente
+create procedure VerificarExistenciaCliente
     @IdCliente char(5),
     @Check bit out
 AS
@@ -159,7 +155,7 @@ select *
 from Estadias
 go
 
-alter procedure VerificarEstadiaExistente
+create procedure VerificarEstadiaExistente
     @CodMascota char (5),
     @Check bit out
 as
@@ -177,9 +173,6 @@ begin
         select @Check
     end
 END
-
-exec VerificarEstadiaExistente 'M0028',0
-exec VerificarEstadiaExistente 'M0003',0
 
 
 

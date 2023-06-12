@@ -12,7 +12,7 @@ from ConsumosEstadia
 order by CodMascota,CheckIn
 GO;
 
-alter procedure CheckOutHuesped
+create procedure CheckOutHuesped
     @CheckIn date,
     @CheckOut date,
     @CodMascota char(5),
@@ -93,7 +93,7 @@ END
 go
 
 
-alter procedure CheckOutHuesped2
+create procedure CheckOutHuesped2
     @CheckIn date,
     @CheckOut date,
     @CodMascota char(5),

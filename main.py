@@ -2114,12 +2114,14 @@ class VeterinariaPage(ttk.Frame):
         if self.popupVac:
             self.popupVac.destroy()
         codigo = self.textoCodVac.get()
+        
         if codigo == '':
             showerror('Error de campo', 'No ha indicado la mascota')
         else:
 
             self.popupVac = tk.Toplevel(
                 self.vacunaFrame, width=500, height=500)
+            self.popupVac.geometry('500x500')
             self.popupVac.title('Historia Vacunas')
 
             self.historialVacFrame = ttk.Frame(
@@ -2127,7 +2129,7 @@ class VeterinariaPage(ttk.Frame):
 
             with pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={conexiones[user.get()][1]};DATABASE=FinalVeterinaria;UID={user.get()};PWD={password.get()}') as conexion:
                 cursor = conexion.cursor()
-                cursor.execute('exec HistorialVacunas ?', (codigo))
+                cursor.execute('exec HistorialVacunacion ?', (codigo))
                 titulos = []
                 for titulo in cursor.description:
                     titulos.append(titulo[0])
@@ -2135,19 +2137,19 @@ class VeterinariaPage(ttk.Frame):
                 datos = cursor.fetchall()
                 cursor.close()
 
-                self.tablaVacunas = ttk.Treeview(self.vacunaFrame,
+                self.tablaVacunas = ttk.Treeview(self.popupVac,
                                                  height=20, columns=titulos[1:])
                 self.tablaVacunas.bind('<Double-1>', self.seleccion)
 
                 for i, titulo in enumerate(titulos):
                     if i == 0:
                         self.tablaVacunas.column(
-                            '#0', width=150, anchor=tk.CENTER)
+                            '#0', width=170, anchor=tk.CENTER)
                         self.tablaVacunas.heading(
                             '#0', text=titulo, anchor=tk.CENTER)
                     else:
                         self.tablaVacunas.column(
-                            titulo, width=150, anchor=tk.CENTER)
+                            titulo, width=170, anchor=tk.CENTER)
                         self.tablaVacunas.heading(
                             titulo, text=titulo, anchor=tk.CENTER)
 
@@ -2781,6 +2783,7 @@ class InfoPage(ttk.Frame):
             cursor.execute('exec BuscarMascota ?,? ',
                            (self.campoElegido, self.textoBuscarPeso))
             resultados = cursor.fetchall()
+            print(resultados,self.campoElegido,self.textoBuscarPeso)
             titulos = []
             for titulo in cursor.description:
                 titulos.append(titulo[0])
@@ -4240,6 +4243,7 @@ class NuevaFamiliaPage(ttk.Frame):
             resultados = cursor.fetchall()
             verificacion = resultados[0][0]
             IdParaPerfil = resultados[0][1]
+            print(verificacion)
             if verificacion:
                 cursor.execute('commit')
                 showinfo(
@@ -4371,7 +4375,7 @@ class InsertarMascotaV(ttk.Frame):
 
                             mascota = Mascota(lista[:-1])
 
-                            cursor.commit()
+                            cursor.execute('commit')
                             respuesta = showinfo(title='Exito',
                                                  message='Se ha agregado a la mascota correctamente!')
 
@@ -4503,6 +4507,7 @@ class RegistrarPrimerPeso(ttk.Frame):
             else:
                 cursor.rollback()
 
+            cursor.execute('commit')
             conexion.commit()
 
 
@@ -4699,7 +4704,8 @@ class NuevoClientePageOnly(ttk.Frame):
                         message='Uno de los datos esta en mal formato')
             return
 
-        if len(str(nrocuenta)) >= 10:
+        if len(str(nrocuenta)) != 10:
+            print(len(str(nrocuenta)))
             showwarning(
                 title='Error', message='El numero de cuenta es invalido (max 10 caracteres)')
             return
@@ -4732,6 +4738,7 @@ class NuevoClientePageOnly(ttk.Frame):
                     title='Error', message='Ha ocurrido un error al insertar el cliente')
                 cursor.rollback()
 
+            cursor.execute('commit')
             cursor.close()
             conexion.commit()
 
@@ -4817,6 +4824,7 @@ class NuevoClientePage(ttk.Frame):
                 showerror(
                     title='Error', message='Ha ocurrido un error al insertar el cliente')
 
+            cursor.execute('commit')
             cursor.close()
             conexion.commit()
 
