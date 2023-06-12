@@ -2114,6 +2114,7 @@ class VeterinariaPage(ttk.Frame):
         if self.popupVac:
             self.popupVac.destroy()
         codigo = self.textoCodVac.get()
+        
         if codigo == '':
             showerror('Error de campo', 'No ha indicado la mascota')
         else:
