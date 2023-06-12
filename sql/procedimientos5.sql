@@ -14,20 +14,23 @@ BEGIN
 end
 go
 
-create procedure BuscarHuespedes
+alter procedure BuscarHuespedes
     @Campo varchar (10),
     @Valor varchar (15)
-AS
+AS  
 BEGIN
     declare @SQL nvarchar(max)
 
-    set @SQL = N'select distinct Mascotas.CodMascota,Alias,Apellido,Especie,Color_pelo from Mascotas
-                inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente
-                inner join Estadias on Estadias.CodMascota = Mascotas.CodMascota
-                where' +QUOTENAME(@Campo)+'=@Valor'
+    set @SQL = N'select distinct CodMascota,Alias,Apellido,Especie,Color_pelo from Mascotas
+                 inner join Clientes on Clientes.IdCliente = Mascotas.IdCliente
+                where' +QUOTENAME(@Campo)+'=@Valor and CodMascota not in (select CodMascota from HistorialesPeso)'
 
     exec sp_executesql @SQL, N'@Valor varchar(15)',@Valor
 end
+
+select CodMascota
+from Estadias
+where CheckOut is null
 
 --hay que modficarlo de acuerdo a lo que se deberia mostrar cuando se busca una
 go
@@ -150,3 +153,33 @@ select NroHab
 from Habitaciones
 where Disponible= 'D'
 order by try_cast(NroHab as int), NroHab desc
+go
+
+select *
+from Estadias
+go
+
+alter procedure VerificarEstadiaExistente
+    @CodMascota char (5),
+    @Check bit out
+as
+begin
+    if exists (select 1
+    from Estadias
+    where CodMascota=@CodMascota and CheckOut is null)
+    BEGIN
+        set @Check = 1
+        select @Check
+    END
+    ELSE
+    BEGIN
+        set @Check = 0
+        select @Check
+    end
+END
+
+exec VerificarEstadiaExistente 'M0028',0
+exec VerificarEstadiaExistente 'M0003',0
+
+
+

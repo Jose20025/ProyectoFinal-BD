@@ -153,7 +153,7 @@ BEGIN
         while(@@FETCH_STATUS=0)
             BEGIN
             set @PrintText =   '  '+CONVERT(VARCHAR(10),@InAux) + REPLICATE(' ',10)+
-                    @Alias + REPLICATE(' ',19 - LEN(@Alias)) +
+                    @Alias + REPLICATE(' ',40 - LEN(@Alias)) +
                     CONVERT(CHAR(2), @Dias) + REPLICATE(' ',16)+
                     @Hab + REPLICATE(' ',15)
                     + CONVERT(VARCHAR(10), @OutAux);
@@ -176,12 +176,12 @@ BEGIN
             (@PrintText)
         set @cantidad=0
     END
-    ELSE    
-        set @PrintText = 'No se ha registrado ningún huesped entre estas fechas';
-    insert into @PrintTable
-    values
-        (@PrintText)
-
+    ELSE
+        BEGIN
+        set @PrintText = 'No se ha registrado ningún huesped entre estas fechas';insert into @PrintTable
+        values
+            (@PrintText)
+    END
     if exists (select 1
     from Estadias
     where CheckOut is NULL)
@@ -236,10 +236,14 @@ BEGIN
             (@PrintText)
     END	
     ELSE
-        set @PrintText = 'Ningún huesped se encuentra actualmente hospedado' ;
-    insert into @PrintTable
-    values
-        (@PrintText)
+        begin
+        set @PrintText = 'Ningún huesped se encuentra actualmente hospedado';
+        insert into @PrintTable
+        values
+            (@PrintText)
+    end
     SELECT PrintText
     FROM @PrintTable
 END
+
+exec ReporteAtendidos '2022-12-01','2023-01-10'
