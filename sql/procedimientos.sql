@@ -205,7 +205,7 @@ END
 GO;
 
 --Procedimiento de registro de una persona y su asignación al cliente
-alter procedure RegistrarPersona
+create procedure RegistrarPersona
     @CI varchar(10),
     @Nombre varchar (30),
     @IdCliente char(5),
