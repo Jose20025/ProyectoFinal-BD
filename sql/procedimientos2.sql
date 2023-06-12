@@ -227,7 +227,7 @@ END
 GO;
 
 --Registro de una estadía
-create procedure RegistrarEstadia
+alter procedure RegistrarEstadia
     @CheckIn date,
     @CodMascota char (5),
     @NroHab char (2),
@@ -245,12 +245,20 @@ BEGIN
     end
     else
     BEGIN
-        set @Check = 1
-        SELECT @Check
-        insert into Estadias
-        values
-            (@CheckIn, @CodMascota, @NroHab, NULL, @Dias)
-        update Habitaciones set Disponible = 'O' where NroHab = @NroHab
+        declare @habcheck char(1)
+        set @habcheck = (select Disponible from Habitaciones where NroHab=@NroHab)
+        if @habcheck = 'D'
+            BEGIN
+            set @Check = 1
+            SELECT @Check
+            insert into Estadias
+            values
+                (@CheckIn, @CodMascota, @NroHab, NULL, @Dias)
+            update Habitaciones set Disponible = 'O' where NroHab = @NroHab
+            END
+        else
+            set @Check = 1
+            SELECT @Check
     END
 END
 GO;

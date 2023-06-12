@@ -1659,6 +1659,8 @@ class EdicionEstadia(ttk.Frame):
             resp = askquestion('Confirmación', '¿Desea guardar los cambios?')
             if resp == 'yes':
                 showinfo('Éxito', 'Cambios guardados')
+            else:
+                return
 
     # viendo cantidad de duchas
             if 'Baño' in self.guardado:
